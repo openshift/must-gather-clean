@@ -1,2 +1,7 @@
+# Binary
+must-gather-clean
+
+# Goland IDE
 .idea
+# schema builds
 pkg/schema/schema_tmp.go
