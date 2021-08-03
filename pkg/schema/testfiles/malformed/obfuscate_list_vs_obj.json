@@ -1,0 +1,8 @@
+{
+  "config": {
+    "obfuscate": {
+      "type": "ip_address",
+      "replacementType": "consistent"
+    }
+  }
+}
