@@ -1,0 +1,11 @@
+config:
+  obfuscate:
+    - type: IP
+      replacementType: Consistent
+  omit:
+    - type: kubernetes
+      namespaces:
+        - openshift-node
+        - openshift-kube-scheduler
+    - type: file
+      pattern: "*.log"

@@ -1,0 +1,172 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "description": "This configuration defines the behaviour of the must-gather-clean CLI.",
+    "required": [
+        "config"
+    ],
+    "title": "must-gather-clean configuration file schema",
+    "type": "object",
+    "properties": {
+        "config": {
+            "description": "The config schema defines the behaviour of the must-gather-clean CLI. There are two sections, \"omit\" which defines the omission behaviour and \"obfuscate\" which defines the obfuscation behaviour.",
+            "required": [],
+            "title": "Tool Config Schema",
+            "type": "object",
+            "properties": {
+                "obfuscate": {
+                    "description": "The obfuscation schema determines what is being detected and how it is being replaced. We ship with several built-in replacements for common types such as IP or MAC, Keywords and Regex. The replacements are done in order of the whole list, so you can define chains of replacements that built on top of one another - for example replacing a keyword and later matching its replacement with a regex. The input to the given replacements are always a line of text (string). Since file names can also have private content in them, they are also processed as a line - exactly as they would with file content.",
+                    "examples": [
+                        [
+                            {
+                                "type": "IP",
+                                "replacementType": "Consistent"
+                            },
+                            {
+                                "type": "MAC",
+                                "replacementType": "Random"
+                            }
+                        ]
+                    ],
+                    "title": "Obfuscation Schema",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/Definitions/obfuscate"
+                    }
+                },
+                "omit": {
+                    "type": "array",
+                    "title": "Omission Schema",
+                    "description": "The omission schema defines what kind of files shall not be included in the final must-gather. This can be seen as a filter and can operate on file paths or Kubernetes and OpenShift and other custom resources. Omissions are settled first in the process of obfuscating a must-gather, so its content won't be scanned and replaced.",
+                    "default": [],
+                    "examples": [
+                        [
+                            {
+                                "type": "kubernetes",
+                                "kind": "Secret"
+                            },
+                            {
+                                "type": "kubernetes",
+                                "kind": "ConfigMap",
+                                "namespaces": [
+                                    "kube-system"
+                                ]
+                            },
+                            {
+                                "type": "file",
+                                "pattern": "*.log"
+                            },
+                            {
+                                "type": "file",
+                                "pattern": "release-4.10/ingress_controllers/*/haproxy.*"
+                            }
+                        ]
+                    ],
+                    "additionalItems": true,
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/Definitions/k8s-omission"
+                            },
+                            {
+                                "$ref": "#/Definitions/file-omission"
+                            }
+                        ]
+                    }
+                }
+            },
+            "additionalProperties": true
+        }
+    },
+    "Definitions": {
+        "obfuscate": {
+            "type": "object",
+            "required": [
+                "type",
+                "replacementType"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "IP",
+                        "MAC",
+                        "Keywords",
+                        "Regex"
+                    ],
+                    "description": "type defines the kind of detection you want to use. For example IP will find IP addresses, whereas Keywords will find predefined keywords."
+                },
+                "replacementType": {
+                    "type": "string",
+                    "default": "Random",
+                    "enum": [
+                        "Consistent",
+                        "Random",
+                        "Static"
+                    ],
+                    "description": "This defines how the detected string will be replaced. Type 'Consistent' will guarantee the same input will always create the same output string and 'Random' will just create a random replacement string of the same length as the input. 'Static' relies solely on the replacement object to define an input/output mapping."
+                },
+                "replacement": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "description": "on any replacement type, this will override a given input string with another output string. On duplicate keys it will use the last defined value as replacement. The input values are matched in a case-sensitive fashion and only as a full words, substrings must be matched using a regex. With type regex, the keys will be considered as capture group values, if there is no mapping available it will be replaced with a random string of the same size."
+                },
+                "regex": {
+                    "type": "string",
+                    "description": "when replacementType=regex is used, the supplied  regex (Golang regexp https://pkg.go.dev/regexp) will be used to detect the string that should be replaced. The regex is line based, spanning multi-line regex statements is not supported."
+                }
+            }
+        },
+        "k8s-omission": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "kubernetes"
+                    ],
+                    "description": "type defines that this signals a kubernetes resource"
+                },
+                "apiVersion": {
+                    "type": "string",
+                    "description": "This defines the apiVersion of the kubernetes resource. That can be used to further refine specific versions of a resource that should be omitted."
+                },
+                "kind": {
+                    "type": "string",
+                    "description": "This defines the kind of kubernetes resource that should be omitted. This can be further specified with the apiVersion and namespaces."
+                },
+                "namespaces": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "This defines the namespaces which are supposed to be omitted. When used together with kind and apiVersions, it becomes a filter. Standalone it will be used as a filter for all resources in a given namespace."
+                }
+            }
+        },
+        "file-omission": {
+            "type": "object",
+            "required": [
+                "type",
+                "pattern"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "file"
+                    ],
+                    "description": "type defines that this signals a file omission"
+                },
+                "pattern": {
+                    "type": "string",
+                    "description": "A Golang regexp https://pkg.go.dev/regexp that matches on file paths relative to the must-gather root. This behaves like a glob using Golangs filepath.Match()."
+                }
+            }
+        }
+    }
+}

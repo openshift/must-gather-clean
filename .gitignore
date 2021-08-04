@@ -1,2 +1,5 @@
 # Binary
 must-gather-clean
+
+# Goland IDE
+.idea
