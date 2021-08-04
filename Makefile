@@ -1,6 +1,8 @@
 all: build
 .PHONY: all
 
+GO_PACKAGES=$(shell go list ./... | grep -v tools)
+
 # Include the library makefile
 include $(addprefix ./vendor/github.com/openshift/build-machinery-go/make/, \
 	golang.mk \
