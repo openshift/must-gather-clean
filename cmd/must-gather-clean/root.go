@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 	"math/rand"
 	"os"
-	"runtime"
 	"time"
 )
 
@@ -42,11 +41,6 @@ func init() {
 }
 
 func main() {
-	// set some basic consistency with OC
 	rand.Seed(time.Now().UTC().UnixNano())
-	if len(os.Getenv("GOMAXPROCS")) == 0 {
-		runtime.GOMAXPROCS(runtime.NumCPU())
-	}
-
 	cobra.CheckErr(rootCmd.Execute())
 }
