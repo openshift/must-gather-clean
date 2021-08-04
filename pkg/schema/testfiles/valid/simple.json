@@ -2,7 +2,7 @@
   "config": {
     "obfuscate": [
       {
-        "type": "ip_address",
+        "type": "ip",
         "replacementType": "consistent"
       }
     ],

@@ -245,9 +245,9 @@ const ObfuscateReplacementTypeStatic ObfuscateReplacementType = "static"
 
 type ObfuscateType string
 
-const ObfuscateTypeIpAddress ObfuscateType = "ip_address"
+const ObfuscateTypeIp ObfuscateType = "ip"
 const ObfuscateTypeKeywords ObfuscateType = "keywords"
-const ObfuscateTypeMacAddress ObfuscateType = "mac_address"
+const ObfuscateTypeMac ObfuscateType = "mac"
 const ObfuscateTypeRegex ObfuscateType = "regex"
 
 // This configuration defines the behaviour of the must-gather-clean CLI.
@@ -292,8 +292,8 @@ var enumValues_ObfuscateReplacementType = []interface{}{
 	"static",
 }
 var enumValues_ObfuscateType = []interface{}{
-	"ip_address",
-	"mac_address",
+	"ip",
+	"mac",
 	"keywords",
 	"regex",
 }

@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"errors"
 	"github.com/stretchr/testify/assert"
 	"path/filepath"
 	"testing"
@@ -29,5 +28,5 @@ func TestInvalidFiles(t *testing.T) {
 
 func TestFailsOnUnsupportedExtension(t *testing.T) {
 	_, err := ReadConfigFromPath("schema_test.go")
-	assert.Equal(t, errors.New("unsupported extension \".go\" found in path \"schema_test.go\". Only .json, .yaml and .yml are supported"), err)
+	assert.Equal(t, wrapError(UnsupportedFileTypeError{UsedExtension: ".go", SupportedExtensions: supportedExtensions}), err)
 }

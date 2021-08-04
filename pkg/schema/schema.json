@@ -88,8 +88,8 @@
                 "type": {
                     "type": "string",
                     "enum": [
-                        "ip_address",
-                        "mac_address",
+                        "ip",
+                        "mac",
                         "keywords",
                         "regex"
                     ],

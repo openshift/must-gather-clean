@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/openshift/must-gather-clean/pkg/cli"
 	"github.com/spf13/cobra"
 	"math/rand"
@@ -20,8 +21,12 @@ var rootCmd = &cobra.Command{
 	Use:   "must-gather-clean",
 	Short: "Obfuscation for must-gather dumps",
 	Long:  "This tool obfuscates sensitive information present in must-gather dumps based on input configuration",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return cli.Run(ConfigFile, InputFolder, OutputFolder)
+	Run: func(cmd *cobra.Command, args []string) {
+		err := cli.Run(ConfigFile, InputFolder, OutputFolder)
+		if err != nil {
+			fmt.Printf("%v\n", err)
+			os.Exit(1)
+		}
 	},
 }
 

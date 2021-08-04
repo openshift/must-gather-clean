@@ -1,7 +1,16 @@
+# github.com/atombender/go-jsonschema v0.9.1-0.20210803111510-5167a44a3a0c
+## explicit
+github.com/atombender/go-jsonschema/cmd/gojsonschema
+github.com/atombender/go-jsonschema/pkg/codegen
+github.com/atombender/go-jsonschema/pkg/generator
+github.com/atombender/go-jsonschema/pkg/schemas
+github.com/atombender/go-jsonschema/pkg/yamlutils
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
+# github.com/mitchellh/go-wordwrap v1.0.0
+github.com/mitchellh/go-wordwrap
 # github.com/openshift/build-machinery-go v0.0.0-20210712174854-1bb7fd1518d3
 ## explicit
 github.com/openshift/build-machinery-go
@@ -12,8 +21,12 @@ github.com/openshift/build-machinery-go/make/targets/golang
 github.com/openshift/build-machinery-go/make/targets/openshift
 github.com/openshift/build-machinery-go/make/targets/openshift/operator
 github.com/openshift/build-machinery-go/scripts
+# github.com/pkg/errors v0.8.1
+github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
+# github.com/sanity-io/litter v1.1.0
+github.com/sanity-io/litter
 # github.com/spf13/cobra v1.1.3
 ## explicit
 github.com/spf13/cobra
