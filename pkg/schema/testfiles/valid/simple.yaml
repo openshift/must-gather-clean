@@ -1,7 +1,7 @@
 config:
   obfuscate:
     - type: IP
-      replacementType: consistent
+      replacementType: Consistent
   omit:
     - type: kubernetes
       namespaces:

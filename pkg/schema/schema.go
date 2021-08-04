@@ -115,7 +115,7 @@ func (j *Obfuscate) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	if v, ok := raw["replacementType"]; !ok || v == nil {
-		plain.ReplacementType = "random"
+		plain.ReplacementType = "Random"
 	}
 	*j = Obfuscate(plain)
 	return nil
@@ -204,15 +204,15 @@ type Obfuscate struct {
 	// available it will be replaced with a random string of the same size.
 	Replacement ObfuscateReplacement `json:"replacement,omitempty"`
 
-	// This defines how the detected string will be replaced. Type 'consistent' will
-	// guarantee the same input will always create the same output string and 'random'
+	// This defines how the detected string will be replaced. Type 'Consistent' will
+	// guarantee the same input will always create the same output string and 'Random'
 	// will just create a random replacement string of the same length as the input.
-	// Static relies solely on the replacement object to define an input/output
+	// 'Static' relies solely on the replacement object to define an input/output
 	// mapping.
 	ReplacementType ObfuscateReplacementType `json:"replacementType"`
 
 	// type defines the kind of detection you want to use. For example IP will find IP
-	// addresses, whereas keywords will find predefined keywords.
+	// addresses, whereas Keywords will find predefined keywords.
 	Type ObfuscateType `json:"type"`
 }
 
@@ -238,16 +238,16 @@ func (j *ObfuscateReplacementType) UnmarshalJSON(b []byte) error {
 
 type FileOmissionType string
 
-const ObfuscateReplacementTypeConsistent ObfuscateReplacementType = "consistent"
-const ObfuscateReplacementTypeRandom ObfuscateReplacementType = "random"
-const ObfuscateReplacementTypeStatic ObfuscateReplacementType = "static"
+const ObfuscateReplacementTypeConsistent ObfuscateReplacementType = "Consistent"
+const ObfuscateReplacementTypeRandom ObfuscateReplacementType = "Random"
+const ObfuscateReplacementTypeStatic ObfuscateReplacementType = "Static"
 
 type ObfuscateType string
 
 const ObfuscateTypeIP ObfuscateType = "IP"
-const ObfuscateTypeKeywords ObfuscateType = "keywords"
+const ObfuscateTypeKeywords ObfuscateType = "Keywords"
 const ObfuscateTypeMAC ObfuscateType = "MAC"
-const ObfuscateTypeRegex ObfuscateType = "regex"
+const ObfuscateTypeRegex ObfuscateType = "Regex"
 
 // This configuration defines the behaviour of the must-gather-clean CLI.
 type SchemaJson struct {
@@ -263,7 +263,7 @@ type SchemaJson struct {
 type SchemaJsonConfig struct {
 	// The obfuscation schema determines what is being detected and how it is being
 	// replaced. We ship with several built-in replacements for common types such as
-	// IP or MAC, keyword and regex. The replacements are done in order of the whole
+	// IP or MAC, Keywords and Regex. The replacements are done in order of the whole
 	// list, so you can define chains of replacements that built on top of one another
 	// - for example replacing a keyword and later matching its replacement with a
 	// regex. The input to the given replacements are always a line of text (string).
@@ -286,15 +286,15 @@ var enumValues_K8SOmissionType = []interface{}{
 	"kubernetes",
 }
 var enumValues_ObfuscateReplacementType = []interface{}{
-	"consistent",
-	"random",
-	"static",
+	"Consistent",
+	"Random",
+	"Static",
 }
 var enumValues_ObfuscateType = []interface{}{
 	"IP",
 	"MAC",
-	"keywords",
-	"regex",
+	"Keywords",
+	"Regex",
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

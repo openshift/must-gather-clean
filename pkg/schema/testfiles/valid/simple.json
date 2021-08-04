@@ -3,7 +3,7 @@
     "obfuscate": [
       {
         "type": "IP",
-        "replacementType": "consistent"
+        "replacementType": "Consistent"
       }
     ],
     "omit": [
