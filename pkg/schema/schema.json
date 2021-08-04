@@ -14,15 +14,15 @@
             "type": "object",
             "properties": {
                 "obfuscate": {
-                    "description": "The obfuscation schema determines what is being detected and how it is being replaced. We ship with several built-in replacements for common types such as ip or mac, keyword and regex. The replacements are done in order of the whole list, so you can define chains of replacements that built on top of one another - for example replacing a keyword and later matching its replacement with a regex. The input to the given replacements are always a line of text (string). Since file names can also have private content in them, they are also processed as a line - exactly as they would with file content.",
+                    "description": "The obfuscation schema determines what is being detected and how it is being replaced. We ship with several built-in replacements for common types such as IP or MAC, keyword and regex. The replacements are done in order of the whole list, so you can define chains of replacements that built on top of one another - for example replacing a keyword and later matching its replacement with a regex. The input to the given replacements are always a line of text (string). Since file names can also have private content in them, they are also processed as a line - exactly as they would with file content.",
                     "examples": [
                         [
                             {
-                                "type": "ip",
+                                "type": "IP",
                                 "replacementType": "consistent"
                             },
                             {
-                                "type": "mac",
+                                "type": "MAC",
                                 "replacementType": "random"
                             }
                         ]
@@ -88,12 +88,12 @@
                 "type": {
                     "type": "string",
                     "enum": [
-                        "ip",
-                        "mac",
+                        "IP",
+                        "MAC",
                         "keywords",
                         "regex"
                     ],
-                    "description": "type defines the kind of detection you want to use. For example ip will find ip addresses, whereas keywords will find predefined keywords."
+                    "description": "type defines the kind of detection you want to use. For example IP will find IP addresses, whereas keywords will find predefined keywords."
                 },
                 "replacementType": {
                     "type": "string",

@@ -1,6 +1,6 @@
 config:
   obfuscate:
-    - type: ip
+    - type: IP
       replacementType: consistent
   omit:
     - type: kubernetes

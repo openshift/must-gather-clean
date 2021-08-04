@@ -211,9 +211,8 @@ type Obfuscate struct {
 	// mapping.
 	ReplacementType ObfuscateReplacementType `json:"replacementType"`
 
-	// type defines the kind of detection you want to use. For example ip_address will
-	// find ip addresses, whereas keywords will take predefined keywords and try to
-	// find them.
+	// type defines the kind of detection you want to use. For example IP will find IP
+	// addresses, whereas keywords will find predefined keywords.
 	Type ObfuscateType `json:"type"`
 }
 
@@ -245,9 +244,9 @@ const ObfuscateReplacementTypeStatic ObfuscateReplacementType = "static"
 
 type ObfuscateType string
 
-const ObfuscateTypeIp ObfuscateType = "ip"
+const ObfuscateTypeIP ObfuscateType = "IP"
 const ObfuscateTypeKeywords ObfuscateType = "keywords"
-const ObfuscateTypeMac ObfuscateType = "mac"
+const ObfuscateTypeMAC ObfuscateType = "MAC"
 const ObfuscateTypeRegex ObfuscateType = "regex"
 
 // This configuration defines the behaviour of the must-gather-clean CLI.
@@ -264,12 +263,12 @@ type SchemaJson struct {
 type SchemaJsonConfig struct {
 	// The obfuscation schema determines what is being detected and how it is being
 	// replaced. We ship with several built-in replacements for common types such as
-	// ip_address or mac_address, keyword and regex. The replacements are done in
-	// order of the whole list, so you can define chains of replacements that built on
-	// top of one another - for example replacing a keyword and later matching its
-	// replacement with a regex. The input to the given replacements are always a line
-	// of text (string). Since file names can also have private content in them, they
-	// are also processed as a line - exactly as they would with file content.
+	// IP or MAC, keyword and regex. The replacements are done in order of the whole
+	// list, so you can define chains of replacements that built on top of one another
+	// - for example replacing a keyword and later matching its replacement with a
+	// regex. The input to the given replacements are always a line of text (string).
+	// Since file names can also have private content in them, they are also processed
+	// as a line - exactly as they would with file content.
 	Obfuscate []Obfuscate `json:"obfuscate,omitempty"`
 
 	// The omission schema defines what kind of files shall not be included in the
@@ -292,8 +291,8 @@ var enumValues_ObfuscateReplacementType = []interface{}{
 	"static",
 }
 var enumValues_ObfuscateType = []interface{}{
-	"ip",
-	"mac",
+	"IP",
+	"MAC",
 	"keywords",
 	"regex",
 }
