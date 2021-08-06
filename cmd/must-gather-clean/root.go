@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/openshift/must-gather-clean/pkg/cli"
-	"github.com/spf13/cobra"
 	"math/rand"
 	"os"
 	"time"
+
+	"github.com/openshift/must-gather-clean/pkg/cli"
+	"github.com/spf13/cobra"
 )
 
 var (
