@@ -3,3 +3,6 @@ must-gather-clean
 
 # Goland IDE
 .idea
+
+# Tools Directory
+bin/

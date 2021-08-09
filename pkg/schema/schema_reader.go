@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
-	"sigs.k8s.io/yaml"
 	"strings"
+
+	"sigs.k8s.io/yaml"
 )
 
 const jsonExtension = ".json"

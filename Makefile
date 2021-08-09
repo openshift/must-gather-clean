@@ -19,3 +19,10 @@ verify: verify-scripts
 update-scripts:
 	hack/update-apigen.sh
 .PHONY: update-scripts
+
+ensure-golangci-lint:
+	hack/ensure-golangci-lint.sh
+.PHONY: ensure-golangci-lint
+
+lint: ensure-golangci-lint
+	bin/golangci-lint -c .golangci.yaml run
