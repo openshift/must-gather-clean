@@ -2,8 +2,8 @@ reviewers:
 - tjungblu
 - arjunrn
 - Elbehery
-- openshift-team-cfe
+- openshift/openshift-team-cfe
 approvers:
 - tjungblu
 - arjunrn
-- openshift-team-cfe
+- openshift/openshift-team-cfe
