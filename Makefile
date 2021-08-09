@@ -12,9 +12,7 @@ include $(addprefix ./vendor/github.com/openshift/build-machinery-go/make/, \
 
 verify-scripts:
 	bash -x hack/verify-apigen.sh
-
 .PHONY: verify-scripts
-verify: verify-scripts
 
 update-scripts:
 	hack/update-apigen.sh
@@ -26,3 +24,5 @@ ensure-golangci-lint:
 
 lint: ensure-golangci-lint
 	bin/golangci-lint -c .golangci.yaml run
+
+verify: verify-scripts lint
