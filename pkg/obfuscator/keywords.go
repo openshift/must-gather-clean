@@ -7,8 +7,8 @@ type keywordsObfuscator struct {
 	replacements map[string]string
 }
 
-func (o *keywordsObfuscator) Report() map[string]string {
-	return o.ReplacementReporter.Report()
+func (o *keywordsObfuscator) ReportingResult() map[string]string {
+	return o.ReplacementReporter.ReportingResult()
 }
 
 func (o *keywordsObfuscator) FileName(name string) string {
@@ -19,7 +19,7 @@ func replace(name string, replacements map[string]string, reporter ReplacementRe
 	for keyword, replacement := range replacements {
 		if strings.Contains(name, keyword) {
 			name = strings.Replace(name, keyword, replacement, -1)
-			reporter.UpsertReplacement(keyword, replacement)
+			reporter.ReportReplacement(keyword, replacement)
 		}
 	}
 	return name

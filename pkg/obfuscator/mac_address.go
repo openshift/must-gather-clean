@@ -20,13 +20,13 @@ func (m *macAddressObfuscator) Contents(s string) string {
 	matches := m.regex.FindAllString(s, -1)
 	for _, match := range matches {
 		s = strings.Replace(s, match, StaticMacReplacement, -1)
-		m.ReplacementReporter.UpsertReplacement(match, StaticMacReplacement)
+		m.ReplacementReporter.ReportReplacement(match, StaticMacReplacement)
 	}
 	return s
 }
 
-func (m *macAddressObfuscator) Report() map[string]string {
-	return m.ReplacementReporter.Report()
+func (m *macAddressObfuscator) ReportingResult() map[string]string {
+	return m.ReplacementReporter.ReportingResult()
 }
 
 func NewMacAddressObfuscator() Obfuscator {

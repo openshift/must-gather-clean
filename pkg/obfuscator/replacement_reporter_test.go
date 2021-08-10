@@ -8,15 +8,16 @@ import (
 
 func TestSimpleReportingHappyPath(t *testing.T) {
 	r := NewSimpleReporter()
-	assert.Equal(t, map[string]string{}, r.Report())
-	r.UpsertReplacement("a", "b")
-	assert.Equal(t, map[string]string{"a": "b"}, r.Report())
+	assert.Equal(t, map[string]string{}, r.ReportingResult())
+	r.ReportReplacement("a", "b")
+	assert.Equal(t, map[string]string{"a": "b"}, r.ReportingResult())
 }
 
-func TestSimpleReportingOverwritesExistingReplacements(t *testing.T) {
+func TestSimpleReportingExistingReplacements(t *testing.T) {
 	r := NewSimpleReporter()
-	r.UpsertReplacement("a", "b")
-	assert.Equal(t, map[string]string{"a": "b"}, r.Report())
-	r.UpsertReplacement("a", "c")
-	assert.Equal(t, map[string]string{"a": "c"}, r.Report())
+	r.ReportReplacement("a", "b")
+	assert.Equal(t, map[string]string{"a": "b"}, r.ReportingResult())
+	assert.Panicsf(t, func() {
+		r.ReportReplacement("a", "c")
+	}, "'a' already has a value reported as 'b', tried to report 'c'")
 }

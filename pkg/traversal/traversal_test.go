@@ -27,11 +27,11 @@ func (d noopObfuscator) Contents(input string) string {
 	return input
 }
 
-func (d noopObfuscator) Report() map[string]string {
+func (d noopObfuscator) ReportingResult() map[string]string {
 	return nil
 }
 
-func (d noopObfuscator) UpsertReplacement(original string, replacement string) {
+func (d noopObfuscator) ReportReplacement(original string, replacement string) {
 
 }
 
