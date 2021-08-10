@@ -14,8 +14,8 @@ func TestMacReplacementHappyPath(t *testing.T) {
 }
 
 func TestMacReplacementManyMatchLine(t *testing.T) {
-	input := "ss eb:a1:2a:b2:09:bf as 29-7E-8C-8C-60-C9 with some stuff around it and lowecased eb-a1-2a-b2-09-bf"
-	expected := "ss xx:xx:xx:xx:xx:xx as xx:xx:xx:xx:xx:xx with some stuff around it and lowecased xx:xx:xx:xx:xx:xx"
+	input := "ss eb:a1:2a:b2:09:bf as 29-7E-8C-8C-60-C9 with some stuff around it and lowercased eb-a1-2a-b2-09-bf"
+	expected := "ss xx:xx:xx:xx:xx:xx as xx:xx:xx:xx:xx:xx with some stuff around it and lowercased xx:xx:xx:xx:xx:xx"
 	o := NewMacAddressObfuscator()
 	assert.Equal(t, expected, o.Contents(input))
 	assert.Equal(t, map[string]string{
@@ -32,6 +32,8 @@ func TestMacReplacementSuper(t *testing.T) {
 		expectedOutput       string
 		expectedReportOutput map[string]string
 	}{
+		{name: "squashed", input: "69806FE67C05", expectedOutput: StaticMacReplacement},
+		{name: "squashed-lowercase", input: "69806fe67c05", expectedOutput: StaticMacReplacement},
 		{name: "uppercase-colon", input: "69:80:6F:E6:7C:05", expectedOutput: StaticMacReplacement},
 		{name: "lowercase-dash", input: "eb-a1-2a-b2-09-bf", expectedOutput: StaticMacReplacement},
 		{name: "lowercase-colon", input: "eb:a1:2a:b2:09:bf", expectedOutput: StaticMacReplacement},
