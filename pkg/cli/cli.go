@@ -23,6 +23,8 @@ func Run(configPath string, inputPath string, outputPath string) error {
 		switch o.Type {
 		case schema.ObfuscateTypeKeywords:
 			obfuscators = append(obfuscators, obfuscator.NewKeywordsObfuscator(o.Replacement))
+		case schema.ObfuscateTypeMAC:
+			obfuscators = append(obfuscators, obfuscator.NewMacAddressObfuscator())
 		}
 	}
 
