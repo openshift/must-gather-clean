@@ -7,22 +7,22 @@ import "reflect"
 import "encoding/json"
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *ObfuscateType) UnmarshalJSON(b []byte) error {
+func (j *ObfuscateTarget) UnmarshalJSON(b []byte) error {
 	var v string
 	if err := json.Unmarshal(b, &v); err != nil {
 		return err
 	}
 	var ok bool
-	for _, expected := range enumValues_ObfuscateType {
+	for _, expected := range enumValues_ObfuscateTarget {
 		if reflect.DeepEqual(v, expected) {
 			ok = true
 			break
 		}
 	}
 	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateType, v)
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateTarget, v)
 	}
-	*j = ObfuscateType(v)
+	*j = ObfuscateTarget(v)
 	return nil
 }
 
@@ -116,6 +116,9 @@ func (j *Obfuscate) UnmarshalJSON(b []byte) error {
 	}
 	if v, ok := raw["replacementType"]; !ok || v == nil {
 		plain.ReplacementType = "Random"
+	}
+	if v, ok := raw["target"]; !ok || v == nil {
+		plain.Target = "FileContents"
 	}
 	*j = Obfuscate(plain)
 	return nil
@@ -211,6 +214,10 @@ type Obfuscate struct {
 	// mapping.
 	ReplacementType ObfuscateReplacementType `json:"replacementType"`
 
+	// This determines if the obfuscation should be performed on the file name or on
+	// the file contents. The file contents are obfuscated by default
+	Target ObfuscateTarget `json:"target,omitempty"`
+
 	// type defines the kind of detection you want to use. For example IP will find IP
 	// addresses, whereas Keywords will find predefined keywords.
 	Type ObfuscateType `json:"type"`
@@ -236,11 +243,37 @@ func (j *ObfuscateReplacementType) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-type FileOmissionType string
-
 const ObfuscateReplacementTypeConsistent ObfuscateReplacementType = "Consistent"
 const ObfuscateReplacementTypeRandom ObfuscateReplacementType = "Random"
 const ObfuscateReplacementTypeStatic ObfuscateReplacementType = "Static"
+
+type FileOmissionType string
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ObfuscateType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_ObfuscateType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateType, v)
+	}
+	*j = ObfuscateType(v)
+	return nil
+}
+
+type ObfuscateTarget string
+
+const ObfuscateTargetAll ObfuscateTarget = "All"
+const ObfuscateTargetFileContents ObfuscateTarget = "FileContents"
+const ObfuscateTargetFileName ObfuscateTarget = "FileName"
 
 type ObfuscateType string
 
@@ -289,6 +322,11 @@ var enumValues_ObfuscateReplacementType = []interface{}{
 	"Consistent",
 	"Random",
 	"Static",
+}
+var enumValues_ObfuscateTarget = []interface{}{
+	"FileName",
+	"FileContents",
+	"All",
 }
 var enumValues_ObfuscateType = []interface{}{
 	"IP",
