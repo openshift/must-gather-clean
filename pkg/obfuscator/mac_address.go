@@ -1,7 +1,6 @@
 package obfuscator
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 )
@@ -30,15 +29,12 @@ func (m *macAddressObfuscator) Report() map[string]string {
 	return m.ReplacementReporter.Report()
 }
 
-func NewMacAddressObfuscator() (Obfuscator, error) {
-	regex, err := regexp.Compile(`(?:[0-9a-fA-F]([:-])?){12}`)
-	if err != nil {
-		return nil, fmt.Errorf("failed to compile mac address regex: %w", err)
-	}
+func NewMacAddressObfuscator() Obfuscator {
+	regex := regexp.MustCompile(`(?:[0-9a-fA-F]([:-])?){12}`)
 
 	reporter := NewSimpleReporter()
 	return &macAddressObfuscator{
 		ReplacementReporter: reporter,
 		regex:               regex,
-	}, nil
+	}
 }

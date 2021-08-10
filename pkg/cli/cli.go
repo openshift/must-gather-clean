@@ -24,11 +24,7 @@ func Run(configPath string, inputPath string, outputPath string) error {
 		case schema.ObfuscateTypeKeywords:
 			obfuscators = append(obfuscators, obfuscator.NewKeywordsObfuscator(o.Replacement))
 		case schema.ObfuscateTypeMAC:
-			macAddressObfuscator, err := obfuscator.NewMacAddressObfuscator()
-			if err != nil {
-				return err
-			}
-			obfuscators = append(obfuscators, macAddressObfuscator)
+			obfuscators = append(obfuscators, obfuscator.NewMacAddressObfuscator())
 		}
 	}
 
