@@ -31,6 +31,10 @@ func (d noopObfuscator) Report() map[string]string {
 	return nil
 }
 
+func (d noopObfuscator) UpsertReplacement(original string, replacement string) {
+
+}
+
 type inMemfile struct {
 	Contents    string      `yaml:"contents"`
 	Permissions os.FileMode `yaml:"permissions"`
