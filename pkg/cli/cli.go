@@ -30,6 +30,8 @@ func Run(configPath string, inputPath string, outputPath string) error {
 				return err
 			}
 			obfuscators = append(obfuscators, o)
+		case schema.ObfuscateTypeDomain:
+			obfuscators = append(obfuscators, obfuscator.NewDomainObfuscator(config.Config.TopLevelDomains))
 		}
 	}
 
