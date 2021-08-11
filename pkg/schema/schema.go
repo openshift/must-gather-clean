@@ -37,9 +37,11 @@ func (j *SchemaJsonConfig) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &plain); err != nil {
 		return err
 	}
+	if len(plain.Obfuscate) < 1 {
+		return fmt.Errorf("field %s length: must be >= %d", "obfuscate", 1)
+	}
 	if v, ok := raw["omit"]; !ok || v == nil {
 		plain.Omit = []interface{}{}
-
 	}
 	*j = SchemaJsonConfig(plain)
 	return nil

@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
@@ -32,10 +31,6 @@ func Run(configPath string, inputPath string, outputPath string) error {
 			}
 			obfuscators = append(obfuscators, o)
 		}
-	}
-
-	if len(obfuscators) < 1 {
-		return errors.New("no obfuscator specified in config")
 	}
 
 	var omitters []omitter.Omitter
