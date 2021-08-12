@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 
+	"github.com/openshift/must-gather-clean/pkg/input"
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
 	"github.com/openshift/must-gather-clean/pkg/omitter"
 	"github.com/openshift/must-gather-clean/pkg/output"
@@ -43,11 +44,15 @@ func Run(configPath string, inputPath string, outputPath string) error {
 		}
 	}
 
+	reader, err := input.NewFSInput(inputPath)
+	if err != nil {
+		return err
+	}
 	writer, err := output.NewFSWriter(outputPath)
 	if err != nil {
 		return err
 	}
-	walker, err := traversal.NewFileWalker(inputPath, writer, obfuscators, omitters)
+	walker, err := traversal.NewFileWalker(reader, writer, obfuscators, omitters)
 	if err != nil {
 		return err
 	}

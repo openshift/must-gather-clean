@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 
+	"github.com/openshift/must-gather-clean/pkg/input"
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
 	"github.com/openshift/must-gather-clean/pkg/omitter"
 	"github.com/openshift/must-gather-clean/pkg/output"
@@ -76,7 +77,9 @@ func TestFileWalker(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fileOmitter := omitter.NewFilenamePatternOmitter("*.log")
 			writer := testOutputter(t)
-			walker, err := NewFileWalker(filepath.Join(tc.inputDir, "mg"), writer, []obfuscator.Obfuscator{noopObfuscator{}}, []omitter.Omitter{fileOmitter})
+			reader, err := input.NewFSInput(filepath.Join(tc.inputDir, "mg"))
+			require.NoError(t, err)
+			walker, err := NewFileWalker(reader, writer, []obfuscator.Obfuscator{noopObfuscator{}}, []omitter.Omitter{fileOmitter})
 			require.NoError(t, err)
 			err = walker.Traverse()
 			require.NoError(t, err)
