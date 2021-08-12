@@ -1,15 +1,44 @@
 package obfuscator
 
 import (
+	"fmt"
 	"net"
 	"regexp"
 	"strings"
+
+	"github.com/openshift/must-gather-clean/pkg/schema"
 )
 
 const (
-	obfuscatedStaticIPv4 = "xxx.xxx.xxx.xxx"
-	obfuscatedStaticIPv6 = "xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx"
+	obfuscatedStaticIPv4         = "xxx.xxx.xxx.xxx"
+	obfuscatedStaticIPv6         = "xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx"
+	consistentIPv4Template       = "x-ipv4-%06d-x"
+	consistentIPv6Template       = "xxxxxxxxxxxxx-ipv6-%06d-xxxxxxxxxxxxx"
+	maximumSupportedObfuscations = 999999
 )
+
+var (
+	ipv6Pattern = regexp.MustCompile(ipv6re)
+	ipv4Pattern = regexp.MustCompile(ipv4re)
+)
+
+type ipGenerator struct {
+	template   string
+	obfuscated string
+	count      int
+}
+
+func (g *ipGenerator) generateConsistent() string {
+	g.count++
+	if g.count > maximumSupportedObfuscations {
+		panic("maximum number of obfuscated ips exceeded")
+	}
+	return fmt.Sprintf(g.template, g.count)
+}
+
+func (g *ipGenerator) static() string {
+	return g.obfuscated
+}
 
 var (
 	ipv4re = `(([0-9]{1,3})\.){3}([0-9]{1,3})`
@@ -19,8 +48,8 @@ var (
 
 type ipObfuscator struct {
 	ReplacementReporter
-	ipv4pattern *regexp.Regexp
-	ipv6pattern *regexp.Regexp
+	replacements    map[*regexp.Regexp]ipGenerator
+	replacementType schema.ObfuscateReplacementType
 }
 
 func (o *ipObfuscator) FileName(s string) string {
@@ -33,29 +62,38 @@ func (o *ipObfuscator) Contents(s string) string {
 
 func (o *ipObfuscator) replace(s string) string {
 	output := s
-	ipv4matches := o.ipv4pattern.FindAllString(output, -1)
-	for _, m := range ipv4matches {
-		if ip := net.ParseIP(m); ip != nil {
-			output = strings.ReplaceAll(output, m, obfuscatedStaticIPv4)
-			o.ReportReplacement(m, obfuscatedStaticIPv4)
+	for pattern, gen := range o.replacements {
+
+		ipMatches := pattern.FindAllString(output, -1)
+		for _, m := range ipMatches {
+			if ip := net.ParseIP(m); ip != nil {
+				var replacement string
+				switch o.replacementType {
+				case schema.ObfuscateReplacementTypeStatic:
+					replacement = gen.static()
+				case schema.ObfuscateReplacementTypeConsistent:
+					if replacement = o.GetReplacement(m); replacement == "" {
+						replacement = gen.generateConsistent()
+					}
+				}
+				output = strings.ReplaceAll(output, m, replacement)
+				o.ReportReplacement(m, replacement)
+			}
 		}
 	}
-
-	ipv6matches := o.ipv6pattern.FindAllString(output, -1)
-	for _, m := range ipv6matches {
-		if ip := net.ParseIP(m); ip != nil {
-			output = strings.ReplaceAll(output, m, obfuscatedStaticIPv6)
-			o.ReportReplacement(m, obfuscatedStaticIPv6)
-		}
-	}
-
 	return output
 }
 
-func NewIPObfuscator() Obfuscator {
-	return &ipObfuscator{
-		ipv4pattern:         regexp.MustCompile(ipv4re),
-		ipv6pattern:         regexp.MustCompile(ipv6re),
-		ReplacementReporter: NewSimpleReporter(),
+func NewIPObfuscator(replacementType schema.ObfuscateReplacementType) (Obfuscator, error) {
+	if replacementType != schema.ObfuscateReplacementTypeStatic && replacementType != schema.ObfuscateReplacementTypeConsistent {
+		return nil, fmt.Errorf("unsupported replacement type: %s", replacementType)
 	}
+	return &ipObfuscator{
+		ReplacementReporter: NewSimpleReporter(),
+		replacements: map[*regexp.Regexp]ipGenerator{
+			ipv4Pattern: {template: consistentIPv4Template, obfuscated: obfuscatedStaticIPv4},
+			ipv6Pattern: {template: consistentIPv6Template, obfuscated: obfuscatedStaticIPv6},
+		},
+		replacementType: replacementType,
+	}, nil
 }

@@ -19,6 +19,10 @@ import (
 type noopObfuscator struct {
 }
 
+func (d noopObfuscator) GetReplacement(original string) string {
+	return original
+}
+
 func (d noopObfuscator) FileName(input string) string {
 	return input
 }
