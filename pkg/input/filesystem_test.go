@@ -13,9 +13,9 @@ func TestFileSystemInput(t *testing.T) {
 	entries, err := input.Root().Entries()
 	require.NoError(t, err)
 	assert.Len(t, entries, 3)
-	assertContains(t, entries, "/test1.yaml", true)
-	assertContains(t, entries, "/test2.yaml", true)
-	assertContains(t, entries, "/testdir", false)
+	assertContains(t, entries, "test1.yaml", true)
+	assertContains(t, entries, "test2.yaml", true)
+	assertContains(t, entries, "testdir", false)
 }
 
 func assertContains(t *testing.T, entries []DirEntry, path string, file bool) {

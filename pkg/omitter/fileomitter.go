@@ -6,8 +6,14 @@ type fileOmitter struct {
 	filePattern string
 }
 
-func (f *fileOmitter) File(filename, _ string) (bool, error) {
-	return filepath.Match(f.filePattern, filename)
+func (f *fileOmitter) File(name, path string) (bool, error) {
+	match, err := filepath.Match(f.filePattern, path)
+	// if there is a match or an error return now
+	if match || err != nil {
+		return match, err
+	}
+	// else check for match with file name
+	return filepath.Match(f.filePattern, name)
 }
 
 func (f *fileOmitter) Contents(_ string) (bool, error) {
