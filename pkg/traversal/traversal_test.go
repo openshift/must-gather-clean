@@ -18,6 +18,7 @@ import (
 )
 
 type noopObfuscator struct {
+	replacements map[string]string
 }
 
 func (d noopObfuscator) GetReplacement(original string) string {
@@ -33,7 +34,7 @@ func (d noopObfuscator) Contents(input string) string {
 }
 
 func (d noopObfuscator) ReportingResult() map[string]string {
-	return nil
+	return d.replacements
 }
 
 func (d noopObfuscator) ReportReplacement(original string, replacement string) {
@@ -84,7 +85,9 @@ func TestFileWalker(t *testing.T) {
 			writer := testOutputter(t)
 			reader, err := input.NewFSInput(filepath.Join(tc.inputDir, "mg"))
 			require.NoError(t, err)
-			walker, err := NewFileWalker(reader, writer, []obfuscator.Obfuscator{noopObfuscator{}}, []omitter.Omitter{fileOmitter})
+			walker, err := NewFileWalker(reader, writer, []obfuscator.Obfuscator{
+				noopObfuscator{replacements: map[string]string{"secret": "xxxxxx"}},
+			}, []omitter.Omitter{fileOmitter})
 			require.NoError(t, err)
 			err = walker.Traverse()
 			require.NoError(t, err)
@@ -94,6 +97,14 @@ func TestFileWalker(t *testing.T) {
 			err = yaml.Unmarshal(contentBytes, &contents)
 			require.NoError(t, err)
 			verifyFiles(t, tc.inputDir, writer.Files, contents.Files)
+
+			var report Report
+			f, err := os.Open(filepath.Join(tc.inputDir, "report.yaml"))
+			require.NoError(t, err)
+			d := yaml.NewDecoder(f)
+			err = d.Decode(&report)
+			require.NoError(t, err)
+			require.Equal(t, &report, walker.GenerateReport())
 		})
 	}
 }

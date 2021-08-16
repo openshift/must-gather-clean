@@ -11,20 +11,36 @@ import (
 )
 
 type FileWalker struct {
-	reader      input.Inputter
-	obfuscators []obfuscator.Obfuscator
-	writer      output.Outputter
-	omitters    []omitter.Omitter
+	reader       input.Inputter
+	obfuscators  []obfuscator.Obfuscator
+	omitters     []omitter.Omitter
+	writer       output.Outputter
+	omittedFiles map[string]struct{}
 }
 
 // NewFileWalker returns a FileWalker. It ensures that the reader directory exists and is readable.
 func NewFileWalker(reader input.Inputter, writer output.Outputter, obfuscators []obfuscator.Obfuscator, omitters []omitter.Omitter) (*FileWalker, error) {
-	return &FileWalker{reader: reader, obfuscators: obfuscators, writer: writer, omitters: omitters}, nil
+	return &FileWalker{reader: reader, obfuscators: obfuscators, writer: writer, omitters: omitters, omittedFiles: map[string]struct{}{}}, nil
 }
 
 // Traverse should be called to start processing the reader directory.
 func (w *FileWalker) Traverse() error {
 	return w.processDir(w.reader.Root(), "")
+}
+
+func (w *FileWalker) GenerateReport() *Report {
+	report := &Report{}
+	for _, o := range w.obfuscators {
+		report.Replacements = append(report.Replacements, o.ReportingResult())
+	}
+	omittedFiles := make([]string, len(w.omittedFiles))
+	var count int
+	for of := range w.omittedFiles {
+		omittedFiles[count] = of
+		count++
+	}
+	report.Omissions = omittedFiles
+	return report
 }
 
 func (w *FileWalker) processDir(inputDir input.Directory, outputDirName string) error {
@@ -51,6 +67,7 @@ func (w *FileWalker) processDir(inputDir input.Directory, outputDirName string) 
 					return fmt.Errorf("failed to determine if %s should be omitted based on path: %w", e.Path(), err)
 				}
 				if omit {
+					w.omittedFiles[e.Path()] = struct{}{}
 					break
 				}
 				omit, err = o.Contents(e.Path())
@@ -58,6 +75,7 @@ func (w *FileWalker) processDir(inputDir input.Directory, outputDirName string) 
 					return fmt.Errorf("failed to determine if %s should be omitted based on contents: %w", e.Path(), err)
 				}
 				if omit {
+					w.omittedFiles[e.Path()] = struct{}{}
 					break
 				}
 			}
