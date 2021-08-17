@@ -12,6 +12,9 @@ type ReplacementReporter interface {
 	// ReportReplacement will add a replacement along with its original string to the report.
 	// If there is an existing value that does not match the given replacement, it will panic as this very likely denotes a bug.
 	ReportReplacement(original string, replacement string)
+
+	// GetReplacement returns the previously used replacement if already set, otherwise returns an empty string
+	GetReplacement(original string) string
 }
 
 type SimpleReporter struct {
@@ -30,6 +33,10 @@ func (s *SimpleReporter) ReportReplacement(original string, replacement string) 
 	}
 
 	s.mapping[original] = replacement
+}
+
+func (s *SimpleReporter) GetReplacement(original string) string {
+	return s.mapping[original]
 }
 
 func NewSimpleReporter() ReplacementReporter {

@@ -21,3 +21,10 @@ func TestSimpleReportingExistingReplacements(t *testing.T) {
 		r.ReportReplacement("a", "c")
 	}, "'a' already has a value reported as 'b', tried to report 'c'")
 }
+
+func TestSimpleReporterGetReplacement(t *testing.T) {
+	r := NewSimpleReporter()
+	r.ReportReplacement("a", "b")
+	assert.Equal(t, r.GetReplacement("a"), "b")
+	assert.Equal(t, r.GetReplacement("c"), "")
+}

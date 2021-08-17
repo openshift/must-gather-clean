@@ -33,7 +33,11 @@ func Run(configPath string, inputPath string, outputPath string) error {
 		case schema.ObfuscateTypeDomain:
 			obfuscators = append(obfuscators, obfuscator.NewDomainObfuscator(config.Config.TopLevelDomains))
 		case schema.ObfuscateTypeIP:
-			obfuscators = append(obfuscators, obfuscator.NewIPObfuscator())
+			o, err := obfuscator.NewIPObfuscator(o.ReplacementType)
+			if err != nil {
+				return err
+			}
+			obfuscators = append(obfuscators, o)
 		}
 	}
 
