@@ -21,6 +21,10 @@ func (f *fsFile) Permissions() os.FileMode {
 	return f.Mode().Perm()
 }
 
+func (f *fsFile) AbsPath() string {
+	return filepath.Join(f.root.rootDir, f.path)
+}
+
 func (f *fsFile) Scanner() (*bufio.Scanner, func() error, error) {
 	file, err := os.Open(filepath.Join(f.root.Path(), f.path))
 	if err != nil {

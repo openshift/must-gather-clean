@@ -16,6 +16,8 @@ type File interface {
 	Name() string
 	Permissions() os.FileMode
 	Scanner() (*bufio.Scanner, func() error, error)
+	// AbsPath returns the absolute path to the file
+	AbsPath() string
 }
 
 type DirEntry interface {

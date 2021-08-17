@@ -70,7 +70,7 @@ func (w *FileWalker) processDir(inputDir input.Directory, outputDirName string) 
 					w.omittedFiles[e.Path()] = struct{}{}
 					break
 				}
-				omit, err = o.Contents(e.Path())
+				omit, err = o.Contents(e.AbsPath())
 				if err != nil {
 					return fmt.Errorf("failed to determine if %s should be omitted based on contents: %w", e.Path(), err)
 				}

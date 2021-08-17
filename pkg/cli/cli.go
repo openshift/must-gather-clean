@@ -59,6 +59,13 @@ func Run(configPath string, inputPath string, outputPath string) error {
 				return err
 			}
 			omitters = append(omitters, om)
+		case schema.OmitTypeKubernetes:
+			kr := *o.KubernetesResource
+			om, err := omitter.NewKubernetesResourceOmitter(kr.ApiVersion, kr.Kind, kr.Namespaces)
+			if err != nil {
+				return err
+			}
+			omitters = append(omitters, om)
 		}
 	}
 
