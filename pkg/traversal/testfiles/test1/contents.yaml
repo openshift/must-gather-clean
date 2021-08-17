@@ -1,6 +1,4 @@
 files:
-  "pods/manifests.yaml": "podkey:podcontents\n"
+  "pods/pod1/manifests.yaml": "podkey:podcontents\n"
+  "pods/pod2/manifests.yaml": "podkey:podcontents\n"
   "nodes/test.yaml": "nodekey:nodecontents\n"
-directories:
-  "pods":
-  "nodes":

@@ -1,84 +1,61 @@
 package traversal
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"path/filepath"
 
+	"github.com/openshift/must-gather-clean/pkg/input"
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
 	"github.com/openshift/must-gather-clean/pkg/omitter"
 	"github.com/openshift/must-gather-clean/pkg/output"
 )
 
 type FileWalker struct {
-	input       string
+	reader      input.Inputter
 	obfuscators []obfuscator.Obfuscator
 	writer      output.Outputter
 	omitters    []omitter.Omitter
 }
 
-// NewFileWalker returns a FileWalker. It ensures that the input directory exists and is readable.
-func NewFileWalker(inputDir string, writer output.Outputter, obfuscators []obfuscator.Obfuscator, omitters []omitter.Omitter) (*FileWalker, error) {
-	fileInfo, err := os.Stat(inputDir)
-	if err != nil {
-		return nil, fmt.Errorf("cannot access input directory %s: %w", inputDir, err)
-	}
-	if !fileInfo.IsDir() {
-		return nil, fmt.Errorf("input path %s is not a directory", inputDir)
-	}
-	inputPath, err := filepath.Abs(inputDir)
-	if err != nil {
-		return nil, err
-	}
-	return &FileWalker{input: inputPath, obfuscators: obfuscators, writer: writer, omitters: omitters}, nil
+// NewFileWalker returns a FileWalker. It ensures that the reader directory exists and is readable.
+func NewFileWalker(reader input.Inputter, writer output.Outputter, obfuscators []obfuscator.Obfuscator, omitters []omitter.Omitter) (*FileWalker, error) {
+	return &FileWalker{reader: reader, obfuscators: obfuscators, writer: writer, omitters: omitters}, nil
 }
 
-// Traverse should be called to start processing the input directory.
+// Traverse should be called to start processing the reader directory.
 func (w *FileWalker) Traverse() error {
-	return w.processDir(w.input, "")
+	return w.processDir(w.reader.Root(), "")
 }
 
-func (w *FileWalker) processDir(inputDirName string, outputDirName string) error {
+func (w *FileWalker) processDir(inputDir input.Directory, outputDirName string) error {
 	// list all the entities in the directory
-	entries, err := os.ReadDir(inputDirName)
+	entries, err := inputDir.Entries()
 	if err != nil {
 		return err
 	}
-	for _, e := range entries {
-		fileInfo, err := e.Info()
-		if err != nil {
-			return err
-		}
-
-		// If a file is a symlink then ignore it
-		if fileInfo.Mode()&os.ModeSymlink != 0 {
-			continue
-		}
-
-		if e.IsDir() {
+	for _, entry := range entries {
+		switch e := entry.(type) {
+		case input.Directory:
 			childDirOutput := filepath.Join(outputDirName, e.Name())
-			childDirInput := filepath.Join(inputDirName, e.Name())
-			err = w.processDir(childDirInput, childDirOutput)
+			err = w.processDir(e, childDirOutput)
 			if err != nil {
 				return err
 			}
-		} else {
-			leafPath := filepath.Join(inputDirName, e.Name())
+		case input.File:
 
 			var omit bool
 			// verify if the file should be omitted
 			for _, o := range w.omitters {
-				omit, err = o.File(e.Name(), leafPath)
+				omit, err = o.File(e.Name(), e.Path())
 				if err != nil {
-					return fmt.Errorf("failed to determine if %s should be omitted based on name: %w", leafPath, err)
+					return fmt.Errorf("failed to determine if %s should be omitted based on path: %w", e.Path(), err)
 				}
 				if omit {
 					break
 				}
-				omit, err = o.Contents(leafPath)
+				omit, err = o.Contents(e.Path())
 				if err != nil {
-					return fmt.Errorf("failed to determine if %s should be omitted based on contents: %w", leafPath, err)
+					return fmt.Errorf("failed to determine if %s should be omitted based on contents: %w", e.Path(), err)
 				}
 				if omit {
 					break
@@ -88,21 +65,34 @@ func (w *FileWalker) processDir(inputDirName string, outputDirName string) error
 			if omit {
 				continue
 			}
-			return func() error {
-				writeCloser, writer, err := w.writer.Writer(outputDirName, e.Name(), fileInfo.Mode())
+
+			// obfuscate the name if required
+			newName := e.Name()
+			for _, o := range w.obfuscators {
+				newName = o.FileName(newName)
+			}
+
+			err := func() error {
+				writeCloser, writer, err := w.writer.Writer(outputDirName, newName, e.Permissions())
+				if err != nil {
+					return err
+				}
+				// close the output file when done
 				defer func() {
 					if err := writeCloser(); err != nil {
-						fmt.Printf("failed to successfully write file %s: %v", filepath.Join(outputDirName, e.Name()), err)
+						fmt.Printf("failed to successfully write file %s: %v", filepath.Join(outputDirName, newName), err)
 					}
 				}()
+
+				scanner, closeReader, err := e.Scanner()
 				if err != nil {
 					return err
 				}
-				file, err := os.Open(leafPath)
-				if err != nil {
-					return err
-				}
-				scanner := bufio.NewScanner(file)
+				defer func() {
+					if err := closeReader(); err != nil {
+						fmt.Printf("failed to close file %s after reading: %v", e.Path(), err)
+					}
+				}()
 				for scanner.Scan() {
 					contents := scanner.Text()
 					for _, o := range w.obfuscators {
@@ -115,6 +105,9 @@ func (w *FileWalker) processDir(inputDirName string, outputDirName string) error
 				}
 				return nil
 			}()
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
