@@ -2,6 +2,10 @@ package cli
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/openshift/must-gather-clean/pkg/input"
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
@@ -9,6 +13,10 @@ import (
 	"github.com/openshift/must-gather-clean/pkg/output"
 	"github.com/openshift/must-gather-clean/pkg/schema"
 	"github.com/openshift/must-gather-clean/pkg/traversal"
+)
+
+const (
+	reportFileName = "report.yaml"
 )
 
 func Run(configPath string, inputPath string, outputPath string) error {
@@ -72,5 +80,16 @@ func Run(configPath string, inputPath string, outputPath string) error {
 		return fmt.Errorf("failed to generate obfuscated output: %w", err)
 	}
 
+	report := walker.GenerateReport()
+	rPath := filepath.Join(outputPath, reportFileName)
+	reportFile, err := os.Create(rPath)
+	if err != nil {
+		return fmt.Errorf("failed to open report file %s: %w", rPath, err)
+	}
+	rEncoder := yaml.NewEncoder(reportFile)
+	err = rEncoder.Encode(report)
+	if err != nil {
+		return fmt.Errorf("failed to write report at %s: %w", rPath, err)
+	}
 	return nil
 }
