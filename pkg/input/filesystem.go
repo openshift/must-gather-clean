@@ -78,7 +78,7 @@ type fileSystemInput struct {
 }
 
 func (f *fileSystemInput) Root() Directory {
-	return newFsDir(f, "/", f.info)
+	return newFsDir(f, "", f.info)
 }
 
 func (f *fileSystemInput) Path() string {
