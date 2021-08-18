@@ -1,6 +1,9 @@
 package omitter
 
-import "path/filepath"
+import (
+	"errors"
+	"path/filepath"
+)
 
 type fileOmitter struct {
 	filePattern string
@@ -21,6 +24,9 @@ func (f *fileOmitter) Contents(_ string) (bool, error) {
 }
 
 // NewFilenamePatternOmitter return an omitter which omits files based on a globbing pattern.
-func NewFilenamePatternOmitter(pattern string) Omitter {
-	return &fileOmitter{filePattern: pattern}
+func NewFilenamePatternOmitter(pattern string) (Omitter, error) {
+	if pattern == "" {
+		return nil, errors.New("pattern for file omitter cannot be empty")
+	}
+	return &fileOmitter{filePattern: pattern}, nil
 }

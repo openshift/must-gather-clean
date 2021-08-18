@@ -40,11 +40,17 @@ func TestFileOmitter(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			omitter := NewFilenamePatternOmitter(tc.pattern)
+			omitter, err := NewFilenamePatternOmitter(tc.pattern)
+			require.NoError(t, err)
 			parts := strings.Split(tc.input, "/")
 			omit, err := omitter.File(parts[len(parts)-1], tc.input)
 			require.NoError(t, err)
 			require.Equal(t, tc.expected, omit)
 		})
 	}
+}
+
+func TestEmptyPattern(t *testing.T) {
+	_, err := NewFilenamePatternOmitter("")
+	require.Error(t, err)
 }
