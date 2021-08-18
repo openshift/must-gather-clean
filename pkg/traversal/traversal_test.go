@@ -79,7 +79,8 @@ func TestFileWalker(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			fileOmitter := omitter.NewFilenamePatternOmitter("*.log")
+			fileOmitter, err := omitter.NewFilenamePatternOmitter("*.log")
+			require.NoError(t, err)
 			writer := testOutputter(t)
 			reader, err := input.NewFSInput(filepath.Join(tc.inputDir, "mg"))
 			require.NoError(t, err)
