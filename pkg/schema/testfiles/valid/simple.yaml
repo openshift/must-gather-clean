@@ -3,9 +3,10 @@ config:
     - type: IP
       replacementType: Consistent
   omit:
-    - type: kubernetes
-      namespaces:
-        - openshift-node
-        - openshift-kube-scheduler
-    - type: file
+    - type: Kubernetes
+      kubernetesResource:
+        namespaces:
+          - openshift-node
+          - openshift-kube-scheduler
+    - type: File
       pattern: "*.log"

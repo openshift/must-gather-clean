@@ -7,22 +7,40 @@ import "reflect"
 import "encoding/json"
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *ObfuscateTarget) UnmarshalJSON(b []byte) error {
+func (j *Omit) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["type"]; !ok || v == nil {
+		return fmt.Errorf("field type: required")
+	}
+	type Plain Omit
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = Omit(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ObfuscateType) UnmarshalJSON(b []byte) error {
 	var v string
 	if err := json.Unmarshal(b, &v); err != nil {
 		return err
 	}
 	var ok bool
-	for _, expected := range enumValues_ObfuscateTarget {
+	for _, expected := range enumValues_ObfuscateType {
 		if reflect.DeepEqual(v, expected) {
 			ok = true
 			break
 		}
 	}
 	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateTarget, v)
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateType, v)
 	}
-	*j = ObfuscateTarget(v)
+	*j = ObfuscateType(v)
 	return nil
 }
 
@@ -39,9 +57,6 @@ func (j *SchemaJsonConfig) UnmarshalJSON(b []byte) error {
 	}
 	if len(plain.Obfuscate) < 1 {
 		return fmt.Errorf("field %s length: must be >= %d", "obfuscate", 1)
-	}
-	if v, ok := raw["omit"]; !ok || v == nil {
-		plain.Omit = []interface{}{}
 	}
 	if v, ok := raw["topLevelDomains"]; !ok || v == nil {
 		plain.TopLevelDomains = []string{
@@ -314,151 +329,64 @@ func (j *SchemaJsonConfig) UnmarshalJSON(b []byte) error {
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *FileOmissionType) UnmarshalJSON(b []byte) error {
+func (j *ObfuscateReplacementType) UnmarshalJSON(b []byte) error {
 	var v string
 	if err := json.Unmarshal(b, &v); err != nil {
 		return err
 	}
 	var ok bool
-	for _, expected := range enumValues_FileOmissionType {
+	for _, expected := range enumValues_ObfuscateReplacementType {
 		if reflect.DeepEqual(v, expected) {
 			ok = true
 			break
 		}
 	}
 	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_FileOmissionType, v)
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateReplacementType, v)
 	}
-	*j = FileOmissionType(v)
-	return nil
-}
-
-const FileOmissionTypeFile FileOmissionType = "file"
-
-type FileOmission struct {
-	// A Golang regexp https://pkg.go.dev/regexp that matches on file paths relative
-	// to the must-gather root. This behaves like a glob using Golangs
-	// filepath.Match().
-	Pattern string `json:"pattern"`
-
-	// type defines that this signals a file omission
-	Type FileOmissionType `json:"type"`
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *FileOmission) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["pattern"]; !ok || v == nil {
-		return fmt.Errorf("field pattern: required")
-	}
-	if v, ok := raw["type"]; !ok || v == nil {
-		return fmt.Errorf("field type: required")
-	}
-	type Plain FileOmission
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = FileOmission(plain)
-	return nil
-}
-
-type K8SOmissionType string
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *Obfuscate) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["type"]; !ok || v == nil {
-		return fmt.Errorf("field type: required")
-	}
-	type Plain Obfuscate
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	if v, ok := raw["replacementType"]; !ok || v == nil {
-		plain.ReplacementType = "Random"
-	}
-	if v, ok := raw["target"]; !ok || v == nil {
-		plain.Target = "FileContents"
-	}
-	*j = Obfuscate(plain)
+	*j = ObfuscateReplacementType(v)
 	return nil
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *K8SOmissionType) UnmarshalJSON(b []byte) error {
+func (j *OmitType) UnmarshalJSON(b []byte) error {
 	var v string
 	if err := json.Unmarshal(b, &v); err != nil {
 		return err
 	}
 	var ok bool
-	for _, expected := range enumValues_K8SOmissionType {
+	for _, expected := range enumValues_OmitType {
 		if reflect.DeepEqual(v, expected) {
 			ok = true
 			break
 		}
 	}
 	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_K8SOmissionType, v)
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_OmitType, v)
 	}
-	*j = K8SOmissionType(v)
+	*j = OmitType(v)
 	return nil
-}
-
-const K8SOmissionTypeKubernetes K8SOmissionType = "kubernetes"
-
-type K8SOmission struct {
-	// This defines the apiVersion of the kubernetes resource. That can be used to
-	// further refine specific versions of a resource that should be omitted.
-	ApiVersion *string `json:"apiVersion,omitempty"`
-
-	// This defines the kind of kubernetes resource that should be omitted. This can
-	// be further specified with the apiVersion and namespaces.
-	Kind *string `json:"kind,omitempty"`
-
-	// This defines the namespaces which are supposed to be omitted. When used
-	// together with kind and apiVersions, it becomes a filter. Standalone it will be
-	// used as a filter for all resources in a given namespace.
-	Namespaces []string `json:"namespaces,omitempty"`
-
-	// type defines that this signals a kubernetes resource
-	Type K8SOmissionType `json:"type"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *K8SOmission) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
+func (j *ObfuscateTarget) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
 		return err
 	}
-	if v, ok := raw["type"]; !ok || v == nil {
-		return fmt.Errorf("field type: required")
+	var ok bool
+	for _, expected := range enumValues_ObfuscateTarget {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
 	}
-	type Plain K8SOmission
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateTarget, v)
 	}
-	*j = K8SOmission(plain)
+	*j = ObfuscateTarget(v)
 	return nil
 }
-
-// on any replacement type, this will override a given input string with another
-// output string. On duplicate keys it will use the last defined value as
-// replacement. The input values are matched in a case-sensitive fashion and only
-// as a full words, substrings must be matched using a regex. With type regex, the
-// keys will be considered as capture group values, if there is no mapping
-// available it will be replaced with a random string of the same size.
-type ObfuscateReplacement map[string]string
-
-type ObfuscateReplacementType string
 
 type Obfuscate struct {
 	// when replacementType=regex is used, the supplied  regex (Golang regexp
@@ -491,51 +419,19 @@ type Obfuscate struct {
 	Type ObfuscateType `json:"type"`
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *ObfuscateReplacementType) UnmarshalJSON(b []byte) error {
-	var v string
-	if err := json.Unmarshal(b, &v); err != nil {
-		return err
-	}
-	var ok bool
-	for _, expected := range enumValues_ObfuscateReplacementType {
-		if reflect.DeepEqual(v, expected) {
-			ok = true
-			break
-		}
-	}
-	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateReplacementType, v)
-	}
-	*j = ObfuscateReplacementType(v)
-	return nil
-}
+// on any replacement type, this will override a given input string with another
+// output string. On duplicate keys it will use the last defined value as
+// replacement. The input values are matched in a case-sensitive fashion and only
+// as a full words, substrings must be matched using a regex. With type regex, the
+// keys will be considered as capture group values, if there is no mapping
+// available it will be replaced with a random string of the same size.
+type ObfuscateReplacement map[string]string
+
+type ObfuscateReplacementType string
 
 const ObfuscateReplacementTypeConsistent ObfuscateReplacementType = "Consistent"
 const ObfuscateReplacementTypeRandom ObfuscateReplacementType = "Random"
 const ObfuscateReplacementTypeStatic ObfuscateReplacementType = "Static"
-
-type FileOmissionType string
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *ObfuscateType) UnmarshalJSON(b []byte) error {
-	var v string
-	if err := json.Unmarshal(b, &v); err != nil {
-		return err
-	}
-	var ok bool
-	for _, expected := range enumValues_ObfuscateType {
-		if reflect.DeepEqual(v, expected) {
-			ok = true
-			break
-		}
-	}
-	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateType, v)
-	}
-	*j = ObfuscateType(v)
-	return nil
-}
 
 type ObfuscateTarget string
 
@@ -546,10 +442,67 @@ const ObfuscateTargetFileName ObfuscateTarget = "FileName"
 type ObfuscateType string
 
 const ObfuscateTypeDomain ObfuscateType = "Domain"
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Obfuscate) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["type"]; !ok || v == nil {
+		return fmt.Errorf("field type: required")
+	}
+	type Plain Obfuscate
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["replacementType"]; !ok || v == nil {
+		plain.ReplacementType = "Random"
+	}
+	if v, ok := raw["target"]; !ok || v == nil {
+		plain.Target = "FileContents"
+	}
+	*j = Obfuscate(plain)
+	return nil
+}
+
 const ObfuscateTypeIP ObfuscateType = "IP"
 const ObfuscateTypeKeywords ObfuscateType = "Keywords"
 const ObfuscateTypeMAC ObfuscateType = "MAC"
 const ObfuscateTypeRegex ObfuscateType = "Regex"
+
+type Omit struct {
+	// KubernetesResource corresponds to the JSON schema field "kubernetesResource".
+	KubernetesResource *OmitKubernetesResource `json:"kubernetesResource,omitempty"`
+
+	// A file glob pattern on file paths relative to the must-gather root. The pattern
+	// should be as described in https://pkg.go.dev/path/filepath#Match
+	Pattern *string `json:"pattern,omitempty"`
+
+	// Type corresponds to the JSON schema field "type".
+	Type OmitType `json:"type"`
+}
+
+type OmitKubernetesResource struct {
+	// This defines the apiVersion of the kubernetes resource. That can be used to
+	// further refine specific versions of a resource that should be omitted.
+	ApiVersion *string `json:"apiVersion,omitempty"`
+
+	// This defines the kind of kubernetes resource that should be omitted. This can
+	// be further specified with the apiVersion and namespaces.
+	Kind *string `json:"kind,omitempty"`
+
+	// This defines the namespaces which are supposed to be omitted. When used
+	// together with kind and apiVersions, it becomes a filter. Standalone it will be
+	// used as a filter for all resources in a given namespace.
+	Namespaces []string `json:"namespaces,omitempty"`
+}
+
+type OmitType string
+
+const OmitTypeFile OmitType = "File"
+const OmitTypeKubernetes OmitType = "Kubernetes"
 
 // This configuration defines the behaviour of the must-gather-clean CLI.
 type SchemaJson struct {
@@ -578,18 +531,12 @@ type SchemaJsonConfig struct {
 	// or Kubernetes and OpenShift and other custom resources. Omissions are settled
 	// first in the process of obfuscating a must-gather, so its content won't be
 	// scanned and replaced.
-	Omit []interface{} `json:"omit,omitempty"`
+	Omit []Omit `json:"omit,omitempty"`
 
 	// A list of TLDs which may be present in the input must-gather
 	TopLevelDomains []string `json:"topLevelDomains,omitempty"`
 }
 
-var enumValues_FileOmissionType = []interface{}{
-	"file",
-}
-var enumValues_K8SOmissionType = []interface{}{
-	"kubernetes",
-}
 var enumValues_ObfuscateReplacementType = []interface{}{
 	"Consistent",
 	"Random",
@@ -606,6 +553,10 @@ var enumValues_ObfuscateType = []interface{}{
 	"Keywords",
 	"MAC",
 	"Regex",
+}
+var enumValues_OmitType = []interface{}{
+	"Kubernetes",
+	"File",
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

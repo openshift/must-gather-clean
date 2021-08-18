@@ -45,40 +45,36 @@
                     "type": "array",
                     "title": "Omission Schema",
                     "description": "The omission schema defines what kind of files shall not be included in the final must-gather. This can be seen as a filter and can operate on file paths or Kubernetes and OpenShift and other custom resources. Omissions are settled first in the process of obfuscating a must-gather, so its content won't be scanned and replaced.",
-                    "default": [],
                     "examples": [
                         [
                             {
-                                "type": "kubernetes",
-                                "kind": "Secret"
+                                "type": "Kubernetes",
+                                "kubernetesResource": {
+                                    "kind": "Secret"
+                                }
                             },
                             {
-                                "type": "kubernetes",
-                                "kind": "ConfigMap",
-                                "namespaces": [
-                                    "kube-system"
-                                ]
+                                "type": "Kubernetes",
+                                "kubernetesResource": {
+                                    "kind": "ConfigMap",
+                                    "namespaces": [
+                                        "kube-system"
+                                    ]
+                                }
                             },
                             {
-                                "type": "file",
+                                "type": "File",
                                 "pattern": "*.log"
                             },
                             {
-                                "type": "file",
+                                "type": "File",
                                 "pattern": "release-4.10/ingress_controllers/*/haproxy.*"
                             }
                         ]
                     ],
                     "additionalItems": true,
                     "items": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/Definitions/k8s-omission"
-                            },
-                            {
-                                "$ref": "#/Definitions/file-omission"
-                            }
-                        ]
+                        "$ref": "#/Definitions/omit"
                     }
                 },
                 "topLevelDomains": {
@@ -115,7 +111,7 @@
                 },
                 "target": {
                     "type": "string",
-                    "default":"FileContents",
+                    "default": "FileContents",
                     "enum": [
                         "FileName",
                         "FileContents",
@@ -146,7 +142,7 @@
                 }
             }
         },
-        "k8s-omission": {
+        "omit": {
             "type": "object",
             "required": [
                 "type"
@@ -155,44 +151,33 @@
                 "type": {
                     "type": "string",
                     "enum": [
-                        "kubernetes"
-                    ],
-                    "description": "type defines that this signals a kubernetes resource"
+                        "Kubernetes",
+                        "File"
+                    ]
                 },
-                "apiVersion": {
-                    "type": "string",
-                    "description": "This defines the apiVersion of the kubernetes resource. That can be used to further refine specific versions of a resource that should be omitted."
-                },
-                "kind": {
-                    "type": "string",
-                    "description": "This defines the kind of kubernetes resource that should be omitted. This can be further specified with the apiVersion and namespaces."
-                },
-                "namespaces": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "description": "This defines the namespaces which are supposed to be omitted. When used together with kind and apiVersions, it becomes a filter. Standalone it will be used as a filter for all resources in a given namespace."
-                }
-            }
-        },
-        "file-omission": {
-            "type": "object",
-            "required": [
-                "type",
-                "pattern"
-            ],
-            "properties": {
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "file"
-                    ],
-                    "description": "type defines that this signals a file omission"
+                "kubernetesResource": {
+                    "type": "object",
+                    "properties": {
+                        "apiVersion": {
+                            "type": "string",
+                            "description": "This defines the apiVersion of the kubernetes resource. That can be used to further refine specific versions of a resource that should be omitted."
+                        },
+                        "kind": {
+                            "type": "string",
+                            "description": "This defines the kind of kubernetes resource that should be omitted. This can be further specified with the apiVersion and namespaces."
+                        },
+                        "namespaces": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "This defines the namespaces which are supposed to be omitted. When used together with kind and apiVersions, it becomes a filter. Standalone it will be used as a filter for all resources in a given namespace."
+                        }
+                    }
                 },
                 "pattern": {
                     "type": "string",
-                    "description": "A Golang regexp https://pkg.go.dev/regexp that matches on file paths relative to the must-gather root. This behaves like a glob using Golangs filepath.Match()."
+                    "description": "A file glob pattern on file paths relative to the must-gather root. The pattern should be as described in https://pkg.go.dev/path/filepath#Match"
                 }
             }
         }
