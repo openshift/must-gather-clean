@@ -130,6 +130,35 @@ func TestIPObfuscatorConsistent(t *testing.T) {
 				"192.168.1.30": "x-ipv4-000002-x",
 			},
 		},
+		{
+			name: "multiple invocations with different IPs",
+			input: []string{
+				"received request from 192.168.1.20 for 192.168.1.30",
+				"received request from 192.168.1.21 for 192.168.1.31",
+				"received request from 192.168.1.22 for 192.168.1.32",
+				"received request from 192.168.1.23 for 192.168.1.33",
+				"received request from 192.168.1.24 for 192.168.1.34",
+			},
+			output: []string{
+				"received request from x-ipv4-000001-x for x-ipv4-000002-x",
+				"received request from x-ipv4-000003-x for x-ipv4-000004-x",
+				"received request from x-ipv4-000005-x for x-ipv4-000006-x",
+				"received request from x-ipv4-000007-x for x-ipv4-000008-x",
+				"received request from x-ipv4-000009-x for x-ipv4-000010-x",
+			},
+			report: map[string]string{
+				"192.168.1.20": "x-ipv4-000001-x",
+				"192.168.1.21": "x-ipv4-000003-x",
+				"192.168.1.22": "x-ipv4-000005-x",
+				"192.168.1.23": "x-ipv4-000007-x",
+				"192.168.1.24": "x-ipv4-000009-x",
+				"192.168.1.30": "x-ipv4-000002-x",
+				"192.168.1.31": "x-ipv4-000004-x",
+				"192.168.1.32": "x-ipv4-000006-x",
+				"192.168.1.33": "x-ipv4-000008-x",
+				"192.168.1.34": "x-ipv4-000010-x",
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent)
@@ -146,7 +175,7 @@ func TestPanicMaximumReplacements(t *testing.T) {
 	o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent)
 	assert.NoError(t, err)
 	iobf := o.(*ipObfuscator)
-	iobf.replacements[ipv4Pattern] = ipGenerator{
+	iobf.replacements[ipv4Pattern] = &ipGenerator{
 		count: maximumSupportedObfuscations,
 	}
 	assert.Panicsf(t, func() {

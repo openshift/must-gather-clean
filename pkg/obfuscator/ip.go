@@ -48,7 +48,7 @@ var (
 
 type ipObfuscator struct {
 	ReplacementReporter
-	replacements    map[*regexp.Regexp]ipGenerator
+	replacements    map[*regexp.Regexp]*ipGenerator
 	replacementType schema.ObfuscateReplacementType
 }
 
@@ -90,7 +90,7 @@ func NewIPObfuscator(replacementType schema.ObfuscateReplacementType) (Obfuscato
 	}
 	return &ipObfuscator{
 		ReplacementReporter: NewSimpleReporter(),
-		replacements: map[*regexp.Regexp]ipGenerator{
+		replacements: map[*regexp.Regexp]*ipGenerator{
 			ipv4Pattern: {template: consistentIPv4Template, obfuscated: obfuscatedStaticIPv4},
 			ipv6Pattern: {template: consistentIPv6Template, obfuscated: obfuscatedStaticIPv6},
 		},
