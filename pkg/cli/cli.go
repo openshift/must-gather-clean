@@ -44,9 +44,12 @@ func Run(configPath string, inputPath string, outputPath string) error {
 
 	var omitters []omitter.Omitter
 	for _, o := range config.Config.Omit {
-		switch om := o.(type) {
-		case schema.FileOmission:
-			omitters = append(omitters, omitter.NewFilenamePatternOmitter(om.Pattern))
+		switch o.Type {
+		case schema.OmitTypeFile:
+			if *o.Pattern == "" {
+				return fmt.Errorf("no pattern specified for file omitter")
+			}
+			omitters = append(omitters, omitter.NewFilenamePatternOmitter(*o.Pattern))
 		}
 	}
 

@@ -8,14 +8,16 @@
     ],
     "omit": [
       {
-        "type": "kubernetes",
-        "namespaces": [
-          "openshift-node",
-          "openshift-kube-scheduler"
-        ]
+        "type": "Kubernetes",
+        "kubernetesResource": {
+          "namespaces": [
+            "openshift-node",
+            "openshift-kube-scheduler"
+          ]
+        }
       },
       {
-        "type": "file",
+        "type": "File",
         "pattern": "*.log"
       }
     ]
