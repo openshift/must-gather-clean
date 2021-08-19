@@ -51,11 +51,10 @@ func (f *fsWriter) Writer(parentPath, name string, permissions os.FileMode) (Clo
 func EnsureOutputPath(path string, deleteIfExists bool) error {
 	info, err := os.Stat(path)
 	if err != nil {
-		if !os.IsNotExist(err) {
-			return err
-		} else {
+		if os.IsNotExist(err) {
 			return os.Mkdir(path, 0700)
 		}
+		return err
 	} else {
 		if deleteIfExists {
 			err = os.RemoveAll(path)
