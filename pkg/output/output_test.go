@@ -89,7 +89,7 @@ func TestFSWriter(t *testing.T) {
 	}
 }
 
-func TestFSWriterNonEmptyDir(t *testing.T) {
+func TestEnsureOutputPathNonEmptyDir(t *testing.T) {
 	testDir, err := os.MkdirTemp(os.TempDir(), "test-dir-*")
 	require.NoError(t, err)
 	defer func() {
@@ -97,33 +97,55 @@ func TestFSWriterNonEmptyDir(t *testing.T) {
 	}()
 	err = ioutil.WriteFile(filepath.Join(testDir, "nonempty"), []byte("nonempty"), 0644)
 	require.NoError(t, err)
-	_, err = NewFSWriter(testDir)
+	err = EnsureOutputPath(testDir, false)
 	require.Error(t, err)
 	require.Equal(t, fmt.Errorf("output directory %s is not empty", testDir), err)
 }
 
-func TestFSWriterInvalidLocation(t *testing.T) {
+func TestEnsureOutputPathInvalidLocation(t *testing.T) {
 	file, err := os.CreateTemp("", "temp-file")
 	require.NoError(t, err)
 	_, err = file.Write([]byte("test-contents"))
 	require.NoError(t, err)
 	err = file.Close()
 	require.NoError(t, err)
-	_, err = NewFSWriter(file.Name())
+	err = EnsureOutputPath(file.Name(), false)
 	require.Error(t, err)
-	require.Equal(t, fmt.Errorf("output destination must be a directory: %s", file.Name()), err)
+	require.Equal(t, fmt.Errorf("output destination must be a directory: '%s'", file.Name()), err)
 }
 
-func TestFSWriterCreateIfRequired(t *testing.T) {
+func TestEnsureOutputPathCreateIfRequired(t *testing.T) {
 	testDir, err := os.MkdirTemp("", "test-dir-*")
 	require.NoError(t, err)
 	defer func(path string) {
 		_ = os.RemoveAll(path)
 	}(testDir)
 	outputDir := filepath.Join(testDir, "nonexistent")
-	_, err = NewFSWriter(outputDir)
+	err = EnsureOutputPath(outputDir, false)
 	require.NoError(t, err)
 	info, err := os.Stat(outputDir)
 	require.NoError(t, err)
 	require.True(t, info.IsDir())
+}
+
+func TestEnsureOutputPathDeletesIfRequired(t *testing.T) {
+	testDir, err := os.MkdirTemp(os.TempDir(), "test-dir-*")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(testDir)
+	}()
+	toBeDeletedFile := filepath.Join(testDir, "nonempty")
+	err = ioutil.WriteFile(toBeDeletedFile, []byte("nonempty"), 0644)
+	require.NoError(t, err)
+
+	err = EnsureOutputPath(testDir, true)
+	require.NoError(t, err)
+
+	info, err := os.Stat(testDir)
+	require.NoError(t, err)
+	require.True(t, info.IsDir())
+
+	_, err = os.Stat(toBeDeletedFile)
+	require.Error(t, err)
+	require.Truef(t, os.IsNotExist(err), "file %s exists even though it shouldn't", toBeDeletedFile)
 }

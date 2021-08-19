@@ -48,29 +48,44 @@ func (f *fsWriter) Writer(parentPath, name string, permissions os.FileMode) (Clo
 	}, writer, nil
 }
 
-// NewFSWriter returns an Outputter which writes the files and directories to a specified location.
-func NewFSWriter(path string) (Outputter, error) {
+func EnsureOutputPath(path string, deleteIfExists bool) error {
 	info, err := os.Stat(path)
 	if err != nil {
-		if !os.IsNotExist(err) {
-			return nil, err
-		} else {
-			err := os.Mkdir(path, 0700)
+		if os.IsNotExist(err) {
+			return os.Mkdir(path, 0700)
+		}
+		return err
+	}
+
+	if !info.IsDir() {
+		return fmt.Errorf("output destination must be a directory: '%s'", path)
+	}
+
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return fmt.Errorf("failed to get contents of output directory '%s': %w", path, err)
+	}
+
+	if len(entries) != 0 {
+		if deleteIfExists {
+			err = os.RemoveAll(path)
 			if err != nil {
-				return nil, fmt.Errorf("failed to create output directory %s: %w", path, err)
+				return fmt.Errorf("error while deleting the output path '%s': %w", path, err)
 			}
-		}
-	} else {
-		if !info.IsDir() {
-			return nil, fmt.Errorf("output destination must be a directory: %s", path)
-		}
-		entries, err := os.ReadDir(path)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get contents of output directory %s: %w", path, err)
-		}
-		if len(entries) != 0 {
-			return nil, fmt.Errorf("output directory %s is not empty", path)
+		} else {
+			return fmt.Errorf("output directory %s is not empty", path)
 		}
 	}
+
+	err = os.Mkdir(path, 0700)
+	if err != nil {
+		return fmt.Errorf("failed to create output directory '%s': %w", path, err)
+	}
+
+	return nil
+}
+
+// NewFSWriter returns an Outputter which writes the files and directories to a specified location.
+func NewFSWriter(path string) (Outputter, error) {
 	return &fsWriter{outputDir: path}, nil
 }

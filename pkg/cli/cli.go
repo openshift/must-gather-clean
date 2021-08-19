@@ -19,7 +19,12 @@ const (
 	reportFileName = "report.yaml"
 )
 
-func Run(configPath string, inputPath string, outputPath string) error {
+func Run(configPath string, inputPath string, outputPath string, deleteOutputFolder bool) error {
+
+	err := output.EnsureOutputPath(outputPath, deleteOutputFolder)
+	if err != nil {
+		return fmt.Errorf("failed to ensure output folder: %w", err)
+	}
 
 	config, err := schema.ReadConfigFromPath(configPath)
 	if err != nil {
