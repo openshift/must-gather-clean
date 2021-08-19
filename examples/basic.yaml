@@ -1,0 +1,10 @@
+config:
+  obfuscate:
+    - type: IP
+      replacementType: Consistent
+      target: All
+    - type: MAC
+    - type: Domain
+  omit:
+    - type: File
+      pattern: "*secret*"
