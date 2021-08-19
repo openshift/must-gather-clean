@@ -32,14 +32,15 @@ func TestMacReplacementSuper(t *testing.T) {
 		expectedOutput       string
 		expectedReportOutput map[string]string
 	}{
-		{name: "squashed", input: "69806FE67C05", expectedOutput: StaticMacReplacement},
-		{name: "squashed-lowercase", input: "69806fe67c05", expectedOutput: StaticMacReplacement},
+		{name: "squashed", input: "69806FE67C05", expectedOutput: "69806FE67C05"},
+		{name: "squashed-lowercase", input: "69806fe67c05", expectedOutput: "69806fe67c05"},
 		{name: "uppercase-colon", input: "69:80:6F:E6:7C:05", expectedOutput: StaticMacReplacement},
 		{name: "lowercase-dash", input: "eb-a1-2a-b2-09-bf", expectedOutput: StaticMacReplacement},
 		{name: "lowercase-colon", input: "eb:a1:2a:b2:09:bf", expectedOutput: StaticMacReplacement},
 		{name: "multi-colon", input: "eb:a1:2a:b2:09:bf eb:a1:2a:b2:09:bf", expectedOutput: StaticMacReplacement + " " + StaticMacReplacement},
 		{name: "multi-colon-dash", input: "16-7C-44-26-24-14 BF:51:A4:1B:7D:0B", expectedOutput: StaticMacReplacement + " " + StaticMacReplacement},
 		{name: "mac surrounded", input: "mac 52:df:20:08:6c:ff caused some trouble", expectedOutput: fmt.Sprintf("mac %s caused some trouble", StaticMacReplacement)},
+		{name: "mac as guid", input: "4a5299ac-6104-479d-aed4-b79faedffcb4", expectedOutput: "4a5299ac-6104-479d-aed4-b79faedffcb4"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			o := NewMacAddressObfuscator()

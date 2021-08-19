@@ -30,7 +30,9 @@ func (m *macAddressObfuscator) ReportingResult() map[string]string {
 }
 
 func NewMacAddressObfuscator() Obfuscator {
-	regex := regexp.MustCompile(`(?:[0-9a-fA-F]([:-])?){12}`)
+	// this regex differs from the standard `(?:[0-9a-fA-F]([:-])?){12}`, to not match very frequently happening UUIDs in K8s
+	// the main culprit is the support for squashed MACs like '69806FE67C05', which won't be supported with the below
+	regex := regexp.MustCompile(`([0-9a-fA-F]{2}[:-][0-9a-fA-F]{2}[:-][0-9a-fA-F]{2}[:-][0-9a-fA-F]{2}[:-][0-9a-fA-F]{2}[:-][0-9a-fA-F]{2})`)
 
 	reporter := NewSimpleReporter()
 	return &macAddressObfuscator{
