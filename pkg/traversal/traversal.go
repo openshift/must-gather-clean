@@ -3,6 +3,7 @@ package traversal
 import (
 	"fmt"
 	"path/filepath"
+	"sort"
 
 	"github.com/openshift/must-gather-clean/pkg/input"
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
@@ -39,6 +40,8 @@ func (w *FileWalker) GenerateReport() *Report {
 		omittedFiles[count] = of
 		count++
 	}
+	// sorting helps humans review the file and ensuring test stability
+	sort.Strings(omittedFiles)
 	report.Omissions = omittedFiles
 	return report
 }
