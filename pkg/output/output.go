@@ -54,10 +54,7 @@ func EnsureOutputPath(path string, deleteIfExists bool) error {
 		if !os.IsNotExist(err) {
 			return err
 		} else {
-			err := os.Mkdir(path, 0700)
-			if err != nil {
-				return fmt.Errorf("failed to create output directory '%s': %w", path, err)
-			}
+			return os.Mkdir(path, 0700)
 		}
 	} else {
 		if deleteIfExists {
