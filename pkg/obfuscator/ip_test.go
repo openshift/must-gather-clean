@@ -59,6 +59,29 @@ func TestIPObfuscatorStatic(t *testing.T) {
 				"::2fa:bf9":    obfuscatedStaticIPv6,
 			},
 		},
+		{
+			name:   "non standard ipv4",
+			input:  "ip-10-0-129-220.ec2.aws.yaml",
+			output: "ip-xxx.xxx.xxx.xxx.ec2.aws.yaml",
+			report: map[string]string{
+				"10-0-129-220": obfuscatedStaticIPv4,
+			},
+		},
+		{
+			name:   "non-standard ipv4 with bad separator",
+			input:  "ip+10+0+129+220.ec2.aws.yaml",
+			output: "ip+10+0+129+220.ec2.aws.yaml",
+			report: map[string]string{},
+		},
+		{
+			name:   "standard ipv4 and standard ipv4",
+			input:  "obfuscate 10.0.129.220 and 10-0-129-220",
+			output: "obfuscate xxx.xxx.xxx.xxx and xxx.xxx.xxx.xxx",
+			report: map[string]string{
+				"10.0.129.220": "xxx.xxx.xxx.xxx",
+				"10-0-129-220": "xxx.xxx.xxx.xxx",
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic)

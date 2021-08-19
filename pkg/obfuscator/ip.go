@@ -18,6 +18,9 @@ const (
 )
 
 var (
+	ipv4re = `([0-9]{1,3}[.-]){3}([0-9]{1,3})`
+	// ipv6re is not perfect. it can still catch words like :face:bad as a valid ipv6 address
+	ipv6re      = `([a-f0-9]{0,4}[:]){1,8}[a-f0-9]{1,4}`
 	ipv6Pattern = regexp.MustCompile(ipv6re)
 	ipv4Pattern = regexp.MustCompile(ipv4re)
 )
@@ -40,12 +43,6 @@ func (g *ipGenerator) static() string {
 	return g.obfuscated
 }
 
-var (
-	ipv4re = `(([0-9]{1,3})\.){3}([0-9]{1,3})`
-	// ipv6re is not perfect. it can still catch words like :face:bad as a valid ipv6 address
-	ipv6re = `([a-f0-9]{0,4}:){1,8}[a-f0-9]{1,4}`
-)
-
 type ipObfuscator struct {
 	ReplacementReporter
 	replacements    map[*regexp.Regexp]*ipGenerator
@@ -65,8 +62,10 @@ func (o *ipObfuscator) replace(s string) string {
 	for pattern, gen := range o.replacements {
 
 		ipMatches := pattern.FindAllString(output, -1)
+
 		for _, m := range ipMatches {
-			if ip := net.ParseIP(m); ip != nil {
+			cleaned := strings.ReplaceAll(m, "-", ".")
+			if ip := net.ParseIP(cleaned); ip != nil {
 				var replacement string
 				switch o.replacementType {
 				case schema.ObfuscateReplacementTypeStatic:
