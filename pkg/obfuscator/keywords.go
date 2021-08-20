@@ -15,6 +15,10 @@ func (o *keywordsObfuscator) FileName(name string) string {
 	return replace(name, o.replacements, o.ReplacementReporter)
 }
 
+func (o *keywordsObfuscator) Contents(contents string) string {
+	return replace(contents, o.replacements, o.ReplacementReporter)
+}
+
 func replace(name string, replacements map[string]string, reporter ReplacementReporter) string {
 	for keyword, replacement := range replacements {
 		if strings.Contains(name, keyword) {
@@ -23,10 +27,6 @@ func replace(name string, replacements map[string]string, reporter ReplacementRe
 		}
 	}
 	return name
-}
-
-func (o *keywordsObfuscator) Contents(contents string) string {
-	return replace(contents, o.replacements, o.ReplacementReporter)
 }
 
 // NewKeywordsObfuscator returns an Obfuscator which replace all occurrences of keys in the map

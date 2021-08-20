@@ -3,6 +3,7 @@ package main
 import (
 	goflag "flag"
 	"math/rand"
+	"runtime"
 	"time"
 
 	"k8s.io/klog/v2"
@@ -13,10 +14,11 @@ import (
 
 var (
 	ConfigFile         string
+	DeleteOutputFolder bool
 	InputFolder        string
 	OutputFolder       string
-	DeleteOutputFolder bool
 	ReportingFolder    string
+	WorkerCount        int
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -27,7 +29,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		defer klog.Flush()
 
-		err := cli.Run(ConfigFile, InputFolder, OutputFolder, DeleteOutputFolder, ReportingFolder)
+		err := cli.Run(ConfigFile, InputFolder, OutputFolder, DeleteOutputFolder, ReportingFolder, WorkerCount)
 		if err != nil {
 			klog.Exitf("%v\n", err)
 		}
@@ -35,18 +37,16 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.Flags().StringVarP(&ConfigFile, "config", "c", "", "The path to the obfuscation configuration")
+	flags := rootCmd.Flags()
+	flags.StringVarP(&ConfigFile, "config", "c", "", "The path to the obfuscation configuration")
 	_ = rootCmd.MarkFlagRequired("config")
-
-	rootCmd.Flags().StringVarP(&InputFolder, "input", "i", "", "The directory of the must-gather dump")
+	flags.StringVarP(&InputFolder, "input", "i", "", "The directory of the must-gather dump")
 	_ = rootCmd.MarkFlagRequired("input")
-
-	rootCmd.Flags().StringVarP(&OutputFolder, "output", "o", "", "The directory of the obfuscated output")
+	flags.StringVarP(&OutputFolder, "output", "o", "", "The directory of the obfuscated output")
 	_ = rootCmd.MarkFlagRequired("output")
-
-	rootCmd.Flags().BoolVarP(&DeleteOutputFolder, "overwrite", "d", false, "If the output directory exists, setting this flag will delete the folder and all its contents before cleaning.")
-
-	rootCmd.Flags().StringVarP(&ReportingFolder, "report", "r", ".", "The directory of the reporting output folder, default is the current working directory")
+	flags.BoolVarP(&DeleteOutputFolder, "overwrite", "d", false, "If the output directory exists, setting this flag will delete the folder and all its contents before cleaning.")
+	flags.IntVarP(&WorkerCount, "worker-count", "w", runtime.NumCPU(), "The number of workers for processing")
+	flags.StringVarP(&ReportingFolder, "report", "r", ".", "The directory of the reporting output folder, default is the current working directory")
 
 	fs := goflag.NewFlagSet("", goflag.ExitOnError)
 	klog.InitFlags(fs)

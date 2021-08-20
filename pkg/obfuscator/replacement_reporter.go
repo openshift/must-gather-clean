@@ -1,12 +1,12 @@
 package obfuscator
 
 import (
+	"sync"
+
 	"k8s.io/klog/v2"
 )
 
-// this struct mainly exists in case we later want to make it thread-safe, so we don't have to individually go through
-// dozens of obfuscators.
-
+// ReplacementReporter contains all the replacements which are performed by an Obfuscator
 type ReplacementReporter interface {
 	// ReportingResult returns a mapping of strings which were replaced.
 	ReportingResult() map[string]string
@@ -20,10 +20,13 @@ type ReplacementReporter interface {
 }
 
 type SimpleReporter struct {
+	lock    sync.RWMutex
 	mapping map[string]string
 }
 
 func (s *SimpleReporter) ReportingResult() map[string]string {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	defensiveCopy := make(map[string]string)
 	for k, v := range s.mapping {
 		defensiveCopy[k] = v
@@ -32,6 +35,8 @@ func (s *SimpleReporter) ReportingResult() map[string]string {
 }
 
 func (s *SimpleReporter) ReportReplacement(original string, replacement string) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 	if val, ok := s.mapping[original]; ok {
 		if replacement != val {
 			klog.Exitf("'%s' already has a value reported as '%s', tried to report '%s'", original, val, replacement)
@@ -42,9 +47,11 @@ func (s *SimpleReporter) ReportReplacement(original string, replacement string) 
 }
 
 func (s *SimpleReporter) GetReplacement(original string) string {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	return s.mapping[original]
 }
 
 func NewSimpleReporter() ReplacementReporter {
-	return &SimpleReporter{map[string]string{}}
+	return &SimpleReporter{mapping: map[string]string{}}
 }
