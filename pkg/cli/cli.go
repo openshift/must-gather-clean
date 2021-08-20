@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"gopkg.in/yaml.v2"
+	"k8s.io/klog/v2"
 
 	"github.com/openshift/must-gather-clean/pkg/input"
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
@@ -19,7 +20,7 @@ const (
 	reportFileName = "report.yaml"
 )
 
-func Run(configPath string, inputPath string, outputPath string, deleteOutputFolder bool) error {
+func Run(configPath string, inputPath string, outputPath string, deleteOutputFolder bool, reportingFolder string) error {
 
 	err := output.EnsureOutputPath(outputPath, deleteOutputFolder)
 	if err != nil {
@@ -69,6 +70,9 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 			}
 			omitters = append(omitters, om)
 		case schema.OmitTypeKubernetes:
+			if o.KubernetesResource == nil {
+				klog.Exitf("type Kubernetes must also include a 'kubernetesResource'. Given: %v", o)
+			}
 			kr := *o.KubernetesResource
 			om, err := omitter.NewKubernetesResourceOmitter(kr.ApiVersion, kr.Kind, kr.Namespaces)
 			if err != nil {
@@ -97,15 +101,24 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 	}
 
 	report := walker.GenerateReport()
-	rPath := filepath.Join(outputPath, reportFileName)
-	reportFile, err := os.Create(rPath)
+
+	err = os.MkdirAll(reportingFolder, 0700)
 	if err != nil {
-		return fmt.Errorf("failed to open report file %s: %w", rPath, err)
+		return fmt.Errorf("failed to create reporting output folder: %w", err)
+	}
+
+	reportingFile := filepath.Join(reportingFolder, reportFileName)
+	reportFile, err := os.Create(reportingFile)
+	if err != nil {
+		return fmt.Errorf("failed to open report file %s: %w", reportingFile, err)
 	}
 	rEncoder := yaml.NewEncoder(reportFile)
 	err = rEncoder.Encode(report)
 	if err != nil {
-		return fmt.Errorf("failed to write report at %s: %w", rPath, err)
+		return fmt.Errorf("failed to write report at %s: %w", reportingFile, err)
 	}
+
+	klog.V(2).Infof("successfully saved obfuscation report in %s", reportingFile)
+
 	return nil
 }

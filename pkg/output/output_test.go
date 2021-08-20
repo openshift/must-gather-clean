@@ -89,6 +89,16 @@ func TestFSWriter(t *testing.T) {
 	}
 }
 
+func TestExistingEmptyDir(t *testing.T) {
+	testDir, err := os.MkdirTemp(os.TempDir(), "test-dir-*")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(testDir)
+	}()
+	err = EnsureOutputPath(testDir, false)
+	require.NoError(t, err)
+}
+
 func TestEnsureOutputPathNonEmptyDir(t *testing.T) {
 	testDir, err := os.MkdirTemp(os.TempDir(), "test-dir-*")
 	require.NoError(t, err)

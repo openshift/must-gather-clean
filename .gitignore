@@ -6,3 +6,6 @@ must-gather-clean
 
 # Tools Directory
 bin/
+
+# reports created by debugging/testing
+report.yaml
