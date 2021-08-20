@@ -19,3 +19,11 @@ func TestSimpleReporterGetReplacement(t *testing.T) {
 	assert.Equal(t, r.GetReplacement("a"), "b")
 	assert.Equal(t, r.GetReplacement("c"), "")
 }
+
+func TestReportLeakingBack(t *testing.T){
+	r := NewSimpleReporter()
+	r.ReportReplacement("foo", "bar")
+	mapping := r.ReportingResult()
+	mapping["foo"] = "baz"
+	assert.Equal(t, "bar", r.GetReplacement("foo"))
+}
