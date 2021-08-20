@@ -8,6 +8,7 @@ require (
 	github.com/spf13/cobra v1.1.3
 	github.com/stretchr/testify v1.7.0
 	gopkg.in/yaml.v2 v2.4.0
+	k8s.io/klog/v2 v2.10.0
 	sigs.k8s.io/yaml v1.2.0
 )
 

@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
+	goflag "flag"
 	"math/rand"
-	"os"
 	"time"
+
+	"k8s.io/klog/v2"
 
 	"github.com/openshift/must-gather-clean/pkg/cli"
 	"github.com/spf13/cobra"
@@ -23,10 +24,11 @@ var rootCmd = &cobra.Command{
 	Short: "Obfuscation for must-gather dumps",
 	Long:  "This tool obfuscates sensitive information present in must-gather dumps based on input configuration",
 	Run: func(cmd *cobra.Command, args []string) {
+		defer klog.Flush()
+
 		err := cli.Run(ConfigFile, InputFolder, OutputFolder, DeleteOutputFolder)
 		if err != nil {
-			fmt.Printf("%v\n", err)
-			os.Exit(1)
+			klog.Exitf("%v\n", err)
 		}
 	},
 }
@@ -42,6 +44,10 @@ func init() {
 	_ = rootCmd.MarkFlagRequired("output")
 
 	rootCmd.Flags().BoolVarP(&DeleteOutputFolder, "overwrite", "d", false, "If the output directory exists, setting this flag will delete the folder and all its contents before cleaning.")
+
+	fs := goflag.NewFlagSet("", goflag.ExitOnError)
+	klog.InitFlags(fs)
+	rootCmd.Flags().AddGoFlagSet(fs)
 }
 
 func main() {

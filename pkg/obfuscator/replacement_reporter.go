@@ -1,6 +1,8 @@
 package obfuscator
 
-import "fmt"
+import (
+	"k8s.io/klog/v2"
+)
 
 // this struct mainly exists in case we later want to make it thread-safe, so we don't have to individually go through
 // dozens of obfuscators.
@@ -22,13 +24,17 @@ type SimpleReporter struct {
 }
 
 func (s *SimpleReporter) ReportingResult() map[string]string {
-	return s.mapping
+	defensiveCopy := make(map[string]string)
+	for k, v := range s.mapping {
+		defensiveCopy[k] = v
+	}
+	return defensiveCopy
 }
 
 func (s *SimpleReporter) ReportReplacement(original string, replacement string) {
 	if val, ok := s.mapping[original]; ok {
 		if replacement != val {
-			panic(fmt.Sprintf("'%s' already has a value reported as '%s', tried to report '%s'", original, val, replacement))
+			klog.Exitf("'%s' already has a value reported as '%s', tried to report '%s'", original, val, replacement)
 		}
 	}
 
