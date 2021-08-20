@@ -85,6 +85,9 @@ func (w *FileWalker) processDir(inputDir input.Directory, outputDirName string) 
 			}
 			// If the file should be omitted then stop processing.
 			if omit {
+				if klog.V(2).Enabled() {
+					klog.Infof("omitting '%s'", e.Path())
+				}
 				continue
 			}
 
@@ -92,6 +95,9 @@ func (w *FileWalker) processDir(inputDir input.Directory, outputDirName string) 
 			newName := e.Name()
 			for _, o := range w.obfuscators {
 				newName = o.FileName(newName)
+				if klog.V(2).Enabled() {
+					klog.Infof("obfuscating filename '%s' to '%s'", e.Name(), newName)
+				}
 			}
 
 			err := func() error {
@@ -129,6 +135,10 @@ func (w *FileWalker) processDir(inputDir input.Directory, outputDirName string) 
 			}()
 			if err != nil {
 				return err
+			}
+
+			if klog.V(2).Enabled() {
+				klog.Infof("done processing '%s'", e.Path())
 			}
 		}
 	}
