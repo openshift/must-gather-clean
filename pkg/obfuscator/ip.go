@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -34,7 +35,7 @@ type ipGenerator struct {
 func (g *ipGenerator) generateConsistent() string {
 	g.count++
 	if g.count > maximumSupportedObfuscations {
-		panic("maximum number of obfuscated ips exceeded")
+		klog.Exitf("maximum number of ip obfuscations exceeded: %d", maximumSupportedObfuscations)
 	}
 	return fmt.Sprintf(g.template, g.count)
 }

@@ -13,15 +13,6 @@ func TestSimpleReportingHappyPath(t *testing.T) {
 	assert.Equal(t, map[string]string{"a": "b"}, r.ReportingResult())
 }
 
-func TestSimpleReportingExistingReplacements(t *testing.T) {
-	r := NewSimpleReporter()
-	r.ReportReplacement("a", "b")
-	assert.Equal(t, map[string]string{"a": "b"}, r.ReportingResult())
-	assert.Panicsf(t, func() {
-		r.ReportReplacement("a", "c")
-	}, "'a' already has a value reported as 'b', tried to report 'c'")
-}
-
 func TestSimpleReporterGetReplacement(t *testing.T) {
 	r := NewSimpleReporter()
 	r.ReportReplacement("a", "b")

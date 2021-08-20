@@ -9,6 +9,7 @@ import (
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
 	"github.com/openshift/must-gather-clean/pkg/omitter"
 	"github.com/openshift/must-gather-clean/pkg/output"
+	"k8s.io/klog/v2"
 )
 
 type FileWalker struct {
@@ -101,7 +102,7 @@ func (w *FileWalker) processDir(inputDir input.Directory, outputDirName string) 
 				// close the output file when done
 				defer func() {
 					if err := writeCloser(); err != nil {
-						fmt.Printf("failed to successfully write file %s: %v", filepath.Join(outputDirName, newName), err)
+						klog.Exitf("failed to successfully write file %s: %v", filepath.Join(outputDirName, newName), err)
 					}
 				}()
 
@@ -111,7 +112,7 @@ func (w *FileWalker) processDir(inputDir input.Directory, outputDirName string) 
 				}
 				defer func() {
 					if err := closeReader(); err != nil {
-						fmt.Printf("failed to close file %s after reading: %v", e.Path(), err)
+						klog.Exitf("failed to close file %s after reading: %v", e.Path(), err)
 					}
 				}()
 				for scanner.Scan() {

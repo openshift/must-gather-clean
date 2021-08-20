@@ -205,15 +205,3 @@ func TestIPObfuscatorConsistent(t *testing.T) {
 		})
 	}
 }
-
-func TestPanicMaximumReplacements(t *testing.T) {
-	o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent)
-	assert.NoError(t, err)
-	iobf := o.(*ipObfuscator)
-	iobf.replacements[ipv4Pattern] = &ipGenerator{
-		count: maximumSupportedObfuscations,
-	}
-	assert.Panicsf(t, func() {
-		o.Contents("192.168.1.1")
-	}, "did not panic")
-}

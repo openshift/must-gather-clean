@@ -7,6 +7,8 @@ github.com/atombender/go-jsonschema/pkg/schemas
 github.com/atombender/go-jsonschema/pkg/yamlutils
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
+# github.com/go-logr/logr v0.4.0
+github.com/go-logr/logr
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
 # github.com/mitchellh/go-wordwrap v1.0.0
@@ -41,6 +43,9 @@ github.com/stretchr/testify/require
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 gopkg.in/yaml.v3
+# k8s.io/klog/v2 v2.10.0
+## explicit
+k8s.io/klog/v2
 # sigs.k8s.io/yaml v1.2.0
 ## explicit
 sigs.k8s.io/yaml
