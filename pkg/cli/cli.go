@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"gopkg.in/yaml.v2"
 	"k8s.io/klog/v2"
@@ -19,7 +20,7 @@ const (
 	reportFileName = "report.yaml"
 )
 
-func Run(configPath string, inputPath string, outputPath string, deleteOutputFolder bool) error {
+func Run(configPath string, inputPath string, outputPath string, deleteOutputFolder bool, reportingFolder string) error {
 
 	err := output.EnsureOutputPath(outputPath, deleteOutputFolder)
 	if err != nil {
@@ -100,16 +101,24 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 	}
 
 	report := walker.GenerateReport()
-	// we store the report in the working dir of the CLI, it should never be created in the output folder
-	// as this is compromising the actual obfuscation that was done.
-	reportFile, err := os.Create(reportFileName)
+
+	err = os.MkdirAll(reportingFolder, 0700)
 	if err != nil {
-		return fmt.Errorf("failed to open report file %s: %w", reportFileName, err)
+		return fmt.Errorf("failed to create reporting output folder: %w", err)
+	}
+
+	reportingFile := filepath.Join(reportingFolder, reportFileName)
+	reportFile, err := os.Create(reportingFile)
+	if err != nil {
+		return fmt.Errorf("failed to open report file %s: %w", reportingFile, err)
 	}
 	rEncoder := yaml.NewEncoder(reportFile)
 	err = rEncoder.Encode(report)
 	if err != nil {
-		return fmt.Errorf("failed to write report at %s: %w", reportFileName, err)
+		return fmt.Errorf("failed to write report at %s: %w", reportingFile, err)
 	}
+
+	klog.V(2).Infof("successfully saved obfuscation report in %s", reportingFile)
+
 	return nil
 }

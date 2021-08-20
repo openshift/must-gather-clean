@@ -16,6 +16,7 @@ var (
 	InputFolder        string
 	OutputFolder       string
 	DeleteOutputFolder bool
+	ReportingFolder    string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -26,7 +27,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		defer klog.Flush()
 
-		err := cli.Run(ConfigFile, InputFolder, OutputFolder, DeleteOutputFolder)
+		err := cli.Run(ConfigFile, InputFolder, OutputFolder, DeleteOutputFolder, ReportingFolder)
 		if err != nil {
 			klog.Exitf("%v\n", err)
 		}
@@ -44,6 +45,8 @@ func init() {
 	_ = rootCmd.MarkFlagRequired("output")
 
 	rootCmd.Flags().BoolVarP(&DeleteOutputFolder, "overwrite", "d", false, "If the output directory exists, setting this flag will delete the folder and all its contents before cleaning.")
+
+	rootCmd.Flags().StringVarP(&ReportingFolder, "report", "r", ".", "The directory of the reporting output folder, default is the current working directory")
 
 	fs := goflag.NewFlagSet("", goflag.ExitOnError)
 	klog.InitFlags(fs)
