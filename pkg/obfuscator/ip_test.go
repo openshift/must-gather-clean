@@ -82,6 +82,18 @@ func TestIPObfuscatorStatic(t *testing.T) {
 				"10-0-129-220": "xxx.xxx.xxx.xxx",
 			},
 		},
+		{
+			name:   "OCP nightly version false positive",
+			input:  "version: 4.8.0-0.nightly-2021-07-31-065602",
+			output: "version: 4.8.0-0.nightly-2021-07-31-065602",
+			report: map[string]string{},
+		},
+		{
+			name:   "OCP version x.y.z",
+			input:  "version: 4.8.12",
+			output: "version: 4.8.12",
+			report: map[string]string{},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic)
