@@ -1,0 +1,28 @@
+config:
+  obfuscate:
+    - type: IP
+      replacementType: Consistent
+      target: All
+    - type: MAC
+    - type: Domain
+      domainNames:
+        - "rhcloud.com"
+        - "dev.rhcloud.com"
+  omit:
+    - type: Kubernetes
+      kubernetesResource:
+        kind: "Secret"
+    - type: Kubernetes
+      kubernetesResource:
+        kind: "ConfigMap"
+        namespaces: [ "kube-system" ]
+    - type: Kubernetes
+      kubernetesResource:
+        kind: CertificateSigningRequest
+        apiVersion: certificates.k8s.io/v1
+    - type: Kubernetes
+      kubernetesResource:
+        kind: CertificateSigningRequestList
+        apiVersion: certificates.k8s.io/v1
+    - type: File
+      pattern: "*secret*"
