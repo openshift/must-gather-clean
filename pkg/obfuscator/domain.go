@@ -2,102 +2,77 @@ package obfuscator
 
 import (
 	"fmt"
-	"path/filepath"
 	"regexp"
 	"strings"
 )
 
+const (
+	domainPattern      = `([a-zA-Z0-9\.]*\.)?(%s)`
+	obfuscatedTemplate = "domain%07d"
+)
+
 type domainObfuscator struct {
 	ReplacementReporter
-	hostPattern *regexp.Regexp
-	domainCount int
-	tlds        map[string]struct{}
-	mainDomains map[string]string
-	ipPattern   *regexp.Regexp
+	domainCount    int
+	domainPatterns []*regexp.Regexp
+	domainMapping  map[string]string
 }
 
 func (d *domainObfuscator) FileName(s string) string {
-	// if the filename has an extension omit it from obfuscation
-	// this is still error-prone because the last part of the domain name could still be mistaken for an extension
-	extension := filepath.Ext(s)
-	if extension != "" {
-		return fmt.Sprintf("%s%s", d.findDomains(s[:len(s)-len(extension)]), extension)
-	}
-	return d.findDomains(s)
+	return d.replaceDomains(s)
 }
 
-func (d *domainObfuscator) findDomains(input string) string {
-	domains := d.hostPattern.FindAllString(input, -1)
+func (d *domainObfuscator) Contents(s string) string {
+	return d.replaceDomains(s)
+}
 
+func (d *domainObfuscator) replaceDomains(input string) string {
 	output := input
-	for _, domain := range domains {
-		// if this is an IP address then do nothing
-		if d.ipPattern.MatchString(domain) {
-			continue
+	for _, p := range d.domainPatterns {
+		matches := p.FindAllStringSubmatch(output, -1)
+		for _, m := range matches {
+			if len(m) != 3 {
+				continue
+			}
+			baseDomain := m[2]
+			subDomain := m[1]
+			obfuscatedBaseDomain := d.obfuscatedDomain(baseDomain)
+			var replacement string
+			if subDomain != "" {
+				replacement = fmt.Sprintf("%s%s", subDomain, obfuscatedBaseDomain)
+			} else {
+				replacement = obfuscatedBaseDomain
+			}
+			output = strings.ReplaceAll(output, m[0], replacement)
+			d.ReportReplacement(m[0], replacement)
 		}
-		output = strings.ReplaceAll(output, domain, d.obfuscatedDomain(domain))
 	}
 	return output
 }
 
-func (d *domainObfuscator) Contents(s string) string {
-	return d.findDomains(s)
-}
-
 func (d *domainObfuscator) obfuscatedDomain(domain string) string {
-	parts := strings.Split(domain, ".")
-	var (
-		mainDomain   string
-		subDomain    string
-		hasExtension bool
-	)
-	// if the last part is present in known list of tlds then combine last and second-to-last parts to get
-	// the main domain otherwise the last part is the main domain
-	if _, ok := d.tlds[parts[len(parts)-1]]; ok {
-		mainDomain = strings.Join(parts[len(parts)-2:], ".")
-		subDomain = strings.Join(parts[:len(parts)-2], ".")
-		hasExtension = true
-	} else {
-		mainDomain = parts[len(parts)-1]
-		subDomain = strings.Join(parts[:len(parts)-1], ".")
+	if replacement, ok := d.domainMapping[domain]; ok {
+		return replacement
 	}
-
-	var (
-		obfuscatedMainDomain string
-		ok                   bool
-	)
-	// if the obfuscated main domain is present then use it, otherwise generate one and store it.
-	if obfuscatedMainDomain, ok = d.mainDomains[mainDomain]; !ok {
-		d.domainCount++
-		if hasExtension {
-			obfuscatedMainDomain = fmt.Sprintf("obfuscated%04d.ext", d.domainCount)
-		} else {
-			obfuscatedMainDomain = fmt.Sprintf("obfuscated%04d", d.domainCount)
-		}
-		d.mainDomains[mainDomain] = obfuscatedMainDomain
-	}
-
-	var obfuscatedDomain string
-	// if there is no subdomain then leave it out
-	if subDomain != "" {
-		obfuscatedDomain = fmt.Sprintf("%s.%s", subDomain, obfuscatedMainDomain)
-	} else {
-		obfuscatedDomain = obfuscatedMainDomain
-	}
-	d.ReportReplacement(domain, obfuscatedDomain)
-	return obfuscatedDomain
+	d.domainCount++
+	replacement := fmt.Sprintf(obfuscatedTemplate, d.domainCount)
+	d.domainMapping[domain] = replacement
+	return replacement
 }
 
-func NewDomainObfuscator(tlds []string) Obfuscator {
-	tldSet := map[string]struct{}{}
-	for _, tld := range tlds {
-		tldSet[strings.TrimLeft(tld, ".")] = struct{}{}
+func NewDomainObfuscator(domains []string) (Obfuscator, error) {
+	patterns := make([]*regexp.Regexp, len(domains))
+	for i, d := range domains {
+		dd := strings.ReplaceAll(d, ".", "\\.")
+		p, err := regexp.Compile(fmt.Sprintf(domainPattern, dd))
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate regex for domain %s: %w", d, err)
+		}
+		patterns[i] = p
 	}
 	return &domainObfuscator{
-		hostPattern:         regexp.MustCompile(`[a-zA-Z0-9-\.]{1,200}\.[a-zA-Z0-9]{1,63}`),
-		ipPattern:           regexp.MustCompile(`([0-9]{1,3}\.){3}[0-9]{1,3}`),
 		ReplacementReporter: NewSimpleReporter(),
-		tlds:                tldSet,
-		mainDomains:         map[string]string{},
-	}
+		domainPatterns:      patterns,
+		domainMapping:       map[string]string{},
+	}, nil
 }

@@ -45,7 +45,11 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 			}
 			obfuscators = append(obfuscators, o)
 		case schema.ObfuscateTypeDomain:
-			obfuscators = append(obfuscators, obfuscator.NewDomainObfuscator(config.Config.TopLevelDomains))
+			o, err := obfuscator.NewDomainObfuscator(o.Domains)
+			if err != nil {
+				return err
+			}
+			obfuscators = append(obfuscators, o)
 		case schema.ObfuscateTypeIP:
 			o, err := obfuscator.NewIPObfuscator(o.ReplacementType)
 			if err != nil {
