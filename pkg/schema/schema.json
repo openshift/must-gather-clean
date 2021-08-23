@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "description": "This configuration defines the behaviour of the must-gather-clean CLI.",
+    "description": "This configuration defines the behaviour of the must-gather-clean CLI. The CLI helps to obfuscate and omit output from OpenShift debug information ('must-gathers'). You can find more information in our GitHub repository at https://github.com/openshift/must-gather-clean.",
     "required": [
         "config"
     ],
@@ -8,9 +8,9 @@
     "type": "object",
     "properties": {
         "config": {
-            "description": "The config schema defines the behaviour of the must-gather-clean CLI. There are two sections, \"omit\" which defines the omission behaviour and \"obfuscate\" which defines the obfuscation behaviour.",
+            "description": "There are two main sections, \"omit\" which defines the omission behaviour and \"obfuscate\" which defines the obfuscation behaviour.",
             "required": [],
-            "title": "Tool Config Schema",
+            "title": "must-gather-clean omission and obfuscation definitions",
             "type": "object",
             "properties": {
                 "obfuscate": {
@@ -23,14 +23,28 @@
                                 "target": "All"
                             },
                             {
-                                "type": "MAC",
-                                "replacementType": "Random",
-                                "target": "FileContents"
+                                "type": "MAC"
                             },
                             {
                                 "type": "Domain",
-                                "replacementType": "Consistent",
-                                "target": "All"
+                                "domainNames": ["rhcloud.com", "dev.rhcloud.com"]
+                            },
+                            {
+                                "type": "Regex",
+                                "target": "FileName",
+                                "regex": "^builds.yaml$"
+                            },
+                            {
+                                "type": "Regex",
+                                "target": "FileContents",
+                                "regex": ".*ssl-min-ver TLSv1.2$"
+                            },
+                            {
+                              "type": "Keywords",
+                              "replacement": {
+                                "hello": "bye",
+                                "true": "false"
+                              }
                             }
                         ]
                     ],
@@ -63,6 +77,13 @@
                                 }
                             },
                             {
+                                "type": "Kubernetes",
+                                "kubernetesResource": {
+                                    "kind": "CertificateSigningRequest",
+                                    "apiVersion": "certificates.k8s.io/v1"
+                                }
+                            },
+                            {
                                 "type": "File",
                                 "pattern": "*.log"
                             },
@@ -85,8 +106,7 @@
         "obfuscate": {
             "type": "object",
             "required": [
-                "type",
-                "replacementType"
+                "type"
             ],
             "properties": {
                 "type": {
@@ -98,10 +118,10 @@
                         "MAC",
                         "Regex"
                     ],
-                    "description": "type defines the kind of detection you want to use. For example IP will find IP addresses, whereas Keywords will find predefined keywords."
+                    "description": "type defines the kind of detection you want to use. For example IP will find IP addresses, whereas Keywords will find keywords defined in the 'replacement' mapping. Domain must be used in conjunction with the 'domains' property, that defines what domains should be obfuscated. MAC currently only supports static replacement where a detected mac address will be replaced by 'x'. Regex should be used with the 'regex' property that will define the regex, here the replacement also will be static by 'x'-ing out the matched string."
                 },
                 "domains": {
-                    "description": "The list of domains and their subdomains which should be obfuscated in the output.",
+                    "description": "The list of domains and their subdomains which should be obfuscated in the output, only used with the type Domain obfuscator.",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -115,28 +135,27 @@
                         "FileContents",
                         "All"
                     ],
-                    "description": "This determines if the obfuscation should be performed on the file name or on the file contents. The file contents are obfuscated by default"
+                    "description": "This determines if the obfuscation should be performed on the file name or on the file contents. The file contents are obfuscated by default."
                 },
                 "replacementType": {
                     "type": "string",
-                    "default": "Random",
+                    "default": "Static",
                     "enum": [
                         "Consistent",
-                        "Random",
                         "Static"
                     ],
-                    "description": "This defines how the detected string will be replaced. Type 'Consistent' will guarantee the same input will always create the same output string and 'Random' will just create a random replacement string of the same length as the input. 'Static' relies solely on the replacement object to define an input/output mapping."
+                    "description": "This defines how the detected string will be replaced. Type 'Consistent' will guarantee the same input will always create the same output string. 'Static' is used by default and will just try to mask the matching input."
                 },
                 "replacement": {
                     "type": "object",
                     "additionalProperties": {
                         "type": "string"
                     },
-                    "description": "on any replacement type, this will override a given input string with another output string. On duplicate keys it will use the last defined value as replacement. The input values are matched in a case-sensitive fashion and only as a full words, substrings must be matched using a regex. With type regex, the keys will be considered as capture group values, if there is no mapping available it will be replaced with a random string of the same size."
+                    "description": "on replacement 'Keywords', this will override a given input string with another output string. On duplicate keys it will use the last defined value as replacement. The input values are matched in a case-sensitive fashion and only as a full words, substrings must be matched using a regex."
                 },
                 "regex": {
                     "type": "string",
-                    "description": "when replacementType=regex is used, the supplied  regex (Golang regexp https://pkg.go.dev/regexp) will be used to detect the string that should be replaced. The regex is line based, spanning multi-line regex statements is not supported."
+                    "description": "when replacementType 'Regex' is used, the supplied Golang regexp (https://pkg.go.dev/regexp) will be used to detect the string that should be replaced. The regex is line based, spanning multi-line regex statements is not supported."
                 }
             }
         },
