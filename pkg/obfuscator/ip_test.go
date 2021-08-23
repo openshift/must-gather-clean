@@ -94,6 +94,18 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			output: "version: 4.8.12",
 			report: map[string]string{},
 		},
+		{
+			name:   "excluded ipv4 address",
+			input:  "Listening on 0.0.0.0:8080",
+			output: "Listening on 0.0.0.0:8080",
+			report: map[string]string{},
+		},
+		{
+			name:   "excluded ipv6 address",
+			input:  "Listening on [::1]:8080",
+			output: "Listening on [::1]:8080",
+			report: map[string]string{},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic)
