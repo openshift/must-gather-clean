@@ -24,6 +24,11 @@ var (
 	ipv6re      = `([a-f0-9]{0,4}[:]){1,8}[a-f0-9]{1,4}`
 	ipv6Pattern = regexp.MustCompile(ipv6re)
 	ipv4Pattern = regexp.MustCompile(ipv4re)
+	excludedIPs = map[string]struct{}{
+		"127.0.0.1": {},
+		"0.0.0.0":   {},
+		"::1":       {},
+	}
 )
 
 type ipGenerator struct {
@@ -65,6 +70,11 @@ func (o *ipObfuscator) replace(s string) string {
 		ipMatches := pattern.FindAllString(output, -1)
 
 		for _, m := range ipMatches {
+			// if the match is in the exclude-list then do not replace.
+			if _, ok := excludedIPs[m]; ok {
+				continue
+			}
+
 			cleaned := strings.ReplaceAll(m, "-", ".")
 			if ip := net.ParseIP(cleaned); ip != nil {
 				var replacement string
