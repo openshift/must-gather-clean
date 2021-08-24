@@ -55,8 +55,8 @@ func (s *SimpleTracker) AddReplacement(original string, replacement string) {
 }
 
 func (s *SimpleTracker) GenerateIfAbsent(original string, key string, generator GenerateReplacement) string {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
+	s.lock.Lock()
+	defer s.lock.Unlock()
 	if val, ok := s.mapping[original]; ok {
 		return val
 	}
