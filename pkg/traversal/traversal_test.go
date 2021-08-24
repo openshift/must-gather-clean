@@ -85,12 +85,12 @@ func TestFileWalker(t *testing.T) {
 			writer := testOutputter(t)
 			reader, err := input.NewFSInput(filepath.Join(tc.inputDir, "mg"))
 			require.NoError(t, err)
-			walker, err := NewFileWalker(reader, writer, []obfuscator.Obfuscator{
-				noopObfuscator{replacements: map[string]string{"secret": "xxxxxx"}},
-			}, []omitter.Omitter{fileOmitter})
+			walker, err := NewFileWalker(reader, writer,
+				[]obfuscator.Obfuscator{
+					noopObfuscator{replacements: map[string]string{"secret": "xxxxxx"}},
+				}, []omitter.Omitter{fileOmitter}, 1)
 			require.NoError(t, err)
-			err = walker.Traverse()
-			require.NoError(t, err)
+			walker.Traverse()
 			contentBytes, err := ioutil.ReadFile(filepath.Join(tc.inputDir, "contents.yaml"))
 			require.NoError(t, err)
 			var contents testContents

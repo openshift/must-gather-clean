@@ -20,8 +20,10 @@ const (
 	reportFileName = "report.yaml"
 )
 
-func Run(configPath string, inputPath string, outputPath string, deleteOutputFolder bool, reportingFolder string) error {
-
+func Run(configPath string, inputPath string, outputPath string, deleteOutputFolder bool, reportingFolder string, workerCount int) error {
+	if workerCount < 1 {
+		return fmt.Errorf("invalid number of workers specified %d", workerCount)
+	}
 	err := output.EnsureOutputPath(outputPath, deleteOutputFolder)
 	if err != nil {
 		return fmt.Errorf("failed to ensure output folder: %w", err)
@@ -90,15 +92,12 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 	if err != nil {
 		return err
 	}
-	walker, err := traversal.NewFileWalker(reader, writer, obfuscators, omitters)
+	walker, err := traversal.NewFileWalker(reader, writer, obfuscators, omitters, workerCount)
 	if err != nil {
 		return err
 	}
 
-	err = walker.Traverse()
-	if err != nil {
-		return fmt.Errorf("failed to generate obfuscated output: %w", err)
-	}
+	walker.Traverse()
 
 	report := walker.GenerateReport()
 

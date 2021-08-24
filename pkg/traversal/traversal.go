@@ -1,33 +1,76 @@
 package traversal
 
 import (
-	"fmt"
 	"path/filepath"
 	"sort"
+	"sync"
+
+	"k8s.io/klog/v2"
 
 	"github.com/openshift/must-gather-clean/pkg/input"
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
 	"github.com/openshift/must-gather-clean/pkg/omitter"
 	"github.com/openshift/must-gather-clean/pkg/output"
-	"k8s.io/klog/v2"
 )
 
 type FileWalker struct {
-	reader       input.Inputter
-	obfuscators  []obfuscator.Obfuscator
-	omitters     []omitter.Omitter
-	writer       output.Outputter
-	omittedFiles map[string]struct{}
+	obfuscators []obfuscator.Obfuscator
+	omitters    []omitter.Omitter
+	reader      input.Inputter
+	workerCount int
+	workers     []*worker
+	writer      output.Outputter
 }
 
 // NewFileWalker returns a FileWalker. It ensures that the reader directory exists and is readable.
-func NewFileWalker(reader input.Inputter, writer output.Outputter, obfuscators []obfuscator.Obfuscator, omitters []omitter.Omitter) (*FileWalker, error) {
-	return &FileWalker{reader: reader, obfuscators: obfuscators, writer: writer, omitters: omitters, omittedFiles: map[string]struct{}{}}, nil
+func NewFileWalker(reader input.Inputter, writer output.Outputter, obfuscators []obfuscator.Obfuscator, omitters []omitter.Omitter, workerCount int) (*FileWalker, error) {
+	return &FileWalker{
+		obfuscators: obfuscators,
+		omitters:    omitters,
+		reader:      reader,
+		workerCount: workerCount,
+		writer:      writer,
+	}, nil
 }
 
 // Traverse should be called to start processing the reader directory.
-func (w *FileWalker) Traverse() error {
-	return w.processDir(w.reader.Root(), "")
+func (w *FileWalker) Traverse() {
+	wg := sync.WaitGroup{}
+	errorCh := make(chan error, w.workerCount)
+	queue := make(chan workerFile, w.workerCount)
+	w.workers = make([]*worker, w.workerCount)
+	for i := 0; i < w.workerCount; i++ {
+		wk := newWorker(i+1, w.obfuscators, w.omitters, queue, w.writer, errorCh)
+		w.workers[i] = wk
+		wg.Add(1)
+		go func() {
+			wk.run()
+			wg.Done()
+		}()
+	}
+
+	errorWg := sync.WaitGroup{}
+	errorWg.Add(1)
+	go func(errorCh <-chan error) {
+		for err := range errorCh {
+			switch e := err.(type) {
+			case *fileProcessingError:
+				klog.Exitf("failed to process %s due to %v", e.path, e.cause)
+			default:
+				klog.Exitf("unexpected error: %v", err)
+			}
+
+		}
+		errorWg.Done()
+	}(errorCh)
+
+	w.processDir(w.reader.Root(), "", queue, errorCh)
+	close(queue)
+	wg.Wait()
+
+	// once all the workers have exited close the error channel and wait for the exit goroutine to complete.
+	close(errorCh)
+	errorWg.Wait()
 }
 
 func (w *FileWalker) GenerateReport() *Report {
@@ -35,11 +78,11 @@ func (w *FileWalker) GenerateReport() *Report {
 	for _, o := range w.obfuscators {
 		report.Replacements = append(report.Replacements, o.ReportingResult())
 	}
-	omittedFiles := make([]string, len(w.omittedFiles))
-	var count int
-	for of := range w.omittedFiles {
-		omittedFiles[count] = of
-		count++
+	omittedFiles := make([]string, 0)
+	for _, w := range w.workers {
+		for of := range w.omittedFiles {
+			omittedFiles = append(omittedFiles, of)
+		}
 	}
 	// sorting helps humans review the file and ensuring test stability
 	sort.Strings(omittedFiles)
@@ -47,94 +90,26 @@ func (w *FileWalker) GenerateReport() *Report {
 	return report
 }
 
-func (w *FileWalker) processDir(inputDir input.Directory, outputDirName string) error {
+func (w *FileWalker) processDir(inputDir input.Directory, outputDirName string, queue chan<- workerFile, errorCh chan<- error) {
 	// list all the entities in the directory
 	entries, err := inputDir.Entries()
 	if err != nil {
-		return err
+		errorCh <- &fileProcessingError{
+			path:  inputDir.Path(),
+			cause: err,
+		}
+		return
 	}
 	for _, entry := range entries {
 		switch e := entry.(type) {
 		case input.Directory:
 			childDirOutput := filepath.Join(outputDirName, e.Name())
-			err = w.processDir(e, childDirOutput)
-			if err != nil {
-				return err
-			}
+			w.processDir(e, childDirOutput, queue, errorCh)
 		case input.File:
-
-			var omit bool
-			// verify if the file should be omitted
-			for _, o := range w.omitters {
-				omit, err = o.File(e.Name(), e.Path())
-				if err != nil {
-					return fmt.Errorf("failed to determine if %s should be omitted based on path: %w", e.Path(), err)
-				}
-				if omit {
-					w.omittedFiles[e.Path()] = struct{}{}
-					break
-				}
-				omit, err = o.Contents(e.AbsPath())
-				if err != nil {
-					return fmt.Errorf("failed to determine if %s should be omitted based on contents: %w", e.Path(), err)
-				}
-				if omit {
-					w.omittedFiles[e.Path()] = struct{}{}
-					break
-				}
+			queue <- workerFile{
+				f:         e,
+				outputDir: outputDirName,
 			}
-			// If the file should be omitted then stop processing.
-			if omit {
-				klog.V(2).Infof("omitting '%s'", e.Path())
-				continue
-			}
-
-			// obfuscate the name if required
-			newName := e.Name()
-			for _, o := range w.obfuscators {
-				newName = o.FileName(newName)
-				klog.V(2).Infof("obfuscating filename '%s' to '%s'", e.Name(), newName)
-			}
-
-			err := func() error {
-				writeCloser, writer, err := w.writer.Writer(outputDirName, newName, e.Permissions())
-				if err != nil {
-					return err
-				}
-				// close the output file when done
-				defer func() {
-					if err := writeCloser(); err != nil {
-						klog.Exitf("failed to successfully write file %s: %v", filepath.Join(outputDirName, newName), err)
-					}
-				}()
-
-				scanner, closeReader, err := e.Scanner()
-				if err != nil {
-					return err
-				}
-				defer func() {
-					if err := closeReader(); err != nil {
-						klog.Exitf("failed to close file %s after reading: %v", e.Path(), err)
-					}
-				}()
-				for scanner.Scan() {
-					contents := scanner.Text()
-					for _, o := range w.obfuscators {
-						contents = o.Contents(contents)
-					}
-					_, err = writer.WriteString(fmt.Sprintf("%s\n", contents))
-					if err != nil {
-						return err
-					}
-				}
-				return nil
-			}()
-			if err != nil {
-				return err
-			}
-
-			klog.V(2).Infof("done processing '%s'", e.Path())
 		}
 	}
-	return nil
 }
