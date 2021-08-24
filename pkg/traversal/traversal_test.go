@@ -33,7 +33,7 @@ func (d noopObfuscator) Contents(input string) string {
 	return input
 }
 
-func (d noopObfuscator) ReportingResult() map[string]string {
+func (d noopObfuscator) Report() map[string]string {
 	return d.replacements
 }
 

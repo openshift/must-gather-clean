@@ -6,6 +6,6 @@ type Obfuscator interface {
 	FileName(string) string
 	// Contents takes string as input and return the obfuscated string
 	Contents(string) string
-	// ReportingResult returns a map of words and their replacements
-	ReportingResult() map[string]string
+	// Report returns a map of words and their replacements
+	Report() map[string]string
 }

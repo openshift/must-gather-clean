@@ -76,7 +76,7 @@ func (w *FileWalker) Traverse() {
 func (w *FileWalker) GenerateReport() *Report {
 	report := &Report{}
 	for _, o := range w.obfuscators {
-		report.Replacements = append(report.Replacements, o.ReportingResult())
+		report.Replacements = append(report.Replacements, o.Report())
 	}
 	omittedFiles := make([]string, 0)
 	for _, w := range w.workers {

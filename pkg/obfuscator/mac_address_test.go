@@ -10,7 +10,7 @@ import (
 func TestMacReplacementHappyPath(t *testing.T) {
 	o := NewMacAddressObfuscator()
 	assert.Equal(t, StaticMacReplacement, o.Contents("29-7E-8C-8C-60-C9"))
-	assert.Equal(t, map[string]string{"29-7E-8C-8C-60-C9": StaticMacReplacement}, o.ReportingResult())
+	assert.Equal(t, map[string]string{"29-7E-8C-8C-60-C9": StaticMacReplacement}, o.Report())
 }
 
 func TestMacReplacementManyMatchLine(t *testing.T) {
@@ -22,7 +22,7 @@ func TestMacReplacementManyMatchLine(t *testing.T) {
 		"eb:a1:2a:b2:09:bf": StaticMacReplacement,
 		"29-7E-8C-8C-60-C9": StaticMacReplacement,
 		"eb-a1-2a-b2-09-bf": StaticMacReplacement,
-	}, o.ReportingResult())
+	}, o.Report())
 }
 
 func TestMacReplacementSuper(t *testing.T) {

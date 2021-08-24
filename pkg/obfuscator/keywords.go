@@ -1,29 +1,31 @@
 package obfuscator
 
-import "strings"
+import (
+	"strings"
+)
 
 type keywordsObfuscator struct {
-	ReplacementReporter
+	ReplacementTracker
 	replacements map[string]string
 }
 
-func (o *keywordsObfuscator) ReportingResult() map[string]string {
-	return o.ReplacementReporter.ReportingResult()
+func (o *keywordsObfuscator) Report() map[string]string {
+	return o.ReplacementTracker.Report()
 }
 
 func (o *keywordsObfuscator) FileName(name string) string {
-	return replace(name, o.replacements, o.ReplacementReporter)
+	return replace(name, o.replacements, o.ReplacementTracker)
 }
 
 func (o *keywordsObfuscator) Contents(contents string) string {
-	return replace(contents, o.replacements, o.ReplacementReporter)
+	return replace(contents, o.replacements, o.ReplacementTracker)
 }
 
-func replace(name string, replacements map[string]string, reporter ReplacementReporter) string {
+func replace(name string, replacements map[string]string, reporter ReplacementTracker) string {
 	for keyword, replacement := range replacements {
 		if strings.Contains(name, keyword) {
 			name = strings.Replace(name, keyword, replacement, -1)
-			reporter.ReportReplacement(keyword, replacement)
+			reporter.AddReplacement(keyword, replacement)
 		}
 	}
 	return name
@@ -33,7 +35,7 @@ func replace(name string, replacements map[string]string, reporter ReplacementRe
 // passed to it with the value of the key.
 func NewKeywordsObfuscator(replacements map[string]string) Obfuscator {
 	return &keywordsObfuscator{
-		ReplacementReporter: NewSimpleReporter(),
-		replacements:        replacements,
+		ReplacementTracker: NewSimpleTracker(),
+		replacements:       replacements,
 	}
 }

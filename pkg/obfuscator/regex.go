@@ -9,7 +9,7 @@ import (
 )
 
 type regexObfuscator struct {
-	ReplacementReporter
+	ReplacementTracker
 	pattern  *regexp.Regexp
 	location schema.ObfuscateTarget
 }
@@ -34,7 +34,7 @@ func (r *regexObfuscator) replace(input string) string {
 	for _, m := range matches {
 		replacement := strings.Repeat("x", len(m))
 		output = strings.ReplaceAll(output, m, replacement)
-		r.ReportReplacement(m, replacement)
+		r.AddReplacement(m, replacement)
 	}
 	return output
 }
@@ -45,8 +45,8 @@ func NewRegexObfuscator(pattern string, replacementLocation schema.ObfuscateTarg
 		return nil, fmt.Errorf("pattern %s is invalid: %w", pattern, err)
 	}
 	return &regexObfuscator{
-		pattern:             regex,
-		location:            replacementLocation,
-		ReplacementReporter: NewSimpleReporter(),
+		pattern:            regex,
+		location:           replacementLocation,
+		ReplacementTracker: NewSimpleTracker(),
 	}, nil
 }
