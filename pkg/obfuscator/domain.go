@@ -12,7 +12,7 @@ const (
 )
 
 type domainObfuscator struct {
-	ReplacementReporter
+	ReplacementTracker
 	domainCount    int
 	domainPatterns []*regexp.Regexp
 	domainMapping  map[string]string
@@ -44,7 +44,7 @@ func (d *domainObfuscator) replaceDomains(input string) string {
 				replacement = obfuscatedBaseDomain
 			}
 			output = strings.ReplaceAll(output, m[0], replacement)
-			d.ReportReplacement(m[0], replacement)
+			d.AddReplacement(m[0], replacement)
 		}
 	}
 	return output
@@ -71,8 +71,8 @@ func NewDomainObfuscator(domains []string) (Obfuscator, error) {
 		patterns[i] = p
 	}
 	return &domainObfuscator{
-		ReplacementReporter: NewSimpleReporter(),
-		domainPatterns:      patterns,
-		domainMapping:       map[string]string{},
+		ReplacementTracker: NewSimpleTracker(),
+		domainPatterns:     patterns,
+		domainMapping:      map[string]string{},
 	}, nil
 }

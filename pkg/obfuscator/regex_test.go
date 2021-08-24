@@ -48,7 +48,7 @@ func TestRegexObfuscator(t *testing.T) {
 			require.NoError(t, err)
 			output := o.Contents(tc.input)
 			assert.Equal(t, tc.output, output)
-			assert.Equal(t, tc.report, o.ReportingResult())
+			assert.Equal(t, tc.report, o.Report())
 		})
 	}
 }

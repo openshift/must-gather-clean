@@ -86,7 +86,7 @@ func TestDomainObfuscatorContents(t *testing.T) {
 				output := o.Contents(i)
 				assert.Equal(t, tc.output[idx], output)
 			}
-			assert.Equal(t, tc.report, o.ReportingResult())
+			assert.Equal(t, tc.report, o.Report())
 		})
 	}
 }
@@ -121,7 +121,7 @@ func TestDomainObfuscator_FileName(t *testing.T) {
 			require.NoError(t, err)
 			output := o.FileName(tc.input)
 			assert.Equal(t, tc.output, output)
-			assert.Equal(t, tc.report, o.ReportingResult())
+			assert.Equal(t, tc.report, o.Report())
 		})
 	}
 }

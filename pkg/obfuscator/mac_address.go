@@ -8,7 +8,7 @@ import (
 const StaticMacReplacement = "xx:xx:xx:xx:xx:xx"
 
 type macAddressObfuscator struct {
-	ReplacementReporter
+	ReplacementTracker
 	regex *regexp.Regexp
 }
 
@@ -20,13 +20,13 @@ func (m *macAddressObfuscator) Contents(s string) string {
 	matches := m.regex.FindAllString(s, -1)
 	for _, match := range matches {
 		s = strings.Replace(s, match, StaticMacReplacement, -1)
-		m.ReplacementReporter.ReportReplacement(match, StaticMacReplacement)
+		m.ReplacementTracker.AddReplacement(match, StaticMacReplacement)
 	}
 	return s
 }
 
-func (m *macAddressObfuscator) ReportingResult() map[string]string {
-	return m.ReplacementReporter.ReportingResult()
+func (m *macAddressObfuscator) Report() map[string]string {
+	return m.ReplacementTracker.Report()
 }
 
 func NewMacAddressObfuscator() Obfuscator {
@@ -34,9 +34,9 @@ func NewMacAddressObfuscator() Obfuscator {
 	// the main culprit is the support for squashed MACs like '69806FE67C05', which won't be supported with the below
 	regex := regexp.MustCompile(`([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}`)
 
-	reporter := NewSimpleReporter()
+	reporter := NewSimpleTracker()
 	return &macAddressObfuscator{
-		ReplacementReporter: reporter,
-		regex:               regex,
+		ReplacementTracker: reporter,
+		regex:              regex,
 	}
 }

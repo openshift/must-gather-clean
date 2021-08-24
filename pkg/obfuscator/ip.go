@@ -5,10 +5,10 @@ import (
 	"net"
 	"regexp"
 	"strings"
-	"sync"
+
+	"k8s.io/klog/v2"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
-	"k8s.io/klog/v2"
 )
 
 const (
@@ -32,61 +32,31 @@ var (
 	}
 )
 
+// ipGenerator generates templated static and consistent obfuscated IP address. The caller should ensure that the
+// generator is not called concurrently.
 type ipGenerator struct {
-	ipReplacements map[string]string
-	template       string
-	obfuscated     string
-	count          int
-	lock           sync.RWMutex
+	template   string
+	obfuscated string
+	count      int
 }
 
-func (g *ipGenerator) consistent(ip string) string {
-	g.lock.Lock()
-	defer g.lock.Unlock()
-
-	if r, ok := g.ipReplacements[ip]; ok {
-		return r
-	}
-
+func (g *ipGenerator) consistent(_ string) string {
 	g.count++
 	if g.count > maximumSupportedObfuscations {
 		klog.Exitf("maximum number of ip obfuscations exceeded: %d", maximumSupportedObfuscations)
 	}
 	r := fmt.Sprintf(g.template, g.count)
-	g.ipReplacements[ip] = r
 	return r
 }
 
-func (g *ipGenerator) static(ip string) string {
-	g.lock.Lock()
-	defer g.lock.Unlock()
-	g.ipReplacements[ip] = g.obfuscated
+func (g *ipGenerator) static(_ string) string {
 	return g.obfuscated
 }
 
-func (g *ipGenerator) replacements() map[string]string {
-	g.lock.RLock()
-	defer g.lock.RUnlock()
-	rCopy := make(map[string]string)
-	for k, v := range g.ipReplacements {
-		rCopy[k] = v
-	}
-	return rCopy
-}
-
 type ipObfuscator struct {
+	ReplacementTracker
 	replacements    map[*regexp.Regexp]*ipGenerator
 	replacementType schema.ObfuscateReplacementType
-}
-
-func (o *ipObfuscator) ReportingResult() map[string]string {
-	result := make(map[string]string)
-	for _, replacers := range o.replacements {
-		for k, v := range replacers.replacements() {
-			result[k] = v
-		}
-	}
-	return result
 }
 
 func (o *ipObfuscator) FileName(s string) string {
@@ -114,9 +84,9 @@ func (o *ipObfuscator) replace(s string) string {
 				var replacement string
 				switch o.replacementType {
 				case schema.ObfuscateReplacementTypeStatic:
-					replacement = gen.static(m)
+					replacement = o.GenerateIfAbsent(m, cleaned, gen.static)
 				case schema.ObfuscateReplacementTypeConsistent:
-					replacement = gen.consistent(m)
+					replacement = o.GenerateIfAbsent(m, cleaned, gen.consistent)
 				}
 				output = strings.ReplaceAll(output, m, replacement)
 			}
@@ -130,9 +100,10 @@ func NewIPObfuscator(replacementType schema.ObfuscateReplacementType) (Obfuscato
 		return nil, fmt.Errorf("unsupported replacement type: %s", replacementType)
 	}
 	return &ipObfuscator{
+		ReplacementTracker: NewSimpleTracker(),
 		replacements: map[*regexp.Regexp]*ipGenerator{
-			ipv4Pattern: {template: consistentIPv4Template, obfuscated: obfuscatedStaticIPv4, ipReplacements: map[string]string{}},
-			ipv6Pattern: {template: consistentIPv6Template, obfuscated: obfuscatedStaticIPv6, ipReplacements: map[string]string{}},
+			ipv4Pattern: {template: consistentIPv4Template, obfuscated: obfuscatedStaticIPv4},
+			ipv6Pattern: {template: consistentIPv6Template, obfuscated: obfuscatedStaticIPv6},
 		},
 		replacementType: replacementType,
 	}, nil

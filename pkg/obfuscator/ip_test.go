@@ -112,7 +112,7 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			assert.NoError(t, err)
 			output := o.Contents(tc.input)
 			assert.Equal(t, tc.output, output)
-			assert.Equal(t, tc.report, o.ReportingResult())
+			assert.Equal(t, tc.report, o.Report())
 		})
 	}
 }
@@ -213,7 +213,7 @@ func TestIPObfuscatorConsistent(t *testing.T) {
 			for i := 0; i < len(tc.input); i++ {
 				assert.Equal(t, tc.output[i], o.Contents(tc.input[i]))
 			}
-			assert.Equal(t, tc.report, o.ReportingResult())
+			assert.Equal(t, tc.report, o.Report())
 		})
 	}
 }
