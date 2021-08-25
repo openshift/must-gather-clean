@@ -111,7 +111,12 @@ metadata:
     namespace: kube-system
     name: 192.178.1.2
 `,
-			output:       "apiVersion: v1\nkind: Secret\nmetadata:\n    namespace: kube-system\n    name: xxx.xxx.xxx.xxx\n",
+			output: `apiVersion: v1
+kind: Secret
+metadata:
+    namespace: kube-system
+    name: xxx.xxx.xxx.xxx
+`,
 			obfuscators:  []obfuscator.Obfuscator{noErrorIpObfuscator(t)},
 			fileOmitters: []omitter.FileOmitter{},
 			k8sOmitters:  []omitter.KubernetesResourceOmitter{},
@@ -125,7 +130,13 @@ metadata:
     name: just a name
     192.178.1.2: as a key? unheard of in the land of dns names
 `,
-			output:       "apiVersion: v1\nkind: Secret\nmetadata:\n    namespace: kube-system\n    name: just a name\n    xxx.xxx.xxx.xxx: as a key? unheard of in the land of dns names\n",
+			output: `apiVersion: v1
+kind: Secret
+metadata:
+    namespace: kube-system
+    name: just a name
+    xxx.xxx.xxx.xxx: as a key? unheard of in the land of dns names
+`,
 			obfuscators:  []obfuscator.Obfuscator{noErrorIpObfuscator(t)},
 			fileOmitters: []omitter.FileOmitter{},
 			k8sOmitters:  []omitter.KubernetesResourceOmitter{},

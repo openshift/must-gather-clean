@@ -91,6 +91,7 @@ func (w *worker) run() {
 					path:  wf.f.Path(),
 					cause: err,
 				}
+				continue
 			}
 		}
 
@@ -127,6 +128,7 @@ func (w *worker) run() {
 				path:  wf.f.Path(),
 				cause: err,
 			}
+			continue
 		}
 		klog.V(3).Infof("[worker %02d] Finished processing %s\n", w.id, wf.f.Path())
 	}

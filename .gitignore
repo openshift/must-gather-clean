@@ -1,8 +1,5 @@
 # Binary
-must-gather-clean
-
-# unignore the folder that has the same name as the binary above
-!/cmd/**
+/must-gather-clean
 
 # Goland IDE
 .idea
