@@ -62,7 +62,8 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 		}
 	}
 
-	var omitters []omitter.Omitter
+	var fileOmitters []omitter.FileOmitter
+	var k8sOmitters []omitter.KubernetesResourceOmitter
 	for _, o := range config.Config.Omit {
 		switch o.Type {
 		case schema.OmitTypeFile:
@@ -70,7 +71,7 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 			if err != nil {
 				return err
 			}
-			omitters = append(omitters, om)
+			fileOmitters = append(fileOmitters, om)
 		case schema.OmitTypeKubernetes:
 			if o.KubernetesResource == nil {
 				klog.Exitf("type Kubernetes must also include a 'kubernetesResource'. Given: %v", o)
@@ -80,7 +81,7 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 			if err != nil {
 				return err
 			}
-			omitters = append(omitters, om)
+			k8sOmitters = append(k8sOmitters, om)
 		}
 	}
 
@@ -92,7 +93,7 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 	if err != nil {
 		return err
 	}
-	walker, err := traversal.NewFileWalker(reader, writer, obfuscators, omitters, workerCount)
+	walker, err := traversal.NewFileWalker(reader, writer, obfuscators, fileOmitters, k8sOmitters, workerCount)
 	if err != nil {
 		return err
 	}

@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/openshift/must-gather-clean/pkg/schema"
 	"github.com/stretchr/testify/require"
 
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
@@ -52,44 +53,119 @@ type errOmitter struct {
 	err      error
 }
 
-func (e *errOmitter) File(_, _ string) (bool, error) {
+func (e *errOmitter) Omit(_, _ string) (bool, error) {
 	if !e.contents {
 		return false, e.err
 	}
 	return false, nil
 }
 
-func (e *errOmitter) Contents(_ string) (bool, error) {
-	if e.contents {
-		return false, e.err
-	}
-	return false, nil
+func pString(s string) *string {
+	return &s
+}
+
+func noErrorIpObfuscator(t *testing.T) obfuscator.Obfuscator {
+	ipObfuscator, err := obfuscator.NewIPObfuscator(schema.ObfuscateReplacementTypeStatic)
+	require.NoError(t, err)
+	return ipObfuscator
+}
+
+func noErrorK8sSecretOmitter(t *testing.T) omitter.KubernetesResourceOmitter {
+	resourceOmitter, err := omitter.NewKubernetesResourceOmitter(pString("v1"), pString("Secret"), nil)
+	require.NoError(t, err)
+	return resourceOmitter
 }
 
 func TestWorker(t *testing.T) {
 	for _, tc := range []struct {
-		name        string
-		output      string
-		input       string
-		obfuscators []obfuscator.Obfuscator
-		omitter     []omitter.Omitter
-		err         error
+		name             string
+		output           string
+		input            string
+		obfuscators      []obfuscator.Obfuscator
+		fileOmitters     []omitter.FileOmitter
+		k8sOmitters      []omitter.KubernetesResourceOmitter
+		expectedOmission bool
+		err              error
 	}{
 		{
-			name:        "simple",
-			input:       "test",
-			output:      "test\n",
-			obfuscators: []obfuscator.Obfuscator{noopObfuscator{}},
-			omitter:     []omitter.Omitter{},
+			name:         "simple",
+			input:        "test",
+			output:       "test\n",
+			obfuscators:  []obfuscator.Obfuscator{noopObfuscator{}},
+			fileOmitters: []omitter.FileOmitter{},
+			k8sOmitters:  []omitter.KubernetesResourceOmitter{},
+		},
+		{
+			name:         "simple ip obfuscation",
+			input:        "there is some cow on 192.178.1.2, what do I do?",
+			output:       "there is some cow on xxx.xxx.xxx.xxx, what do I do?\n",
+			obfuscators:  []obfuscator.Obfuscator{noErrorIpObfuscator(t)},
+			fileOmitters: []omitter.FileOmitter{},
+			k8sOmitters:  []omitter.KubernetesResourceOmitter{},
+		},
+		{
+			name: "ip obfuscated in yaml when its in a k8s resource",
+			input: `apiVersion: v1
+kind: Secret
+metadata:
+    namespace: kube-system
+    name: 192.178.1.2
+`,
+			output: `apiVersion: v1
+kind: Secret
+metadata:
+    namespace: kube-system
+    name: xxx.xxx.xxx.xxx
+`,
+			obfuscators:  []obfuscator.Obfuscator{noErrorIpObfuscator(t)},
+			fileOmitters: []omitter.FileOmitter{},
+			k8sOmitters:  []omitter.KubernetesResourceOmitter{},
+		},
+		{
+			name: "ip obfuscated in yaml when its in a k8s resource as a key",
+			input: `apiVersion: v1
+kind: Secret
+metadata:
+    namespace: kube-system
+    name: just a name
+    192.178.1.2: as a key? unheard of in the land of dns names
+`,
+			output: `apiVersion: v1
+kind: Secret
+metadata:
+    namespace: kube-system
+    name: just a name
+    xxx.xxx.xxx.xxx: as a key? unheard of in the land of dns names
+`,
+			obfuscators:  []obfuscator.Obfuscator{noErrorIpObfuscator(t)},
+			fileOmitters: []omitter.FileOmitter{},
+			k8sOmitters:  []omitter.KubernetesResourceOmitter{},
+		},
+		{
+			name: "ip not obfuscated because secret k8s resource is omitted",
+			input: `apiVersion: v1
+kind: Secret
+metadata:
+    namespace: kube-system
+    name: 192.178.1.2
+`,
+			obfuscators:      []obfuscator.Obfuscator{noErrorIpObfuscator(t)},
+			fileOmitters:     []omitter.FileOmitter{},
+			k8sOmitters:      []omitter.KubernetesResourceOmitter{noErrorK8sSecretOmitter(t)},
+			output:           "",
+			expectedOmission: true,
 		},
 		{
 			name:        "error omitters",
 			obfuscators: []obfuscator.Obfuscator{noopObfuscator{}},
-			omitter: []omitter.Omitter{&errOmitter{
-				contents: false,
-				err:      errors.New("omitter error"),
-			}},
-			err: errors.New("omitter error"),
+			fileOmitters: []omitter.FileOmitter{
+				&errOmitter{
+					contents: false,
+					err:      errors.New("omitter error"),
+				},
+			},
+			k8sOmitters: []omitter.KubernetesResourceOmitter{},
+			err:         errors.New("omitter error"),
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -110,7 +186,7 @@ func TestWorker(t *testing.T) {
 			workerQueue := make(chan workerFile, 1)
 			errorCh := make(chan error, 1)
 			o := testOutputter(t)
-			w := newWorker(1, tc.obfuscators, tc.omitter, workerQueue, o, errorCh)
+			w := newWorker(1, tc.obfuscators, tc.fileOmitters, tc.k8sOmitters, workerQueue, o, errorCh)
 			workerQueue <- workerFile{
 				f: &testInputFile{
 					relPath: "test.yaml",
@@ -137,6 +213,10 @@ func TestWorker(t *testing.T) {
 					path:  "test.yaml",
 					cause: tc.err,
 				}, err)
+			}
+
+			if tc.expectedOmission {
+				require.Contains(t, w.omittedFiles, "test.yaml")
 			}
 		})
 	}

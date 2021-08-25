@@ -5,11 +5,11 @@ import (
 	"path/filepath"
 )
 
-type fileOmitter struct {
+type filePatternOmitter struct {
 	filePattern string
 }
 
-func (f *fileOmitter) File(name, path string) (bool, error) {
+func (f *filePatternOmitter) Omit(name, path string) (bool, error) {
 	match, err := filepath.Match(f.filePattern, path)
 	// if there is a match or an error return now
 	if match || err != nil {
@@ -19,14 +19,10 @@ func (f *fileOmitter) File(name, path string) (bool, error) {
 	return filepath.Match(f.filePattern, name)
 }
 
-func (f *fileOmitter) Contents(_ string) (bool, error) {
-	return false, nil
-}
-
 // NewFilenamePatternOmitter return an omitter which omits files based on a globbing pattern.
-func NewFilenamePatternOmitter(pattern string) (Omitter, error) {
+func NewFilenamePatternOmitter(pattern string) (FileOmitter, error) {
 	if pattern == "" {
 		return nil, errors.New("pattern for file omitter cannot be empty")
 	}
-	return &fileOmitter{filePattern: pattern}, nil
+	return &filePatternOmitter{filePattern: pattern}, nil
 }

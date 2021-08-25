@@ -14,22 +14,29 @@ import (
 )
 
 type FileWalker struct {
-	obfuscators []obfuscator.Obfuscator
-	omitters    []omitter.Omitter
-	reader      input.Inputter
-	workerCount int
-	workers     []*worker
-	writer      output.Outputter
+	obfuscators  []obfuscator.Obfuscator
+	fileOmitters []omitter.FileOmitter
+	k8sOmitters  []omitter.KubernetesResourceOmitter
+	reader       input.Inputter
+	workerCount  int
+	workers      []*worker
+	writer       output.Outputter
 }
 
 // NewFileWalker returns a FileWalker. It ensures that the reader directory exists and is readable.
-func NewFileWalker(reader input.Inputter, writer output.Outputter, obfuscators []obfuscator.Obfuscator, omitters []omitter.Omitter, workerCount int) (*FileWalker, error) {
+func NewFileWalker(reader input.Inputter,
+	writer output.Outputter,
+	obfuscators []obfuscator.Obfuscator,
+	fileOmitters []omitter.FileOmitter,
+	k8sOmitters []omitter.KubernetesResourceOmitter,
+	workerCount int) (*FileWalker, error) {
 	return &FileWalker{
-		obfuscators: obfuscators,
-		omitters:    omitters,
-		reader:      reader,
-		workerCount: workerCount,
-		writer:      writer,
+		obfuscators:  obfuscators,
+		fileOmitters: fileOmitters,
+		k8sOmitters:  k8sOmitters,
+		reader:       reader,
+		workerCount:  workerCount,
+		writer:       writer,
 	}, nil
 }
 
@@ -40,7 +47,7 @@ func (w *FileWalker) Traverse() {
 	queue := make(chan workerFile, w.workerCount)
 	w.workers = make([]*worker, w.workerCount)
 	for i := 0; i < w.workerCount; i++ {
-		wk := newWorker(i+1, w.obfuscators, w.omitters, queue, w.writer, errorCh)
+		wk := newWorker(i+1, w.obfuscators, w.fileOmitters, w.k8sOmitters, queue, w.writer, errorCh)
 		w.workers[i] = wk
 		wg.Add(1)
 		go func() {

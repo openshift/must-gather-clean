@@ -43,7 +43,7 @@ func TestFileOmitter(t *testing.T) {
 			omitter, err := NewFilenamePatternOmitter(tc.pattern)
 			require.NoError(t, err)
 			parts := strings.Split(tc.input, "/")
-			omit, err := omitter.File(parts[len(parts)-1], tc.input)
+			omit, err := omitter.Omit(parts[len(parts)-1], tc.input)
 			require.NoError(t, err)
 			require.Equal(t, tc.expected, omit)
 		})
