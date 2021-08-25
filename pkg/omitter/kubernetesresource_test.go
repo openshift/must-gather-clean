@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/openshift/must-gather-clean/pkg/kube"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -146,16 +147,6 @@ metadata:
 			omit:       false,
 		},
 		{
-
-			name: "non resource kind",
-			resource: `key1:value1
-key2:value2
-`,
-			kind:       "Secret",
-			apiVersion: "v1",
-			omit:       false,
-		},
-		{
 			name: "resource list all match",
 			resource: `---
 apiVersion: v1
@@ -229,10 +220,14 @@ items:
 			require.NoError(t, err)
 			err = file.Close()
 			require.NoError(t, err)
-			require.NoError(t, err)
+
 			omitter, err := NewKubernetesResourceOmitter(&tc.apiVersion, &tc.kind, tc.namespaces)
 			require.NoError(t, err)
-			omit, err := omitter.Contents(file.Name())
+
+			resourceList, err := kube.ReadKubernetesResourceFromPath(file.Name())
+			require.NoError(t, err)
+
+			omit, err := omitter.Omit(resourceList)
 			require.NoError(t, err)
 			require.Equal(t, tc.omit, omit)
 		})

@@ -3,6 +3,7 @@ package traversal
 import (
 	"fmt"
 
+	"github.com/openshift/must-gather-clean/pkg/kube"
 	"k8s.io/klog/v2"
 
 	"github.com/openshift/must-gather-clean/pkg/input"
@@ -32,19 +33,27 @@ type workerFile struct {
 type worker struct {
 	id           int
 	obfuscators  []obfuscator.Obfuscator
-	omitters     []omitter.Omitter
+	fileOmitters []omitter.FileOmitter
+	k8sOmitters  []omitter.KubernetesResourceOmitter
 	queue        <-chan workerFile
 	omittedFiles map[string]struct{}
 	writer       output.Outputter
 	errorCh      chan<- error
 }
 
-func newWorker(id int, obfuscators []obfuscator.Obfuscator, omitters []omitter.Omitter, queue <-chan workerFile, writer output.Outputter, errorCh chan<- error) *worker {
+func newWorker(id int,
+	obfuscators []obfuscator.Obfuscator,
+	fileOmitters []omitter.FileOmitter,
+	k8sOmitters []omitter.KubernetesResourceOmitter,
+	queue <-chan workerFile,
+	writer output.Outputter,
+	errorCh chan<- error) *worker {
 	return &worker{
 		id:           id,
 		obfuscators:  obfuscators,
 		omittedFiles: map[string]struct{}{},
-		omitters:     omitters,
+		fileOmitters: fileOmitters,
+		k8sOmitters:  k8sOmitters,
 		queue:        queue,
 		writer:       writer,
 		errorCh:      errorCh,
@@ -56,7 +65,7 @@ func (w *worker) run() {
 		klog.V(3).Infof("[worker %02d] Processing %s\n", w.id, wf.f.Path())
 
 		// check if the file should be omitted
-		omit, err := w.shouldOmit(wf.f)
+		omit, err := w.shouldOmitFile(wf.f)
 		if err != nil {
 			w.errorCh <- &fileProcessingError{
 				path:  wf.f.Path(),
@@ -70,6 +79,36 @@ func (w *worker) run() {
 			w.omittedFiles[wf.f.Path()] = struct{}{}
 			klog.V(2).Infof("[worker %02d] Omitting file %s", w.id, wf.f.Path())
 			continue
+		}
+
+		isKubernetesResource := true
+		kubeResource, err := kube.ReadKubernetesResourceFromPath(wf.f.AbsPath())
+		if err != nil {
+			if err == kube.NoKubernetesResourceError {
+				isKubernetesResource = false
+			} else {
+				w.errorCh <- &fileProcessingError{
+					path:  wf.f.Path(),
+					cause: err,
+				}
+			}
+		}
+
+		if isKubernetesResource {
+			omit, err := w.shouldOmitK8sResource(kubeResource)
+			if err != nil {
+				w.errorCh <- &fileProcessingError{
+					path:  wf.f.Path(),
+					cause: err,
+				}
+				continue
+			}
+
+			if omit {
+				w.omittedFiles[wf.f.Path()] = struct{}{}
+				klog.V(2).Infof("[worker %02d] Omitting k8s resource %s", w.id, wf.f.Path())
+				continue
+			}
 		}
 
 		// obfuscate the name if required
@@ -93,16 +132,22 @@ func (w *worker) run() {
 	}
 }
 
-func (w *worker) shouldOmit(f input.File) (bool, error) {
-	for _, o := range w.omitters {
-		omit, err := o.File(f.Name(), f.Path())
+func (w *worker) shouldOmitFile(f input.File) (bool, error) {
+	for _, o := range w.fileOmitters {
+		omit, err := o.Omit(f.Name(), f.Path())
 		if err != nil {
 			return false, err
 		}
 		if omit {
 			return true, nil
 		}
-		omit, err = o.Contents(f.AbsPath())
+	}
+	return false, nil
+}
+
+func (w *worker) shouldOmitK8sResource(resource *kube.ResourceList) (bool, error) {
+	for _, o := range w.k8sOmitters {
+		omit, err := o.Omit(resource)
 		if err != nil {
 			return false, err
 		}

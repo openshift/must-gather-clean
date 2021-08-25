@@ -88,7 +88,7 @@ func TestFileWalker(t *testing.T) {
 			walker, err := NewFileWalker(reader, writer,
 				[]obfuscator.Obfuscator{
 					noopObfuscator{replacements: map[string]string{"secret": "xxxxxx"}},
-				}, []omitter.Omitter{fileOmitter}, 1)
+				}, []omitter.FileOmitter{fileOmitter}, []omitter.KubernetesResourceOmitter{}, 1)
 			require.NoError(t, err)
 			walker.Traverse()
 			contentBytes, err := ioutil.ReadFile(filepath.Join(tc.inputDir, "contents.yaml"))

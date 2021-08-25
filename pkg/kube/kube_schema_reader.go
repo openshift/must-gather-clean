@@ -1,0 +1,53 @@
+package kube
+
+import (
+	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"strings"
+
+	"gopkg.in/yaml.v2"
+)
+
+var NoKubernetesResourceError = errors.New("not a k8s resource")
+
+// ReadKubernetesResourceFromPath tries to read a kubernetes resource from the file.
+// it will return a NoKubernetesResourceError in case it's not a yml/yaml or json file or when it is not able to parse it into a known schema.
+// Otherwise, it will always return a list resource which either contains the list of the advertised Kind and ApiVersion (which is set then),
+// or alternatively just a single Item with Kind and ApiVersion being empty.
+func ReadKubernetesResourceFromPath(path string) (*ResourceList, error) {
+	var unmarshaller ResourceUnmarshaller
+	switch {
+	case strings.HasSuffix(path, ".yml") || strings.HasSuffix(path, ".yaml"):
+		unmarshaller = yaml.Unmarshal
+	case strings.HasSuffix(path, ".json"):
+		unmarshaller = json.Unmarshal
+	default:
+		return nil, NoKubernetesResourceError
+	}
+
+	input, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var resource Resource
+	err = unmarshaller(input, &resource)
+	if err != nil {
+		// this means that the input is not a kubernetes resource
+		return nil, NoKubernetesResourceError
+	}
+
+	var resourceList ResourceList
+	// check if the input was a list type
+	if strings.HasSuffix(resource.Kind, "List") && resource.ApiVersion == "v1" {
+		err = unmarshaller(input, &resourceList)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		resourceList = ResourceList{Items: []Resource{resource}}
+	}
+
+	return &resourceList, nil
+}
