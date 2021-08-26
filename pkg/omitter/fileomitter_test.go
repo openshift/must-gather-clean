@@ -38,6 +38,12 @@ func TestFileOmitter(t *testing.T) {
 			input:    "release-4.10/ingress_controllers/pod1/haproxy.conf",
 			expected: true,
 		},
+		{
+			name:     "real world sdn glob",
+			pattern:  "*/namespaces/openshift-sdn/pods/*/*/*/logs/*.log",
+			input:    "quay-io-openshift-release-dev-ocp-v4-0-art-dev-sha256-47c2f751ab0d5ee88e2826749f1372e6a24db3d0c0c942136ae84db17cb7f086/namespaces/openshift-sdn/pods/ovn-2vqtd/openvswitch/openvswitch/logs/current.log",
+			expected: true,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			omitter, err := NewFilenamePatternOmitter(tc.pattern)
