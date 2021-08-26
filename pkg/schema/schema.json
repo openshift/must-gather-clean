@@ -90,6 +90,10 @@
                             {
                                 "type": "File",
                                 "pattern": "release-4.10/ingress_controllers/*/haproxy.*"
+                            },
+                            {
+                                "type": "File",
+                                "pattern": "*/namespaces/openshift-sdn/pods/*/openvswitch/openvswitch/logs/current.log"
                             }
                         ]
                     ],

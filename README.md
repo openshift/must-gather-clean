@@ -19,7 +19,12 @@ The cleaned must-gather can then be found in the `must-gather-output-cleaned` fo
 # Configuration
 
 A very basic default configuration you can supply as the above `-c` flag for OpenShift can be found
-under [examples/openshift_default.yaml](examples/openshift_default.yaml).
+under [examples/openshift_default.yaml](examples/openshift_default.yaml). 
+
+In any case, if you want to obfuscate your domain names (e.g. DNS entries), then you have to adjust the list of `domainNames` to include yours.
+
+In case you don't need networking or SDN information in the must-gather, you can run the configuration under [examples/openshift_omit_network.yaml](examples/openshift_omit_network.yaml). 
+This will ignore the largest files that also take a long time to obfuscate.
 
 The fully supported schema defined in [JSON schema](https://json-schema.org/)
 can be found in [schema.json](pkg/schema/schema.json) along with examples and documentation. A more browsable
