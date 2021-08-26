@@ -12,6 +12,7 @@ type Directory interface {
 }
 
 type File interface {
+	// Path returns the relative path to the file from the must-gather root.
 	Path() string
 	Name() string
 	Permissions() os.FileMode

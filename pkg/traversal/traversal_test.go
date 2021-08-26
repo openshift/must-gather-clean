@@ -25,7 +25,7 @@ func (d noopObfuscator) GetReplacement(original string) string {
 	return original
 }
 
-func (d noopObfuscator) FileName(input string) string {
+func (d noopObfuscator) Path(input string) string {
 	return input
 }
 
@@ -55,12 +55,11 @@ type memoryOutputter struct {
 	Files map[string]inMemfile
 }
 
-func (m *memoryOutputter) Writer(parent string, name string, permissions os.FileMode) (output.Closer, io.StringWriter, error) {
-	filePath := filepath.Join(parent, name)
-	require.NotContains(m.t, m.Files, filePath)
+func (m *memoryOutputter) Writer(relPath string, permissions os.FileMode) (output.Closer, io.StringWriter, error) {
+	require.NotContains(m.t, m.Files, relPath)
 	buffer := &bytes.Buffer{}
 	return func() error {
-		m.Files[filePath] = inMemfile{Contents: buffer.String(), Permissions: permissions.Perm()}
+		m.Files[relPath] = inMemfile{Contents: buffer.String(), Permissions: permissions.Perm()}
 		return nil
 	}, buffer, nil
 }

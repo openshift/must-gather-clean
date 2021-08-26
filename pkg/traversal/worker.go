@@ -26,8 +26,7 @@ func (f *fileProcessingError) Cause() error {
 }
 
 type workerFile struct {
-	f         input.File
-	outputDir string
+	f input.File
 }
 
 type worker struct {
@@ -107,22 +106,22 @@ func (w *worker) run() {
 
 			if omit {
 				w.omittedFiles[wf.f.Path()] = struct{}{}
-				klog.V(2).Infof("[worker %02d] Omitting k8s resource %s", w.id, wf.f.Path())
+				klog.V(2).Infof("[worker %02d] Omitting k8s resource '%s'", w.id, wf.f.Path())
 				continue
 			}
 		}
 
-		// obfuscate the name if required
-		newName := wf.f.Name()
+		originalPath := wf.f.Path()
+		newPath := originalPath
 		for _, o := range w.obfuscators {
-			newName = o.FileName(newName)
+			newPath = o.Path(newPath)
 		}
 
-		if wf.f.Name() != newName {
-			klog.V(2).Infof("[worker %02d] Obfuscating file %s as %s", w.id, wf.f.Name(), newName)
+		if originalPath != newPath {
+			klog.V(2).Infof("[worker %02d] Obfuscating file '%s' as '%s'", w.id, originalPath, newPath)
 		}
 
-		err = w.obfuscateFile(wf, newName)
+		err = w.obfuscateFile(wf, newPath)
 		if err != nil {
 			w.errorCh <- &fileProcessingError{
 				path:  wf.f.Path(),
@@ -160,8 +159,8 @@ func (w *worker) shouldOmitK8sResource(resource *kube.ResourceList) (bool, error
 	return false, nil
 }
 
-func (w *worker) obfuscateFile(wf workerFile, outputFileName string) error {
-	closeWriter, writer, err := w.writer.Writer(wf.outputDir, outputFileName, wf.f.Permissions())
+func (w *worker) obfuscateFile(wf workerFile, relativePathToFile string) error {
+	closeWriter, writer, err := w.writer.Writer(relativePathToFile, wf.f.Permissions())
 	if err != nil {
 		return err
 	}

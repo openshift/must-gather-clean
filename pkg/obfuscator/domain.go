@@ -18,7 +18,7 @@ type domainObfuscator struct {
 	domainMapping  map[string]string
 }
 
-func (d *domainObfuscator) FileName(s string) string {
+func (d *domainObfuscator) Path(s string) string {
 	return d.replaceDomains(s)
 }
 

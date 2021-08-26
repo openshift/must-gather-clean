@@ -259,8 +259,8 @@ type SchemaJsonConfig struct {
 	// list, so you can define chains of replacements that built on top of one another
 	// - for example replacing a keyword and later matching its replacement with a
 	// regex. The input to the given replacements are always a line of text (string).
-	// Since file names can also have private content in them, they are also processed
-	// as a line - exactly as they would with file content.
+	// Since file names and directories can also have private content in them, they
+	// are also processed as a line - exactly as they would with file content.
 	Obfuscate []Obfuscate `json:"obfuscate,omitempty"`
 
 	// The omission schema defines what kind of files shall not be included in the

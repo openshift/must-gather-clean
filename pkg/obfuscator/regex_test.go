@@ -80,7 +80,7 @@ func TestRegexObfuscationTarget(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			o, err := NewRegexObfuscator("secret-word", tc.target)
 			require.NoError(t, err)
-			output := o.FileName("secret-word")
+			output := o.Path("secret-word")
 			if tc.fileNameObfuscate {
 				assert.NotEqual(t, "secret-word", output)
 			} else {

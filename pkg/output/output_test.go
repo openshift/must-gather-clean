@@ -14,8 +14,7 @@ func TestFSWriter(t *testing.T) {
 	for _, tc := range []struct {
 		name         string
 		writeActions []struct {
-			parent    string
-			name      string
+			path      string
 			contents  []string
 			expectErr string
 		}
@@ -27,12 +26,11 @@ func TestFSWriter(t *testing.T) {
 		{
 			name: "simple-operations",
 			writeActions: []struct {
-				parent    string
-				name      string
+				path      string
 				contents  []string
 				expectErr string
 			}{
-				{parent: "abc/def/ghi", name: "jkw", contents: []string{"file-contents-1", "file-contents-2"}},
+				{path: "abc/def/ghi/jkw", contents: []string{"file-contents-1", "file-contents-2"}},
 			},
 			expectedFiles: []struct {
 				path     string
@@ -44,26 +42,29 @@ func TestFSWriter(t *testing.T) {
 		{
 			name: "invalid write",
 			writeActions: []struct {
-				parent    string
-				name      string
+				path      string
 				contents  []string
 				expectErr string
 			}{
-				{parent: "abc/def/ghi", name: "jkw", contents: []string{"file-contents-1", "file-contents-2"}},
-				{parent: "abc/def/ghi/jkw", name: "invalidfile", contents: []string{"file-contents-1", "file-contents-2"}, expectErr: "jkw: not a directory"},
+				{path: "abc/def/ghi/jkw", contents: []string{"file-contents-1", "file-contents-2"}},
+				{path: "abc/def/ghi/jkw/invalidfile", contents: []string{"file-contents-1", "file-contents-2"}, expectErr: "jkw: not a directory"},
 			},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			tempdir, err := os.MkdirTemp(os.TempDir(), "test-*")
 			require.NoError(t, err)
-			defer os.RemoveAll(tempdir)
+			defer func(tempdir string) {
+				_ = os.RemoveAll(tempdir)
+			}(tempdir)
+
 			writer, err := NewFSWriter(tempdir)
 			require.NoError(t, err)
+
 			for _, a := range tc.writeActions {
 				func() {
 					t.Helper()
-					closeWriter, writer, err := writer.Writer(a.parent, a.name, 0700)
+					closeWriter, writer, err := writer.Writer(a.path, 0700)
 					if a.expectErr == "" {
 						require.NoError(t, err)
 						defer func() {

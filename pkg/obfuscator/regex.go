@@ -14,7 +14,7 @@ type regexObfuscator struct {
 	location schema.ObfuscateTarget
 }
 
-func (r *regexObfuscator) FileName(s string) string {
+func (r *regexObfuscator) Path(s string) string {
 	if r.location == schema.ObfuscateTargetAll || r.location == schema.ObfuscateTargetFileName {
 		return r.replace(s)
 	}
