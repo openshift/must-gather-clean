@@ -229,14 +229,14 @@ func TestIPObfuscationInPaths(t *testing.T) {
 			name:   "installer path",
 			input:  "quay-io-release/namespaces/openshift-kube-apiserver/pods/installer-4-ip-10-0-187-218.ec2.internal/installer-4-ip-10-0-187-218.ec2.internal.yaml",
 			output: "quay-io-release/namespaces/openshift-kube-apiserver/pods/installer-4-ip-x-ipv4-000001-x.ec2.internal/installer-4-ip-x-ipv4-000001-x.ec2.internal.yaml",
-		},{
+		}, {
 			name:   "revision pruner path",
 			input:  "quay-io-release/namespaces/openshift-kube-apiserver/pods/revision-pruner-9-ip-10-0-189-142.ec2.internal/revision-pruner-9-ip-10-0-189-142.ec2.internal.yaml",
 			output: "quay-io-release/namespaces/openshift-kube-apiserver/pods/revision-pruner-9-ip-x-ipv4-000001-x.ec2.internal/revision-pruner-9-ip-x-ipv4-000001-x.ec2.internal.yaml",
 		},
 		{
-			name: "etcd pod logs",
-			input: "quay-io-release/namespaces/openshift-etcd/pods/etcd-ip-10-0-189-142.ec2.internal/etcd/etcd/logs/current.log",
+			name:   "etcd pod logs",
+			input:  "quay-io-release/namespaces/openshift-etcd/pods/etcd-ip-10-0-189-142.ec2.internal/etcd/etcd/logs/current.log",
 			output: "quay-io-release/namespaces/openshift-etcd/pods/etcd-ip-x-ipv4-000001-x.ec2.internal/etcd/etcd/logs/current.log",
 		},
 	} {
