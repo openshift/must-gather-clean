@@ -13,9 +13,9 @@ type Closer func() error
 
 // Outputter is an interface for any object which can write the processed output.
 type Outputter interface {
-	// Writer returns an io.StringWriter which can used to write to the file that will be created under the relativePathToFile.
-	// All paths up to the file are created. Errors are returned when the folder can't be created or the file already exists.
-	Writer(relativePathToFile string, permissions os.FileMode) (Closer, io.StringWriter, error)
+	// Writer returns an io.StringWriter which can used to write to the file that will be created under as relativePath (yes, this is a file).
+	// All paths up to the file are created automatically. Errors are returned when the folder can't be created or the file already exists.
+	Writer(relativePath string, permissions os.FileMode) (Closer, io.StringWriter, error)
 }
 
 type fsWriter struct {

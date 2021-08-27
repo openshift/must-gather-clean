@@ -5,8 +5,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/openshift/must-gather-clean/pkg/schema"
 )
 
 func TestRegexObfuscator(t *testing.T) {
@@ -44,54 +42,11 @@ func TestRegexObfuscator(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewRegexObfuscator(tc.pattern, schema.ObfuscateTargetAll)
+			o, err := NewRegexObfuscator(tc.pattern)
 			require.NoError(t, err)
 			output := o.Contents(tc.input)
 			assert.Equal(t, tc.output, output)
 			assert.Equal(t, tc.report, o.Report())
-		})
-	}
-}
-
-func TestRegexObfuscationTarget(t *testing.T) {
-	for _, tc := range []struct {
-		name              string
-		target            schema.ObfuscateTarget
-		fileNameObfuscate bool
-		contentObfuscate  bool
-	}{
-		{
-			name:              "filename only",
-			target:            schema.ObfuscateTargetFileName,
-			fileNameObfuscate: true,
-		},
-		{
-			name:             "content only",
-			target:           schema.ObfuscateTargetFileContents,
-			contentObfuscate: true,
-		},
-		{
-			name:              "both file and content",
-			target:            schema.ObfuscateTargetAll,
-			fileNameObfuscate: true,
-			contentObfuscate:  true,
-		},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewRegexObfuscator("secret-word", tc.target)
-			require.NoError(t, err)
-			output := o.Path("secret-word")
-			if tc.fileNameObfuscate {
-				assert.NotEqual(t, "secret-word", output)
-			} else {
-				assert.Equal(t, "secret-word", output)
-			}
-			output = o.Contents("secret-word")
-			if tc.contentObfuscate {
-				assert.NotEqual(t, "secret-word", output)
-			} else {
-				assert.Equal(t, "secret-word", output)
-			}
 		})
 	}
 }

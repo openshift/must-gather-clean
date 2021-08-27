@@ -28,8 +28,9 @@ type Obfuscate struct {
 	// used by default and will just try to mask the matching input.
 	ReplacementType ObfuscateReplacementType `json:"replacementType,omitempty"`
 
-	// This determines if the obfuscation should be performed on the file name or on
-	// the file contents. The file contents are obfuscated by default.
+	// This determines if the obfuscation should be performed on the file path
+	// (relative path from the must-gather root folder) or on the file contents. The
+	// file contents are obfuscated by default.
 	Target ObfuscateTarget `json:"target,omitempty"`
 
 	// type defines the kind of detection you want to use. For example IP will find IP
@@ -57,7 +58,7 @@ type ObfuscateTarget string
 
 const ObfuscateTargetAll ObfuscateTarget = "All"
 const ObfuscateTargetFileContents ObfuscateTarget = "FileContents"
-const ObfuscateTargetFileName ObfuscateTarget = "FileName"
+const ObfuscateTargetFilePath ObfuscateTarget = "FilePath"
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (j *ObfuscateTarget) UnmarshalJSON(b []byte) error {
@@ -276,7 +277,7 @@ var enumValues_ObfuscateReplacementType = []interface{}{
 	"Static",
 }
 var enumValues_ObfuscateTarget = []interface{}{
-	"FileName",
+	"FilePath",
 	"FileContents",
 	"All",
 }

@@ -38,27 +38,33 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 	for _, o := range config.Config.Obfuscate {
 		switch o.Type {
 		case schema.ObfuscateTypeKeywords:
-			obfuscators = append(obfuscators, obfuscator.NewKeywordsObfuscator(o.Replacement))
+			k := obfuscator.NewKeywordsObfuscator(o.Replacement)
+			k = obfuscator.NewTargetObfuscator(o.Target, k)
+			obfuscators = append(obfuscators, k)
 		case schema.ObfuscateTypeMAC:
-			obfuscators = append(obfuscators, obfuscator.NewMacAddressObfuscator())
+			k := obfuscator.NewTargetObfuscator(o.Target, obfuscator.NewMacAddressObfuscator())
+			obfuscators = append(obfuscators, k)
 		case schema.ObfuscateTypeRegex:
-			o, err := obfuscator.NewRegexObfuscator(*o.Regex, o.Target)
+			k, err := obfuscator.NewRegexObfuscator(*o.Regex)
 			if err != nil {
 				return err
 			}
-			obfuscators = append(obfuscators, o)
+			k = obfuscator.NewTargetObfuscator(o.Target, k)
+			obfuscators = append(obfuscators, k)
 		case schema.ObfuscateTypeDomain:
-			o, err := obfuscator.NewDomainObfuscator(o.Domains)
+			k, err := obfuscator.NewDomainObfuscator(o.Domains)
 			if err != nil {
 				return err
 			}
-			obfuscators = append(obfuscators, o)
+			k = obfuscator.NewTargetObfuscator(o.Target, k)
+			obfuscators = append(obfuscators, k)
 		case schema.ObfuscateTypeIP:
-			o, err := obfuscator.NewIPObfuscator(o.ReplacementType)
+			k, err := obfuscator.NewIPObfuscator(o.ReplacementType)
 			if err != nil {
 				return err
 			}
-			obfuscators = append(obfuscators, o)
+			k = obfuscator.NewTargetObfuscator(o.Target, k)
+			obfuscators = append(obfuscators, k)
 		}
 	}
 

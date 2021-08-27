@@ -31,8 +31,8 @@
                             },
                             {
                                 "type": "Regex",
-                                "target": "FileName",
-                                "regex": "^builds.yaml$"
+                                "target": "FilePath",
+                                "regex": "release-4.10/ingress_controllers/*/haproxy.*"
                             },
                             {
                                 "type": "Regex",
@@ -45,6 +45,13 @@
                                 "hello": "bye",
                                 "true": "false"
                               }
+                            },
+                            {
+                                "type": "Keywords",
+                                "target": "FilePath",
+                                "replacement": {
+                                    "some_secret": "redacted"
+                                }
                             }
                         ]
                     ],
@@ -131,11 +138,11 @@
                     "type": "string",
                     "default": "FileContents",
                     "enum": [
-                        "FileName",
+                        "FilePath",
                         "FileContents",
                         "All"
                     ],
-                    "description": "This determines if the obfuscation should be performed on the file name or on the file contents. The file contents are obfuscated by default."
+                    "description": "This determines if the obfuscation should be performed on the file path (relative path from the must-gather root folder) or on the file contents. The file contents are obfuscated by default."
                 },
                 "replacementType": {
                     "type": "string",
