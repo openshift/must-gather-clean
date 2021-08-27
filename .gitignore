@@ -9,3 +9,6 @@ bin/
 
 # reports created by debugging/testing
 report.yaml
+
+# Compiled files
+/dist
