@@ -13,20 +13,21 @@ type Closer func() error
 
 // Outputter is an interface for any object which can write the processed output.
 type Outputter interface {
-	// Writer returns a io.StringWriter which can used to write to the output. The caller must ensure that
-	// the parent directory already exists and the close function is called after the caller is done.
-	Writer(parent string, name string, permissions os.FileMode) (Closer, io.StringWriter, error)
+	// Writer returns an io.StringWriter which can used to write to the file that will be created under as relativePath (yes, this is a file).
+	// All paths up to the file are created automatically. Errors are returned when the folder can't be created or the file already exists.
+	Writer(relativePath string, permissions os.FileMode) (Closer, io.StringWriter, error)
 }
 
 type fsWriter struct {
 	outputDir string
 }
 
-func (f *fsWriter) Writer(parentPath, name string, permissions os.FileMode) (Closer, io.StringWriter, error) {
-	filePath := filepath.Join(f.outputDir, parentPath, name)
-	err := os.MkdirAll(filepath.Join(f.outputDir, parentPath), 0755)
+func (f *fsWriter) Writer(relativePathToFile string, permissions os.FileMode) (Closer, io.StringWriter, error) {
+	filePath := filepath.Join(f.outputDir, relativePathToFile)
+	parentDir := filepath.Dir(filePath)
+	err := os.MkdirAll(parentDir, 0755)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to create directory %s: %w", parentPath, err)
+		return nil, nil, fmt.Errorf("failed to create directory %s: %w", parentDir, err)
 	}
 	_, err = os.Stat(filePath)
 	if err != nil && !os.IsNotExist(err) {

@@ -12,7 +12,7 @@ type macAddressObfuscator struct {
 	regex *regexp.Regexp
 }
 
-func (m *macAddressObfuscator) FileName(s string) string {
+func (m *macAddressObfuscator) Path(s string) string {
 	return m.Contents(s)
 }
 

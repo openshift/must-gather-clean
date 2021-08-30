@@ -4,28 +4,19 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-
-	"github.com/openshift/must-gather-clean/pkg/schema"
 )
 
 type regexObfuscator struct {
 	ReplacementTracker
-	pattern  *regexp.Regexp
-	location schema.ObfuscateTarget
+	pattern *regexp.Regexp
 }
 
-func (r *regexObfuscator) FileName(s string) string {
-	if r.location == schema.ObfuscateTargetAll || r.location == schema.ObfuscateTargetFileName {
-		return r.replace(s)
-	}
-	return s
+func (r *regexObfuscator) Path(s string) string {
+	return r.replace(s)
 }
 
 func (r *regexObfuscator) Contents(s string) string {
-	if r.location == schema.ObfuscateTargetAll || r.location == schema.ObfuscateTargetFileContents {
-		return r.replace(s)
-	}
-	return s
+	return r.replace(s)
 }
 
 func (r *regexObfuscator) replace(input string) string {
@@ -39,14 +30,13 @@ func (r *regexObfuscator) replace(input string) string {
 	return output
 }
 
-func NewRegexObfuscator(pattern string, replacementLocation schema.ObfuscateTarget) (Obfuscator, error) {
+func NewRegexObfuscator(pattern string) (Obfuscator, error) {
 	regex, err := regexp.Compile(pattern)
 	if err != nil {
 		return nil, fmt.Errorf("pattern %s is invalid: %w", pattern, err)
 	}
 	return &regexObfuscator{
 		pattern:            regex,
-		location:           replacementLocation,
 		ReplacementTracker: NewSimpleTracker(),
 	}, nil
 }

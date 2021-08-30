@@ -2,8 +2,8 @@ package obfuscator
 
 // Obfuscator is the interface which all obfuscators should implement
 type Obfuscator interface {
-	// FileName takes a filename as input and return the obfuscated name
-	FileName(string) string
+	// Path takes a relative path (from the must-gather input root) as input and returns the obfuscated name
+	Path(string) string
 	// Contents takes string as input and return the obfuscated string
 	Contents(string) string
 	// Report returns a map of words and their replacements

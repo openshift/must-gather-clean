@@ -13,7 +13,7 @@ func (o *keywordsObfuscator) Report() map[string]string {
 	return o.ReplacementTracker.Report()
 }
 
-func (o *keywordsObfuscator) FileName(name string) string {
+func (o *keywordsObfuscator) Path(name string) string {
 	return replace(name, o.replacements, o.ReplacementTracker)
 }
 

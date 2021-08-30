@@ -114,8 +114,7 @@ func (w *FileWalker) processDir(inputDir input.Directory, outputDirName string, 
 			w.processDir(e, childDirOutput, queue, errorCh)
 		case input.File:
 			queue <- workerFile{
-				f:         e,
-				outputDir: outputDirName,
+				f: e,
 			}
 		}
 	}

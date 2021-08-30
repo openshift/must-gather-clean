@@ -59,7 +59,7 @@ type ipObfuscator struct {
 	replacementType schema.ObfuscateReplacementType
 }
 
-func (o *ipObfuscator) FileName(s string) string {
+func (o *ipObfuscator) Path(s string) string {
 	return o.replace(s)
 }
 

@@ -14,7 +14,7 @@
             "type": "object",
             "properties": {
                 "obfuscate": {
-                    "description": "The obfuscation schema determines what is being detected and how it is being replaced. We ship with several built-in replacements for common types such as IP or MAC, Keywords and Regex. The replacements are done in order of the whole list, so you can define chains of replacements that built on top of one another - for example replacing a keyword and later matching its replacement with a regex. The input to the given replacements are always a line of text (string). Since file names can also have private content in them, they are also processed as a line - exactly as they would with file content.",
+                    "description": "The obfuscation schema determines what is being detected and how it is being replaced. We ship with several built-in replacements for common types such as IP or MAC, Keywords and Regex. The replacements are done in order of the whole list, so you can define chains of replacements that built on top of one another - for example replacing a keyword and later matching its replacement with a regex. The input to the given replacements are always a line of text (string). Since file names and directories can also have private content in them, they are also processed as a line - exactly as they would with file content.",
                     "examples": [
                         [
                             {
@@ -31,8 +31,8 @@
                             },
                             {
                                 "type": "Regex",
-                                "target": "FileName",
-                                "regex": "^builds.yaml$"
+                                "target": "FilePath",
+                                "regex": "release-4.10/ingress_controllers/*/haproxy.*"
                             },
                             {
                                 "type": "Regex",
@@ -45,6 +45,13 @@
                                 "hello": "bye",
                                 "true": "false"
                               }
+                            },
+                            {
+                                "type": "Keywords",
+                                "target": "FilePath",
+                                "replacement": {
+                                    "some_secret": "redacted"
+                                }
                             }
                         ]
                     ],
@@ -135,11 +142,11 @@
                     "type": "string",
                     "default": "FileContents",
                     "enum": [
-                        "FileName",
+                        "FilePath",
                         "FileContents",
                         "All"
                     ],
-                    "description": "This determines if the obfuscation should be performed on the file name or on the file contents. The file contents are obfuscated by default."
+                    "description": "This determines if the obfuscation should be performed on the file path (relative path from the must-gather root folder) or on the file contents. The file contents are obfuscated by default."
                 },
                 "replacementType": {
                     "type": "string",

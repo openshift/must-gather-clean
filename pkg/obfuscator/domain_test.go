@@ -119,7 +119,7 @@ func TestDomainObfuscator_FileName(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			o, err := NewDomainObfuscator(tc.domains)
 			require.NoError(t, err)
-			output := o.FileName(tc.input)
+			output := o.Path(tc.input)
 			assert.Equal(t, tc.output, output)
 			assert.Equal(t, tc.report, o.Report())
 		})
