@@ -1,59 +1,33 @@
 package traversal
 
 import (
+	"io/fs"
 	"path/filepath"
-	"sort"
 	"sync"
 
 	"k8s.io/klog/v2"
-
-	"github.com/openshift/must-gather-clean/pkg/input"
-	"github.com/openshift/must-gather-clean/pkg/obfuscator"
-	"github.com/openshift/must-gather-clean/pkg/omitter"
-	"github.com/openshift/must-gather-clean/pkg/output"
 )
 
 type FileWalker struct {
-	obfuscators  []obfuscator.Obfuscator
-	fileOmitters []omitter.FileOmitter
-	k8sOmitters  []omitter.KubernetesResourceOmitter
-	reader       input.Inputter
-	workerCount  int
-	workers      []*worker
-	writer       output.Outputter
+	inputPath     string
+	workerCount   int
+	workers       []QueueProcessor
+	workerFactory func(int) QueueProcessor
 }
 
-// NewFileWalker returns a FileWalker. It ensures that the reader directory exists and is readable.
-func NewFileWalker(reader input.Inputter,
-	writer output.Outputter,
-	obfuscators []obfuscator.Obfuscator,
-	fileOmitters []omitter.FileOmitter,
-	k8sOmitters []omitter.KubernetesResourceOmitter,
-	workerCount int) (*FileWalker, error) {
-	return &FileWalker{
-		obfuscators:  obfuscators,
-		fileOmitters: fileOmitters,
-		k8sOmitters:  k8sOmitters,
-		reader:       reader,
-		workerCount:  workerCount,
-		writer:       writer,
-	}, nil
-}
-
-// Traverse should be called to start processing the reader directory.
+// Traverse should be called to start processing the must-gather directory. This method will exist the CLI if an error is encountered.
 func (w *FileWalker) Traverse() {
 	wg := sync.WaitGroup{}
 	errorCh := make(chan error, w.workerCount)
-	queue := make(chan workerFile, w.workerCount)
-	w.workers = make([]*worker, w.workerCount)
+	queue := make(chan WorkerInput, w.workerCount)
+	w.workers = make([]QueueProcessor, w.workerCount)
 	for i := 0; i < w.workerCount; i++ {
-		wk := newWorker(i+1, w.obfuscators, w.fileOmitters, w.k8sOmitters, queue, w.writer, errorCh)
-		w.workers[i] = wk
+		w.workers[i] = w.workerFactory(i + 1)
 		wg.Add(1)
-		go func() {
-			wk.run()
+		go func(i int, queue chan WorkerInput, errorCh chan error) {
+			w.workers[i].ProcessQueue(queue, errorCh)
 			wg.Done()
-		}()
+		}(i, queue, errorCh)
 	}
 
 	errorWg := sync.WaitGroup{}
@@ -71,7 +45,32 @@ func (w *FileWalker) Traverse() {
 		errorWg.Done()
 	}(errorCh)
 
-	w.processDir(w.reader.Root(), "", queue, errorCh)
+	err := filepath.WalkDir(w.inputPath, func(path string, dirEntry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !dirEntry.IsDir() {
+			// the rest of the logic expects the path to be relative to the input dir root, if it fails we assume it is already relative
+			relPath, err := filepath.Rel(w.inputPath, path)
+			if err != nil {
+				queue <- WorkerInput{
+					path: path,
+				}
+			} else {
+				queue <- WorkerInput{
+					path: relPath,
+				}
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		klog.Exitf("failed to traverse the directory structure due to: %v", err)
+	}
+
 	close(queue)
 	wg.Wait()
 
@@ -80,42 +79,10 @@ func (w *FileWalker) Traverse() {
 	errorWg.Wait()
 }
 
-func (w *FileWalker) GenerateReport() *Report {
-	report := &Report{}
-	for _, o := range w.obfuscators {
-		report.Replacements = append(report.Replacements, o.Report())
-	}
-	omittedFiles := make([]string, 0)
-	for _, w := range w.workers {
-		for of := range w.omittedFiles {
-			omittedFiles = append(omittedFiles, of)
-		}
-	}
-	// sorting helps humans review the file and ensuring test stability
-	sort.Strings(omittedFiles)
-	report.Omissions = omittedFiles
-	return report
-}
-
-func (w *FileWalker) processDir(inputDir input.Directory, outputDirName string, queue chan<- workerFile, errorCh chan<- error) {
-	// list all the entities in the directory
-	entries, err := inputDir.Entries()
-	if err != nil {
-		errorCh <- &fileProcessingError{
-			path:  inputDir.Path(),
-			cause: err,
-		}
-		return
-	}
-	for _, entry := range entries {
-		switch e := entry.(type) {
-		case input.Directory:
-			childDirOutput := filepath.Join(outputDirName, e.Name())
-			w.processDir(e, childDirOutput, queue, errorCh)
-		case input.File:
-			queue <- workerFile{
-				f: e,
-			}
-		}
+func NewParallelFileWalker(inputPath string, workerCount int, workerFactory func(id int) QueueProcessor) *FileWalker {
+	return &FileWalker{
+		inputPath:     inputPath,
+		workerCount:   workerCount,
+		workerFactory: workerFactory,
 	}
 }

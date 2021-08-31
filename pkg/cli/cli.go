@@ -5,13 +5,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"gopkg.in/yaml.v2"
 	"k8s.io/klog/v2"
 
-	"github.com/openshift/must-gather-clean/pkg/input"
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
 	"github.com/openshift/must-gather-clean/pkg/omitter"
-	"github.com/openshift/must-gather-clean/pkg/output"
 	"github.com/openshift/must-gather-clean/pkg/schema"
 	"github.com/openshift/must-gather-clean/pkg/traversal"
 )
@@ -24,7 +21,7 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 	if workerCount < 1 {
 		return fmt.Errorf("invalid number of workers specified %d", workerCount)
 	}
-	err := output.EnsureOutputPath(outputPath, deleteOutputFolder)
+	err := ensureOutputPath(outputPath, deleteOutputFolder)
 	if err != nil {
 		return fmt.Errorf("failed to ensure output folder: %w", err)
 	}
@@ -91,40 +88,50 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 		}
 	}
 
-	reader, err := input.NewFSInput(inputPath)
+	reporter := traversal.NewSimpleReporter()
+	workerFactory := func(id int) traversal.QueueProcessor {
+		return traversal.NewWorker(id, inputPath, outputPath, obfuscators, fileOmitters, k8sOmitters, reporter)
+	}
+
+	traversal.NewParallelFileWalker(inputPath, workerCount, workerFactory).Traverse()
+
+	reporter.ReportObfuscators(obfuscators)
+	return reporter.WriteReport(filepath.Join(reportingFolder, reportFileName))
+}
+
+func ensureOutputPath(path string, deleteIfExists bool) error {
+	info, err := os.Stat(path)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return os.Mkdir(path, 0700)
+		}
 		return err
 	}
-	writer, err := output.NewFSWriter(outputPath)
-	if err != nil {
-		return err
-	}
-	walker, err := traversal.NewFileWalker(reader, writer, obfuscators, fileOmitters, k8sOmitters, workerCount)
-	if err != nil {
-		return err
+
+	if !info.IsDir() {
+		return fmt.Errorf("output destination must be a directory: '%s'", path)
 	}
 
-	walker.Traverse()
-
-	report := walker.GenerateReport()
-
-	err = os.MkdirAll(reportingFolder, 0700)
+	entries, err := os.ReadDir(path)
 	if err != nil {
-		return fmt.Errorf("failed to create reporting output folder: %w", err)
+		return fmt.Errorf("failed to get contents of output directory '%s': %w", path, err)
 	}
 
-	reportingFile := filepath.Join(reportingFolder, reportFileName)
-	reportFile, err := os.Create(reportingFile)
-	if err != nil {
-		return fmt.Errorf("failed to open report file %s: %w", reportingFile, err)
-	}
-	rEncoder := yaml.NewEncoder(reportFile)
-	err = rEncoder.Encode(report)
-	if err != nil {
-		return fmt.Errorf("failed to write report at %s: %w", reportingFile, err)
+	if len(entries) != 0 {
+		if deleteIfExists {
+			err = os.RemoveAll(path)
+			if err != nil {
+				return fmt.Errorf("error while deleting the output path '%s': %w", path, err)
+			}
+		} else {
+			return fmt.Errorf("output directory %s is not empty", path)
+		}
 	}
 
-	klog.V(2).Infof("successfully saved obfuscation report in %s", reportingFile)
+	err = os.MkdirAll(path, 0700)
+	if err != nil {
+		return fmt.Errorf("failed to create output directory '%s': %w", path, err)
+	}
 
 	return nil
 }

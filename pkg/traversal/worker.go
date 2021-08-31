@@ -1,15 +1,16 @@
 package traversal
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/openshift/must-gather-clean/pkg/kube"
 	"k8s.io/klog/v2"
 
-	"github.com/openshift/must-gather-clean/pkg/input"
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
 	"github.com/openshift/must-gather-clean/pkg/omitter"
-	"github.com/openshift/must-gather-clean/pkg/output"
 )
 
 type fileProcessingError struct {
@@ -25,49 +26,34 @@ func (f *fileProcessingError) Cause() error {
 	return f.cause
 }
 
-type workerFile struct {
-	f input.File
+type WorkerInput struct {
+	// path here is relative to the must-gather root folder
+	path string
 }
 
-type worker struct {
+type QueueProcessor interface {
+	ProcessQueue(queue chan WorkerInput, errorCh chan error)
+}
+
+type Worker struct {
 	id           int
+	inputFolder  string
+	outputFolder string
 	obfuscators  []obfuscator.Obfuscator
 	fileOmitters []omitter.FileOmitter
 	k8sOmitters  []omitter.KubernetesResourceOmitter
-	queue        <-chan workerFile
-	omittedFiles map[string]struct{}
-	writer       output.Outputter
-	errorCh      chan<- error
+	reporter     Reporter
 }
 
-func newWorker(id int,
-	obfuscators []obfuscator.Obfuscator,
-	fileOmitters []omitter.FileOmitter,
-	k8sOmitters []omitter.KubernetesResourceOmitter,
-	queue <-chan workerFile,
-	writer output.Outputter,
-	errorCh chan<- error) *worker {
-	return &worker{
-		id:           id,
-		obfuscators:  obfuscators,
-		omittedFiles: map[string]struct{}{},
-		fileOmitters: fileOmitters,
-		k8sOmitters:  k8sOmitters,
-		queue:        queue,
-		writer:       writer,
-		errorCh:      errorCh,
-	}
-}
-
-func (w *worker) run() {
-	for wf := range w.queue {
-		klog.V(3).Infof("[worker %02d] Processing %s\n", w.id, wf.f.Path())
+func (w *Worker) ProcessQueue(queue chan WorkerInput, errorCh chan error) {
+	for wf := range queue {
+		klog.V(3).Infof("[Worker %02d] Processing %s\n", w.id, wf.path)
 
 		// check if the file should be omitted
-		omit, err := w.shouldOmitFile(wf.f)
+		omit, err := w.shouldOmitFile(wf.path)
 		if err != nil {
-			w.errorCh <- &fileProcessingError{
-				path:  wf.f.Path(),
+			errorCh <- &fileProcessingError{
+				path:  wf.path,
 				cause: err,
 			}
 			continue
@@ -75,19 +61,19 @@ func (w *worker) run() {
 
 		// If the file should be omitted then stop processing.
 		if omit {
-			w.omittedFiles[wf.f.Path()] = struct{}{}
-			klog.V(2).Infof("[worker %02d] Omitting file %s", w.id, wf.f.Path())
+			w.reporter.ReportOmission(wf.path)
+			klog.V(2).Infof("[Worker %02d] Omitting file %s", w.id, wf.path)
 			continue
 		}
 
 		isKubernetesResource := true
-		kubeResource, err := kube.ReadKubernetesResourceFromPath(wf.f.AbsPath())
+		kubeResource, err := kube.ReadKubernetesResourceFromPath(filepath.Join(w.inputFolder, wf.path))
 		if err != nil {
 			if err == kube.NoKubernetesResourceError {
 				isKubernetesResource = false
 			} else {
-				w.errorCh <- &fileProcessingError{
-					path:  wf.f.Path(),
+				errorCh <- &fileProcessingError{
+					path:  wf.path,
 					cause: err,
 				}
 				continue
@@ -97,45 +83,45 @@ func (w *worker) run() {
 		if isKubernetesResource {
 			omit, err := w.shouldOmitK8sResource(kubeResource)
 			if err != nil {
-				w.errorCh <- &fileProcessingError{
-					path:  wf.f.Path(),
+				errorCh <- &fileProcessingError{
+					path:  wf.path,
 					cause: err,
 				}
 				continue
 			}
 
 			if omit {
-				w.omittedFiles[wf.f.Path()] = struct{}{}
-				klog.V(2).Infof("[worker %02d] Omitting k8s resource '%s'", w.id, wf.f.Path())
+				w.reporter.ReportOmission(wf.path)
+				klog.V(2).Infof("[Worker %02d] Omitting k8s resource '%s'", w.id, wf.path)
 				continue
 			}
 		}
 
-		originalPath := wf.f.Path()
+		originalPath := wf.path
 		newPath := originalPath
 		for _, o := range w.obfuscators {
 			newPath = o.Path(newPath)
 		}
 
 		if originalPath != newPath {
-			klog.V(2).Infof("[worker %02d] Obfuscating file '%s' as '%s'", w.id, originalPath, newPath)
+			klog.V(2).Infof("[Worker %02d] Obfuscating file '%s' as '%s'", w.id, originalPath, newPath)
 		}
 
-		err = w.obfuscateFile(wf, newPath)
+		err = w.obfuscateFileContent(wf.path, newPath)
 		if err != nil {
-			w.errorCh <- &fileProcessingError{
-				path:  wf.f.Path(),
+			errorCh <- &fileProcessingError{
+				path:  wf.path,
 				cause: err,
 			}
 			continue
 		}
-		klog.V(3).Infof("[worker %02d] Finished processing %s\n", w.id, wf.f.Path())
+		klog.V(3).Infof("[Worker %02d] Finished processing %s\n", w.id, wf.path)
 	}
 }
 
-func (w *worker) shouldOmitFile(f input.File) (bool, error) {
+func (w *Worker) shouldOmitFile(path string) (bool, error) {
 	for _, o := range w.fileOmitters {
-		omit, err := o.Omit(f.Name(), f.Path())
+		omit, err := o.Omit(path)
 		if err != nil {
 			return false, err
 		}
@@ -146,7 +132,7 @@ func (w *worker) shouldOmitFile(f input.File) (bool, error) {
 	return false, nil
 }
 
-func (w *worker) shouldOmitK8sResource(resource *kube.ResourceList) (bool, error) {
+func (w *Worker) shouldOmitK8sResource(resource *kube.ResourceList) (bool, error) {
 	for _, o := range w.k8sOmitters {
 		omit, err := o.Omit(resource)
 		if err != nil {
@@ -159,42 +145,77 @@ func (w *worker) shouldOmitK8sResource(resource *kube.ResourceList) (bool, error
 	return false, nil
 }
 
-func (w *worker) obfuscateFile(wf workerFile, relativePathToFile string) error {
-	closeWriter, writer, err := w.writer.Writer(relativePathToFile, wf.f.Permissions())
-	if err != nil {
-		return err
-	}
-	// close the output file when done
-	defer func() {
-		if err := closeWriter(); err != nil {
-			w.errorCh <- &fileProcessingError{
-				path:  wf.f.Path(),
-				cause: err,
-			}
-		}
-	}()
+func (w *Worker) obfuscateFileContent(inputFile string, outputFile string) error {
+	readPath := filepath.Join(w.inputFolder, inputFile)
+	writePath := filepath.Join(w.outputFolder, outputFile)
+	writePathParentDir := filepath.Dir(writePath)
 
-	scanner, closeReader, err := wf.f.Scanner()
+	inputOsFile, err := os.Open(readPath)
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err := closeReader(); err != nil {
-			w.errorCh <- &fileProcessingError{
-				path:  wf.f.Path(),
-				cause: err,
-			}
-		}
-	}()
+	scanner := bufio.NewScanner(inputOsFile)
+
+	err = os.MkdirAll(writePathParentDir, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to create directory %s: %w", writePathParentDir, err)
+	}
+
+	outputOsFile, err := os.OpenFile(writePath, os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		return err
+	}
+
+	writer := bufio.NewWriter(outputOsFile)
 	for scanner.Scan() {
 		contents := scanner.Text()
 		for _, o := range w.obfuscators {
 			contents = o.Contents(contents)
 		}
-		_, err = writer.WriteString(fmt.Sprintf("%s\n", contents))
+
+		_, err = fmt.Fprintln(writer, contents)
 		if err != nil {
 			return err
 		}
 	}
+
+	// we deliberately do not defer the closes, as this will be processed asynchronous and
+	// any error will make the CLI exit immediately anyway
+
+	err = inputOsFile.Close()
+	if err != nil {
+		return err
+	}
+
+	err = writer.Flush()
+	if err != nil {
+		return err
+	}
+
+	err = outputOsFile.Close()
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func NewWorker(
+	id int,
+	inputFolder string,
+	outputFolder string,
+	obfuscators []obfuscator.Obfuscator,
+	fileOmitters []omitter.FileOmitter,
+	k8sOmitters []omitter.KubernetesResourceOmitter,
+	reporter Reporter) QueueProcessor {
+
+	return &Worker{
+		id:           id,
+		inputFolder:  inputFolder,
+		outputFolder: outputFolder,
+		obfuscators:  obfuscators,
+		fileOmitters: fileOmitters,
+		k8sOmitters:  k8sOmitters,
+		reporter:     reporter,
+	}
 }

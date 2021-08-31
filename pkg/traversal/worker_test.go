@@ -1,11 +1,10 @@
 package traversal
 
 import (
-	"bufio"
 	"errors"
+	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
@@ -16,36 +15,28 @@ import (
 	"github.com/openshift/must-gather-clean/pkg/omitter"
 )
 
-type testInputFile struct {
-	relPath string
-	dir     string
-	t       *testing.T
+type noopObfuscator struct {
+	replacements map[string]string
 }
 
-func (t *testInputFile) Path() string {
-	return t.relPath
+func (d noopObfuscator) GetReplacement(original string) string {
+	return original
 }
 
-func (t *testInputFile) Name() string {
-	parts := strings.Split(t.relPath, "/")
-	return parts[len(parts)-1]
+func (d noopObfuscator) Path(input string) string {
+	return input
 }
 
-func (t *testInputFile) Permissions() os.FileMode {
-	info, err := os.Stat(t.AbsPath())
-	require.NoError(t.t, err)
-	return info.Mode().Perm()
+func (d noopObfuscator) Contents(input string) string {
+	return input
 }
 
-func (t *testInputFile) Scanner() (*bufio.Scanner, func() error, error) {
-	p := t.AbsPath()
-	f, err := os.Open(p)
-	require.NoError(t.t, err)
-	return bufio.NewScanner(f), f.Close, nil
+func (d noopObfuscator) Report() map[string]string {
+	return d.replacements
 }
 
-func (t *testInputFile) AbsPath() string {
-	return filepath.Join(t.dir, t.relPath)
+func (d noopObfuscator) ReportReplacement(_ string, _ string) {
+
 }
 
 type errOmitter struct {
@@ -53,7 +44,7 @@ type errOmitter struct {
 	err      error
 }
 
-func (e *errOmitter) Omit(_, _ string) (bool, error) {
+func (e *errOmitter) Omit(_ string) (bool, error) {
 	if !e.contents {
 		return false, e.err
 	}
@@ -169,36 +160,43 @@ metadata:
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			tempDir, err := os.MkdirTemp("", "worker-test-*")
+			tmpInputDir, err := os.MkdirTemp("", "Worker-test-*")
 			require.NoError(t, err)
 			defer func() {
-				_ = os.RemoveAll(tempDir)
+				_ = os.RemoveAll(tmpInputDir)
 			}()
 
+			tmpOutputDir, err := os.MkdirTemp("", "Worker-test-*")
+			require.NoError(t, err)
+			defer func() {
+				_ = os.RemoveAll(tmpOutputDir)
+			}()
+
+			const testFileName = "test.yaml"
 			if tc.input != "" {
-				f, err := os.Create(filepath.Join(tempDir, "test.yaml"))
+				f, err := os.Create(filepath.Join(tmpInputDir, testFileName))
 				require.NoError(t, err)
 				_, err = f.Write([]byte(tc.input))
 				require.NoError(t, err)
 				require.NoError(t, f.Close())
 			}
 
-			workerQueue := make(chan workerFile, 1)
+			workerQueue := make(chan WorkerInput, 1)
 			errorCh := make(chan error, 1)
-			o := testOutputter(t)
-			w := newWorker(1, tc.obfuscators, tc.fileOmitters, tc.k8sOmitters, workerQueue, o, errorCh)
-			workerQueue <- workerFile{
-				f: &testInputFile{
-					relPath: "test.yaml",
-					dir:     tempDir,
-					t:       t,
-				},
+
+			simpleReporter := NewSimpleReporter()
+			w := NewWorker(1, tmpInputDir, tmpOutputDir, tc.obfuscators, tc.fileOmitters, tc.k8sOmitters, simpleReporter)
+			workerQueue <- WorkerInput{
+				path: testFileName,
 			}
 			close(workerQueue)
-			w.run()
+
+			w.ProcessQueue(workerQueue, errorCh)
 
 			if tc.output != "" {
-				require.Equal(t, tc.output, o.Files["test.yaml"].Contents)
+				bytes, err := ioutil.ReadFile(filepath.Join(tmpOutputDir, testFileName))
+				require.NoError(t, err)
+				require.Equal(t, tc.output, string(bytes))
 			}
 
 			if tc.err != nil {
@@ -210,13 +208,13 @@ metadata:
 				}
 				require.NotNil(t, err)
 				require.Equal(t, &fileProcessingError{
-					path:  "test.yaml",
+					path:  testFileName,
 					cause: tc.err,
 				}, err)
 			}
 
 			if tc.expectedOmission {
-				require.Contains(t, w.omittedFiles, "test.yaml")
+				require.Contains(t, simpleReporter.omissions, testFileName)
 			}
 		})
 	}
