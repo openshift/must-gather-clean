@@ -19,12 +19,12 @@ type FileWalker struct {
 func (w *FileWalker) Traverse() {
 	wg := sync.WaitGroup{}
 	errorCh := make(chan error, w.workerCount)
-	queue := make(chan WorkerInput, w.workerCount)
+	queue := make(chan workerInput, w.workerCount)
 	w.workers = make([]QueueProcessor, w.workerCount)
 	for i := 0; i < w.workerCount; i++ {
 		w.workers[i] = w.workerFactory(i + 1)
 		wg.Add(1)
-		go func(i int, queue chan WorkerInput, errorCh chan error) {
+		go func(i int, queue chan workerInput, errorCh chan error) {
 			w.workers[i].ProcessQueue(queue, errorCh)
 			wg.Done()
 		}(i, queue, errorCh)
@@ -40,7 +40,6 @@ func (w *FileWalker) Traverse() {
 			default:
 				klog.Exitf("unexpected error: %v", err)
 			}
-
 		}
 		errorWg.Done()
 	}(errorCh)
@@ -54,13 +53,9 @@ func (w *FileWalker) Traverse() {
 			// the rest of the logic expects the path to be relative to the input dir root, if it fails we assume it is already relative
 			relPath, err := filepath.Rel(w.inputPath, path)
 			if err != nil {
-				queue <- WorkerInput{
-					path: path,
-				}
+				queue <- workerInput(path)
 			} else {
-				queue <- WorkerInput{
-					path: relPath,
-				}
+				queue <- workerInput(relPath)
 			}
 		}
 

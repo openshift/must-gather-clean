@@ -1,12 +1,11 @@
-package traversal
+package reporting
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sync"
 
-	"github.com/openshift/must-gather-clean/pkg/obfuscator"
+	"github.com/openshift/must-gather-clean/pkg/omitter"
 	"gopkg.in/yaml.v3"
 	"k8s.io/klog/v2"
 )
@@ -20,23 +19,19 @@ type Reporter interface {
 	// WriteReport writes the final report into the given path, will create folders if necessary.
 	WriteReport(path string) error
 
-	// ReportOmission saves the given path as omitted to later report as such.
-	ReportOmission(path string)
+	// CollectOmitterReport will call the Report method on the obfuscator and collect its omissions.
+	CollectOmitterReport(omitter omitter.ReportingOmitter)
 
-	// ReportObfuscators will call the Report method on all obfuscators and collect the individual obfuscation results for final reporting.
-	ReportObfuscators(obfuscators []obfuscator.Obfuscator)
+	// CollectObfuscatorReport will call the Report method on the obfuscator and collect the individual obfuscation results.
+	CollectObfuscatorReport(obfuscatorReport []map[string]string)
 }
 
 type SimpleReporter struct {
-	lock         *sync.RWMutex
 	replacements []map[string]string
 	omissions    []string
 }
 
 func (s *SimpleReporter) WriteReport(path string) error {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-
 	reportingFolder := filepath.Dir(path)
 	err := os.MkdirAll(reportingFolder, 0700)
 	if err != nil {
@@ -61,25 +56,16 @@ func (s *SimpleReporter) WriteReport(path string) error {
 	return nil
 }
 
-func (s *SimpleReporter) ReportOmission(path string) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	s.omissions = append(s.omissions, path)
+func (s *SimpleReporter) CollectOmitterReport(report []string) {
+	s.omissions = append(s.omissions, report...)
 }
 
-func (s *SimpleReporter) ReportObfuscators(obfuscators []obfuscator.Obfuscator) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	for _, o := range obfuscators {
-		s.replacements = append(s.replacements, o.Report())
-	}
+func (s *SimpleReporter) CollectObfuscatorReport(obfuscatorReport []map[string]string) {
+	s.replacements = append(s.replacements, obfuscatorReport...)
 }
 
 func NewSimpleReporter() *SimpleReporter {
 	return &SimpleReporter{
-		lock:         &sync.RWMutex{},
 		replacements: []map[string]string{},
 		omissions:    []string{},
 	}

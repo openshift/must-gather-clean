@@ -41,7 +41,7 @@ func TestFileOmitter(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			omitter, err := NewFilenamePatternOmitter(tc.pattern)
 			require.NoError(t, err)
-			omit, err := omitter.Omit(tc.input)
+			omit, err := omitter.OmitPath(tc.input)
 			require.NoError(t, err)
 			require.Equal(t, tc.expected, omit)
 		})

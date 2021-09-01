@@ -95,7 +95,7 @@ func (o *ipObfuscator) replace(s string) string {
 	return output
 }
 
-func NewIPObfuscator(replacementType schema.ObfuscateReplacementType) (Obfuscator, error) {
+func NewIPObfuscator(replacementType schema.ObfuscateReplacementType) (ReportingObfuscator, error) {
 	if replacementType != schema.ObfuscateReplacementTypeStatic && replacementType != schema.ObfuscateReplacementTypeConsistent {
 		return nil, fmt.Errorf("unsupported replacement type: %s", replacementType)
 	}

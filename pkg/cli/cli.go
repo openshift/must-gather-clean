@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/openshift/must-gather-clean/pkg/cleaner"
+	"github.com/openshift/must-gather-clean/pkg/reporting"
 	"k8s.io/klog/v2"
 
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
@@ -17,10 +19,36 @@ const (
 	reportFileName = "report.yaml"
 )
 
+func RunPipe(configPath string) error {
+	if configPath != "" {
+		// TODO(thomas): read some config and do the same as below
+		return fmt.Errorf("supplying config is not supported yet")
+	} else {
+		ipObfuscator, err := obfuscator.NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent)
+		if err != nil {
+			return fmt.Errorf("failed to create IP obfuscator: %w", err)
+		}
+
+		multiObfuscator := obfuscator.NewMultiObfuscator([]obfuscator.ReportingObfuscator{
+			ipObfuscator,
+			obfuscator.NewMacAddressObfuscator(),
+		})
+
+		contentObfuscator := cleaner.ContentObfuscator{Obfuscator: multiObfuscator}
+		err = contentObfuscator.ObfuscateReader(os.Stdin, os.Stdout)
+		if err != nil {
+			return fmt.Errorf("failed to obfuscate via pipe: %w", err)
+		}
+	}
+
+	return nil
+}
+
 func Run(configPath string, inputPath string, outputPath string, deleteOutputFolder bool, reportingFolder string, workerCount int) error {
 	if workerCount < 1 {
 		return fmt.Errorf("invalid number of workers specified %d", workerCount)
 	}
+
 	err := ensureOutputPath(outputPath, deleteOutputFolder)
 	if err != nil {
 		return fmt.Errorf("failed to ensure output folder: %w", err)
@@ -31,7 +59,7 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 		return fmt.Errorf("failed to read config at %s: %w", configPath, err)
 	}
 
-	var obfuscators []obfuscator.Obfuscator
+	var obfuscators []obfuscator.ReportingObfuscator
 	for _, o := range config.Config.Obfuscate {
 		switch o.Type {
 		case schema.ObfuscateTypeKeywords:
@@ -88,14 +116,19 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 		}
 	}
 
-	reporter := traversal.NewSimpleReporter()
+	multiReportingOmitter := omitter.NewMultiReportingOmitter(fileOmitters, k8sOmitters)
+	multiObfuscator := obfuscator.NewMultiObfuscator(obfuscators)
+	fileCleaner := cleaner.NewFileCleaner(inputPath, outputPath, multiObfuscator, multiReportingOmitter)
+
 	workerFactory := func(id int) traversal.QueueProcessor {
-		return traversal.NewWorker(id, inputPath, outputPath, obfuscators, fileOmitters, k8sOmitters, reporter)
+		return traversal.NewWorker(id, fileCleaner)
 	}
 
 	traversal.NewParallelFileWalker(inputPath, workerCount, workerFactory).Traverse()
 
-	reporter.ReportObfuscators(obfuscators)
+	reporter := reporting.NewSimpleReporter()
+	reporter.CollectOmitterReport(multiReportingOmitter.Report())
+	reporter.CollectObfuscatorReport(multiObfuscator.ReportPerObfuscator())
 	return reporter.WriteReport(filepath.Join(reportingFolder, reportFileName))
 }
 

@@ -1,4 +1,4 @@
-package traversal
+package reporting
 
 import (
 	"io/ioutil"
@@ -14,10 +14,16 @@ import (
 
 func TestReportingHappyPath(t *testing.T) {
 	r := NewSimpleReporter()
-	r.ReportOmission("some path")
-	r.ReportObfuscators([]obfuscator.Obfuscator{noopObfuscator{replacements: map[string]string{
-		"this": "that",
-	}}})
+	r.CollectOmitterReport([]string{"some path"})
+	multiObfuscator := obfuscator.NewMultiObfuscator([]obfuscator.ReportingObfuscator{
+		obfuscator.NoopObfuscator{Replacements: map[string]string{
+			"this": "that",
+		}},
+		obfuscator.NoopObfuscator{Replacements: map[string]string{
+			"another": "something",
+		}},
+	})
+	r.CollectObfuscatorReport(multiObfuscator.ReportPerObfuscator())
 
 	tmpInputDir, err := os.MkdirTemp("", "reporter-*")
 	require.NoError(t, err)
@@ -32,6 +38,7 @@ func TestReportingHappyPath(t *testing.T) {
 	assertReportMatches(t, reportFile, Report{
 		Replacements: []map[string]string{
 			{"this": "that"},
+			{"another": "something"},
 		},
 		Omissions: []string{"some path"},
 	})

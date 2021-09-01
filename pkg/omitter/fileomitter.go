@@ -9,7 +9,7 @@ type filePatternOmitter struct {
 	filePattern string
 }
 
-func (f *filePatternOmitter) Omit(path string) (bool, error) {
+func (f *filePatternOmitter) OmitPath(path string) (bool, error) {
 	return filepath.Match(f.filePattern, path)
 }
 

@@ -4,7 +4,7 @@ import "github.com/openshift/must-gather-clean/pkg/schema"
 
 type targetObfuscator struct {
 	target     schema.ObfuscateTarget
-	obfuscator Obfuscator
+	obfuscator ReportingObfuscator
 }
 
 func (t *targetObfuscator) Path(s string) string {
@@ -25,7 +25,7 @@ func (t *targetObfuscator) Report() map[string]string {
 	return t.obfuscator.Report()
 }
 
-func NewTargetObfuscator(target schema.ObfuscateTarget, obfuscator Obfuscator) Obfuscator {
+func NewTargetObfuscator(target schema.ObfuscateTarget, obfuscator ReportingObfuscator) ReportingObfuscator {
 	return &targetObfuscator{
 		target:     target,
 		obfuscator: obfuscator,

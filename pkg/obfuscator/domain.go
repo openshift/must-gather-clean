@@ -60,7 +60,7 @@ func (d *domainObfuscator) obfuscatedDomain(domain string) string {
 	return replacement
 }
 
-func NewDomainObfuscator(domains []string) (Obfuscator, error) {
+func NewDomainObfuscator(domains []string) (ReportingObfuscator, error) {
 	patterns := make([]*regexp.Regexp, len(domains))
 	for i, d := range domains {
 		dd := strings.ReplaceAll(d, ".", "\\.")

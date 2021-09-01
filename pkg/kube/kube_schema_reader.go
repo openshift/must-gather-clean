@@ -15,7 +15,7 @@ var NoKubernetesResourceError = errors.New("not a k8s resource")
 // it will return a NoKubernetesResourceError in case it's not a yml/yaml or json file or when it is not able to parse it into a known schema.
 // Otherwise, it will always return a list resource which either contains the list of the advertised Kind and ApiVersion (which is set then),
 // or alternatively just a single Item with Kind and ApiVersion being empty.
-func ReadKubernetesResourceFromPath(path string) (*ResourceList, error) {
+func ReadKubernetesResourceFromPath(path string) (*ResourceListWithPath, error) {
 	var unmarshaller ResourceUnmarshaller
 	switch {
 	case strings.HasSuffix(path, ".yml") || strings.HasSuffix(path, ".yaml"):
@@ -49,5 +49,8 @@ func ReadKubernetesResourceFromPath(path string) (*ResourceList, error) {
 		resourceList = ResourceList{Items: []Resource{resource}}
 	}
 
-	return &resourceList, nil
+	return &ResourceListWithPath{
+		ResourceList: resourceList,
+		Path:         path,
+	}, nil
 }

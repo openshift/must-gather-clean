@@ -10,9 +10,9 @@ type collectingQueueProcessor struct {
 	paths []string
 }
 
-func (c *collectingQueueProcessor) ProcessQueue(queue chan WorkerInput, _ chan error) {
+func (c *collectingQueueProcessor) ProcessQueue(queue chan workerInput, _ chan error) {
 	for wf := range queue {
-		c.paths = append(c.paths, wf.path)
+		c.paths = append(c.paths, string(wf))
 	}
 }
 

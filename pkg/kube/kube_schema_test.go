@@ -108,7 +108,12 @@ items: []
 
 			resource, err := ReadKubernetesResourceFromPath(file.Name())
 			assert.Equal(t, tc.expectedError, err)
-			assert.Equal(t, tc.expectedOutput, resource)
+			if tc.expectedOutput != nil {
+				assert.Equal(t, file.Name(), resource.Path)
+				assert.Equal(t, tc.expectedOutput, &resource.ResourceList)
+			} else {
+				assert.Nil(t, resource)
+			}
 		})
 	}
 }

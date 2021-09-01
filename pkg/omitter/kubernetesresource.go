@@ -12,7 +12,7 @@ type kubernetesResourceOmitter struct {
 	namespaces   map[string]struct{}
 }
 
-func (k *kubernetesResourceOmitter) Omit(resourceList *kube.ResourceList) (bool, error) {
+func (k *kubernetesResourceOmitter) OmitKubeResource(resourceList *kube.ResourceListWithPath) (bool, error) {
 	if len(resourceList.Items) == 0 {
 		return false, nil
 	}
