@@ -20,25 +20,32 @@ const (
 )
 
 func RunPipe(configPath string) error {
+	var multiObfuscator *obfuscator.MultiObfuscator
 	if configPath != "" {
-		// TODO(thomas): read some config and do the same as below
-		return fmt.Errorf("supplying config is not supported yet")
+		config, err := schema.ReadConfigFromPath(configPath)
+		if err != nil {
+			return fmt.Errorf("failed to read config at %s: %w", configPath, err)
+		}
+		multiObfuscator, err = createObfuscatorsFromConfig(config)
+		if err != nil {
+			return fmt.Errorf("failed to create obfuscators via config at %s: %w", configPath, err)
+		}
 	} else {
 		ipObfuscator, err := obfuscator.NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent)
 		if err != nil {
 			return fmt.Errorf("failed to create IP obfuscator: %w", err)
 		}
 
-		multiObfuscator := obfuscator.NewMultiObfuscator([]obfuscator.ReportingObfuscator{
+		multiObfuscator = obfuscator.NewMultiObfuscator([]obfuscator.ReportingObfuscator{
 			ipObfuscator,
 			obfuscator.NewMacAddressObfuscator(),
 		})
+	}
 
-		contentObfuscator := cleaner.ContentObfuscator{Obfuscator: multiObfuscator}
-		err = contentObfuscator.ObfuscateReader(os.Stdin, os.Stdout)
-		if err != nil {
-			return fmt.Errorf("failed to obfuscate via pipe: %w", err)
-		}
+	contentObfuscator := cleaner.ContentObfuscator{Obfuscator: multiObfuscator}
+	err := contentObfuscator.ObfuscateReader(os.Stdin, os.Stdout)
+	if err != nil {
+		return fmt.Errorf("failed to obfuscate via pipe: %w", err)
 	}
 
 	return nil
@@ -59,38 +66,9 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 		return fmt.Errorf("failed to read config at %s: %w", configPath, err)
 	}
 
-	var obfuscators []obfuscator.ReportingObfuscator
-	for _, o := range config.Config.Obfuscate {
-		switch o.Type {
-		case schema.ObfuscateTypeKeywords:
-			k := obfuscator.NewKeywordsObfuscator(o.Replacement)
-			k = obfuscator.NewTargetObfuscator(o.Target, k)
-			obfuscators = append(obfuscators, k)
-		case schema.ObfuscateTypeMAC:
-			k := obfuscator.NewTargetObfuscator(o.Target, obfuscator.NewMacAddressObfuscator())
-			obfuscators = append(obfuscators, k)
-		case schema.ObfuscateTypeRegex:
-			k, err := obfuscator.NewRegexObfuscator(*o.Regex)
-			if err != nil {
-				return err
-			}
-			k = obfuscator.NewTargetObfuscator(o.Target, k)
-			obfuscators = append(obfuscators, k)
-		case schema.ObfuscateTypeDomain:
-			k, err := obfuscator.NewDomainObfuscator(o.Domains)
-			if err != nil {
-				return err
-			}
-			k = obfuscator.NewTargetObfuscator(o.Target, k)
-			obfuscators = append(obfuscators, k)
-		case schema.ObfuscateTypeIP:
-			k, err := obfuscator.NewIPObfuscator(o.ReplacementType)
-			if err != nil {
-				return err
-			}
-			k = obfuscator.NewTargetObfuscator(o.Target, k)
-			obfuscators = append(obfuscators, k)
-		}
+	multiObfuscator, err := createObfuscatorsFromConfig(config)
+	if err != nil {
+		return fmt.Errorf("failed to create obfuscators via config at %s: %w", configPath, err)
 	}
 
 	var fileOmitters []omitter.FileOmitter
@@ -117,7 +95,6 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 	}
 
 	multiReportingOmitter := omitter.NewMultiReportingOmitter(fileOmitters, k8sOmitters)
-	multiObfuscator := obfuscator.NewMultiObfuscator(obfuscators)
 	fileCleaner := cleaner.NewFileCleaner(inputPath, outputPath, multiObfuscator, multiReportingOmitter)
 
 	workerFactory := func(id int) traversal.QueueProcessor {
@@ -130,6 +107,43 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 	reporter.CollectOmitterReport(multiReportingOmitter.Report())
 	reporter.CollectObfuscatorReport(multiObfuscator.ReportPerObfuscator())
 	return reporter.WriteReport(filepath.Join(reportingFolder, reportFileName))
+}
+
+func createObfuscatorsFromConfig(config *schema.SchemaJson) (*obfuscator.MultiObfuscator, error) {
+	var obfuscators []obfuscator.ReportingObfuscator
+	for _, o := range config.Config.Obfuscate {
+		switch o.Type {
+		case schema.ObfuscateTypeKeywords:
+			k := obfuscator.NewKeywordsObfuscator(o.Replacement)
+			k = obfuscator.NewTargetObfuscator(o.Target, k)
+			obfuscators = append(obfuscators, k)
+		case schema.ObfuscateTypeMAC:
+			k := obfuscator.NewTargetObfuscator(o.Target, obfuscator.NewMacAddressObfuscator())
+			obfuscators = append(obfuscators, k)
+		case schema.ObfuscateTypeRegex:
+			k, err := obfuscator.NewRegexObfuscator(*o.Regex)
+			if err != nil {
+				return nil, err
+			}
+			k = obfuscator.NewTargetObfuscator(o.Target, k)
+			obfuscators = append(obfuscators, k)
+		case schema.ObfuscateTypeDomain:
+			k, err := obfuscator.NewDomainObfuscator(o.Domains)
+			if err != nil {
+				return nil, err
+			}
+			k = obfuscator.NewTargetObfuscator(o.Target, k)
+			obfuscators = append(obfuscators, k)
+		case schema.ObfuscateTypeIP:
+			k, err := obfuscator.NewIPObfuscator(o.ReplacementType)
+			if err != nil {
+				return nil, err
+			}
+			k = obfuscator.NewTargetObfuscator(o.Target, k)
+			obfuscators = append(obfuscators, k)
+		}
+	}
+	return obfuscator.NewMultiObfuscator(obfuscators), nil
 }
 
 func ensureOutputPath(path string, deleteIfExists bool) error {
