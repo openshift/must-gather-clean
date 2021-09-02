@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"io/fs"
 	"io/ioutil"
 	"path"
 	"path/filepath"
@@ -33,6 +34,44 @@ func TestEndToEndWithExample(t *testing.T) {
 	generatedReport := readReport(t, filepath.Join(rootDir, reportFileName))
 	verifyReport(t, rootDir, truthReport, generatedReport)
 	verifyOmissions(t, inputDir, outputDir, generatedReport)
+	verifyObfuscation(t, outputDir, generatedReport)
+}
+
+func verifyObfuscation(t *testing.T, dir string, report *reporting.Report) {
+	// report should already be verified by verifyReport before to ensure it does contain correct information
+	var generatedMap map[string]string
+	for i := 0; i < len(report.Replacements); i++ {
+		if len(report.Replacements[i]) > 0 {
+			generatedMap = report.Replacements[i]
+			break
+		}
+	}
+
+	err := filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return nil
+		}
+
+		for k, v := range generatedMap {
+			assert.NotContainsf(t, path, k, "path should not contain secret IP %s, but rather its replacement %s", k, v)
+		}
+
+		if !info.IsDir() {
+			file, err := ioutil.ReadFile(path)
+			if err != nil {
+				return err
+			}
+
+			content := string(file)
+			for k, v := range generatedMap {
+				assert.NotContainsf(t, content, k, "file content should not contain secret IP %s, but rather its replacement %s", k, v)
+			}
+		}
+
+		return nil
+	})
+
+	require.NoError(t, err)
 }
 
 func verifyReport(t *testing.T, inputDir string, truthReport *reporting.Report, generatedReport *reporting.Report) {
