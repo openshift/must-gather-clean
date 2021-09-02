@@ -1,9 +1,11 @@
 package traversal
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type collectingQueueProcessor struct {
@@ -46,4 +48,25 @@ func TestFileWalker(t *testing.T) {
 			assert.Equal(t, tc.expectedResult, queueProc.paths)
 		})
 	}
+}
+
+func TestFileWalkerAbsolutePathing(t *testing.T) {
+	abs, err := filepath.Abs("testfiles/test1/mg")
+	require.NoError(t, err)
+
+	queueProc := &collectingQueueProcessor{[]string{}}
+	walker := NewParallelFileWalker(abs, 1, func(id int) QueueProcessor {
+		return queueProc
+	})
+
+	walker.Traverse()
+
+	assert.Equal(t, []string{
+		"nodes/another.yaml",
+		"nodes/test.yaml",
+		"pods/pod1/application.log",
+		"pods/pod1/manifests.yaml",
+		"pods/pod2/application.log",
+		"pods/pod2/manifests.yaml",
+	}, queueProc.paths)
 }
