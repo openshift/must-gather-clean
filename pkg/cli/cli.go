@@ -39,30 +39,10 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 		return fmt.Errorf("failed to create obfuscators via config at %s: %w", configPath, err)
 	}
 
-	var fileOmitters []omitter.FileOmitter
-	var k8sOmitters []omitter.KubernetesResourceOmitter
-	for _, o := range config.Config.Omit {
-		switch o.Type {
-		case schema.OmitTypeFile:
-			om, err := omitter.NewFilenamePatternOmitter(*o.Pattern)
-			if err != nil {
-				return err
-			}
-			fileOmitters = append(fileOmitters, om)
-		case schema.OmitTypeKubernetes:
-			if o.KubernetesResource == nil {
-				klog.Exitf("type Kubernetes must also include a 'kubernetesResource'. Given: %v", o)
-			}
-			kr := *o.KubernetesResource
-			om, err := omitter.NewKubernetesResourceOmitter(kr.ApiVersion, kr.Kind, kr.Namespaces)
-			if err != nil {
-				return err
-			}
-			k8sOmitters = append(k8sOmitters, om)
-		}
+	mro, err := createOmittersFromConfig(config)
+	if err != nil {
+		return fmt.Errorf("failed to create omitters via config at %s: %w", configPath, err)
 	}
-
-	mro := omitter.NewMultiReportingOmitter(fileOmitters, k8sOmitters)
 	fileCleaner := cleaner.NewFileCleaner(inputPath, outputPath, mo, mro)
 
 	workerFactory := func(id int) traversal.QueueProcessor {
@@ -75,6 +55,33 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 	reporter.CollectOmitterReport(mro.Report())
 	reporter.CollectObfuscatorReport(mo.ReportPerObfuscator())
 	return reporter.WriteReport(filepath.Join(reportingFolder, reportFileName))
+}
+
+func createOmittersFromConfig(config *schema.SchemaJson) (omitter.ReportingOmitter, error) {
+	var fileOmitters []omitter.FileOmitter
+	var k8sOmitters []omitter.KubernetesResourceOmitter
+	for _, o := range config.Config.Omit {
+		switch o.Type {
+		case schema.OmitTypeFile:
+			om, err := omitter.NewFilenamePatternOmitter(*o.Pattern)
+			if err != nil {
+				return nil, err
+			}
+			fileOmitters = append(fileOmitters, om)
+		case schema.OmitTypeKubernetes:
+			if o.KubernetesResource == nil {
+				klog.Exitf("type Kubernetes must also include a 'kubernetesResource'. Given: %v", o)
+			}
+			kr := *o.KubernetesResource
+			om, err := omitter.NewKubernetesResourceOmitter(kr.ApiVersion, kr.Kind, kr.Namespaces)
+			if err != nil {
+				return nil, err
+			}
+			k8sOmitters = append(k8sOmitters, om)
+		}
+	}
+
+	return omitter.NewMultiReportingOmitter(fileOmitters, k8sOmitters), nil
 }
 
 func createObfuscatorsFromConfig(config *schema.SchemaJson) (*obfuscator.MultiObfuscator, error) {

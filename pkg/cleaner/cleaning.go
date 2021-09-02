@@ -29,7 +29,7 @@ type FileObfuscator interface {
 }
 
 type ContentObfuscator struct {
-	Obfuscator obfuscator.ReportingObfuscator
+	Obfuscator obfuscator.Obfuscator
 }
 
 type FileProcessor struct {
@@ -38,7 +38,7 @@ type FileProcessor struct {
 	inputFolder  string
 	outputFolder string
 
-	omitter omitter.ReportingOmitter
+	omitter omitter.Omitter
 }
 
 func (c *FileProcessor) Process(path string) error {
@@ -128,7 +128,7 @@ func (c *ContentObfuscator) ObfuscateReader(inputReader io.Reader, outputWriter 
 	return writer.Flush()
 }
 
-func NewFileCleaner(inputPath string, outputPath string, obfuscator obfuscator.ReportingObfuscator, omitter omitter.ReportingOmitter) Processor {
+func NewFileCleaner(inputPath string, outputPath string, obfuscator obfuscator.Obfuscator, omitter omitter.Omitter) Processor {
 	return &FileProcessor{
 		ContentObfuscator: ContentObfuscator{Obfuscator: obfuscator},
 		inputFolder:       inputPath,

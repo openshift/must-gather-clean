@@ -14,9 +14,15 @@ type KubernetesResourceOmitter interface {
 	OmitKubeResource(resourceList *kube.ResourceListWithPath) (bool, error)
 }
 
-type ReportingOmitter interface {
+// Omitter is the interface for all kinds of omissions.
+type Omitter interface {
 	FileOmitter
 	KubernetesResourceOmitter
+}
+
+// ReportingOmitter adds reporting functionality to all omitters.
+type ReportingOmitter interface {
+	Omitter
 
 	// Report should return all paths that were omitted
 	Report() []string
