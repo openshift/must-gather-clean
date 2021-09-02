@@ -1,0 +1,92 @@
+2021-08-03T09:26:39.812571965Z 30c29f1b390a6a04, started, ip-10-0-189-142.ec2.internal, https://10.0.189.142:2380, https://10.0.189.142:2379,unixs://10.0.189.142:0, false
+2021-08-03T09:26:39.812668548Z 5a492cc498c39e02, started, ip-10-0-187-218.ec2.internal, https://10.0.187.218:2380, https://10.0.187.218:2379,unixs://10.0.187.218:0, false
+2021-08-03T09:26:39.812668548Z bb9c7099bd31ffff, started, ip-10-0-195-177.ec2.internal, https://10.0.195.177:2380, https://10.0.195.177:2379,unixs://10.0.195.177:0, false
+2021-08-03T09:26:39.816428847Z dataDir is present on ip-10-0-187-218.ec2.internal
+2021-08-03T09:26:39.826696370Z #### attempt 0
+2021-08-03T09:26:39.827417298Z       member={name="ip-10-0-189-142.ec2.internal", peerURLs=[https://10.0.189.142:2380}, clientURLs=[https://10.0.189.142:2379,unixs://10.0.189.142:0]
+2021-08-03T09:26:39.827417298Z       member={name="ip-10-0-187-218.ec2.internal", peerURLs=[https://10.0.187.218:2380}, clientURLs=[https://10.0.187.218:2379,unixs://10.0.187.218:0]
+2021-08-03T09:26:39.827417298Z       member={name="ip-10-0-195-177.ec2.internal", peerURLs=[https://10.0.195.177:2380}, clientURLs=[https://10.0.195.177:2379,unixs://10.0.195.177:0]
+2021-08-03T09:26:39.827417298Z       target={name="ip-10-0-187-218.ec2.internal", peerURLs=[https://10.0.187.218:2380}, clientURLs=[https://10.0.187.218:2379,unixs://10.0.187.218:0]
+2021-08-03T09:26:39.828778486Z Waiting for ports 2379, 2380 and 9978 to be released.2021-08-03T09:26:39.831911409Z .2021-08-03T09:26:40.837319896Z .2021-08-03T09:26:41.842296556Z .2021-08-03T09:26:42.847039866Z .2021-08-03T09:26:43.851563088Z .2021-08-03T09:26:44.856437801Z .2021-08-03T09:26:45.861130751Z .2021-08-03T09:26:46.865812375Z .2021-08-03T09:26:47.870315656Z .2021-08-03T09:26:48.875020622Z .2021-08-03T09:26:49.879921296Z .2021-08-03T09:26:50.885400951Z .2021-08-03T09:26:51.890388486Z .2021-08-03T09:26:52.895407365Z .2021-08-03T09:26:53.900501893Z .2021-08-03T09:26:54.905517858Z .2021-08-03T09:26:55.910121094Z .2021-08-03T09:26:56.914847322Z .2021-08-03T09:26:57.919668295Z .2021-08-03T09:26:58.924385862Z .2021-08-03T09:26:59.929346323Z .2021-08-03T09:27:00.934064103Z .2021-08-03T09:27:01.938690673Z 
+2021-08-03T09:27:01.938690673Z real	0m22.110s
+2021-08-03T09:27:01.938690673Z user	0m0.033s
+2021-08-03T09:27:01.938690673Z sys	0m0.076s
+2021-08-03T09:27:01.940280393Z ETCD_SOCKET_REUSE_ADDRESS=true
+2021-08-03T09:27:01.940280393Z ETCD_PORT_2379_TCP_PORT=2379
+2021-08-03T09:27:01.940280393Z ETCD_INITIAL_CLUSTER_STATE=existing
+2021-08-03T09:27:01.940280393Z ETCD_STATIC_POD_VERSION=3
+2021-08-03T09:27:01.940280393Z ETCD_HEARTBEAT_INTERVAL=100
+2021-08-03T09:27:01.940280393Z ETCD_INITIAL_CLUSTER=
+2021-08-03T09:27:01.940280393Z ETCD_PORT_2379_TCP=tcp://172.30.221.236:2379
+2021-08-03T09:27:01.940280393Z ETCD_SERVICE_PORT_ETCD=2379
+2021-08-03T09:27:01.940280393Z ETCD_ENABLE_PPROF=true
+2021-08-03T09:27:01.940280393Z ETCDCTL_CERT=/etc/kubernetes/static-pod-certs/secrets/etcd-all-certs/etcd-peer-ip-10-0-187-218.ec2.internal.crt
+2021-08-03T09:27:01.940280393Z ETCD_PORT_9979_TCP_PORT=9979
+2021-08-03T09:27:01.940280393Z ETCD_PORT_2379_TCP_PROTO=tcp
+2021-08-03T09:27:01.940280393Z ETCD_PORT_9979_TCP_ADDR=172.30.221.236
+2021-08-03T09:27:01.940280393Z ETCD_SERVICE_HOST=172.30.221.236
+2021-08-03T09:27:01.940280393Z ETCD_DATA_DIR=/var/lib/etcd
+2021-08-03T09:27:01.940280393Z ETCD_IMAGE=quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:7ab0346b7ff58de373ea380dd6c38242741b5323698c30030094c33913876153
+2021-08-03T09:27:01.940280393Z ALL_ETCD_ENDPOINTS=https://10.0.187.218:2379,https://10.0.189.142:2379,https://10.0.195.177:2379
+2021-08-03T09:27:01.940280393Z ETCDCTL_ENDPOINTS=https://10.0.187.218:2379,https://10.0.189.142:2379,https://10.0.195.177:2379
+2021-08-03T09:27:01.940280393Z ETCDCTL_API=3
+2021-08-03T09:27:01.940280393Z ETCD_PORT_9979_TCP_PROTO=tcp
+2021-08-03T09:27:01.940280393Z ETCD_SERVICE_PORT_ETCD_METRICS=9979
+2021-08-03T09:27:01.940280393Z ETCD_CIPHER_SUITES=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+2021-08-03T09:27:01.940280393Z ETCD_ELECTION_TIMEOUT=1000
+2021-08-03T09:27:01.940280393Z ETCDCTL_CACERT=/etc/kubernetes/static-pod-certs/configmaps/etcd-serving-ca/ca-bundle.crt
+2021-08-03T09:27:01.940280393Z ETCD_NAME=ip-10-0-187-218.ec2.internal
+2021-08-03T09:27:01.940280393Z ETCD_QUOTA_BACKEND_BYTES=7516192768
+2021-08-03T09:27:01.940280393Z ETCD_PORT_2379_TCP_ADDR=172.30.221.236
+2021-08-03T09:27:01.940280393Z ETCD_SERVICE_PORT=2379
+2021-08-03T09:27:01.940280393Z ETCD_PORT_9979_TCP=tcp://172.30.221.236:9979
+2021-08-03T09:27:01.940280393Z ETCD_EXPERIMENTAL_WATCH_PROGRESS_NOTIFY_INTERVAL=5s
+2021-08-03T09:27:01.940280393Z ETCD_PORT=tcp://172.30.221.236:2379
+2021-08-03T09:27:01.940280393Z ETCDCTL_KEY=/etc/kubernetes/static-pod-certs/secrets/etcd-all-certs/etcd-peer-ip-10-0-187-218.ec2.internal.key
+2021-08-03T09:27:01.940577136Z + exec ionice -c2 -n0 etcd --logger=zap --log-level=info --initial-advertise-peer-urls=https://10.0.187.218:2380 --cert-file=/etc/kubernetes/static-pod-certs/secrets/etcd-all-certs/etcd-serving-ip-10-0-187-218.ec2.internal.crt --key-file=/etc/kubernetes/static-pod-certs/secrets/etcd-all-certs/etcd-serving-ip-10-0-187-218.ec2.internal.key --trusted-ca-file=/etc/kubernetes/static-pod-certs/configmaps/etcd-serving-ca/ca-bundle.crt --client-cert-auth=true --peer-cert-file=/etc/kubernetes/static-pod-certs/secrets/etcd-all-certs/etcd-peer-ip-10-0-187-218.ec2.internal.crt --peer-key-file=/etc/kubernetes/static-pod-certs/secrets/etcd-all-certs/etcd-peer-ip-10-0-187-218.ec2.internal.key --peer-trusted-ca-file=/etc/kubernetes/static-pod-certs/configmaps/etcd-peer-client-ca/ca-bundle.crt --peer-client-cert-auth=true --advertise-client-urls=https://10.0.187.218:2379,unixs://10.0.187.218:0 --listen-client-urls=https://0.0.0.0:2379,unixs://10.0.187.218:0 --listen-peer-urls=https://0.0.0.0:2380 --listen-metrics-urls=https://0.0.0.0:9978
+2021-08-03T09:27:01.949237654Z 2021-08-03 09:27:01.949177 I | pkg/flags: recognized and used environment variable ETCD_CIPHER_SUITES=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+2021-08-03T09:27:01.949237654Z 2021-08-03 09:27:01.949227 I | pkg/flags: recognized and used environment variable ETCD_DATA_DIR=/var/lib/etcd
+2021-08-03T09:27:01.949266561Z 2021-08-03 09:27:01.949235 I | pkg/flags: recognized and used environment variable ETCD_ELECTION_TIMEOUT=1000
+2021-08-03T09:27:01.949266561Z 2021-08-03 09:27:01.949240 I | pkg/flags: recognized and used environment variable ETCD_ENABLE_PPROF=true
+2021-08-03T09:27:01.949266561Z 2021-08-03 09:27:01.949250 I | pkg/flags: recognized and used environment variable ETCD_EXPERIMENTAL_WATCH_PROGRESS_NOTIFY_INTERVAL=5s
+2021-08-03T09:27:01.949266561Z 2021-08-03 09:27:01.949256 I | pkg/flags: recognized and used environment variable ETCD_HEARTBEAT_INTERVAL=100
+2021-08-03T09:27:01.949266561Z 2021-08-03 09:27:01.949261 I | pkg/flags: recognized and used environment variable ETCD_INITIAL_CLUSTER_STATE=existing
+2021-08-03T09:27:01.949284396Z 2021-08-03 09:27:01.949276 I | pkg/flags: recognized and used environment variable ETCD_NAME=ip-10-0-187-218.ec2.internal
+2021-08-03T09:27:01.949307065Z 2021-08-03 09:27:01.949289 I | pkg/flags: recognized and used environment variable ETCD_QUOTA_BACKEND_BYTES=7516192768
+2021-08-03T09:27:01.949307065Z 2021-08-03 09:27:01.949301 I | pkg/flags: recognized and used environment variable ETCD_SOCKET_REUSE_ADDRESS=true
+2021-08-03T09:27:01.949327966Z 2021-08-03 09:27:01.949309 W | pkg/flags: unrecognized environment variable ETCD_PORT_2379_TCP_PORT=2379
+2021-08-03T09:27:01.949327966Z 2021-08-03 09:27:01.949313 W | pkg/flags: unrecognized environment variable ETCD_STATIC_POD_VERSION=3
+2021-08-03T09:27:01.949335539Z 2021-08-03 09:27:01.949316 W | pkg/flags: unrecognized environment variable ETCD_INITIAL_CLUSTER=
+2021-08-03T09:27:01.949335539Z 2021-08-03 09:27:01.949319 W | pkg/flags: unrecognized environment variable ETCD_PORT_2379_TCP=tcp://172.30.221.236:2379
+2021-08-03T09:27:01.949335539Z 2021-08-03 09:27:01.949321 W | pkg/flags: unrecognized environment variable ETCD_SERVICE_PORT_ETCD=2379
+2021-08-03T09:27:01.949335539Z 2021-08-03 09:27:01.949326 W | pkg/flags: unrecognized environment variable ETCD_PORT_9979_TCP_PORT=9979
+2021-08-03T09:27:01.949343440Z 2021-08-03 09:27:01.949335 W | pkg/flags: unrecognized environment variable ETCD_PORT_2379_TCP_PROTO=tcp
+2021-08-03T09:27:01.949343440Z 2021-08-03 09:27:01.949340 W | pkg/flags: unrecognized environment variable ETCD_PORT_9979_TCP_ADDR=172.30.221.236
+2021-08-03T09:27:01.949350038Z 2021-08-03 09:27:01.949343 W | pkg/flags: unrecognized environment variable ETCD_SERVICE_HOST=172.30.221.236
+2021-08-03T09:27:01.949356508Z 2021-08-03 09:27:01.949350 W | pkg/flags: unrecognized environment variable ETCD_IMAGE=quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:7ab0346b7ff58de373ea380dd6c38242741b5323698c30030094c33913876153
+2021-08-03T09:27:01.949356508Z 2021-08-03 09:27:01.949354 W | pkg/flags: unrecognized environment variable ETCD_PORT_9979_TCP_PROTO=tcp
+2021-08-03T09:27:01.949363196Z 2021-08-03 09:27:01.949356 W | pkg/flags: unrecognized environment variable ETCD_SERVICE_PORT_ETCD_METRICS=9979
+2021-08-03T09:27:01.949369788Z 2021-08-03 09:27:01.949361 W | pkg/flags: unrecognized environment variable ETCD_PORT_2379_TCP_ADDR=172.30.221.236
+2021-08-03T09:27:01.949369788Z 2021-08-03 09:27:01.949364 W | pkg/flags: unrecognized environment variable ETCD_SERVICE_PORT=2379
+2021-08-03T09:27:01.949369788Z 2021-08-03 09:27:01.949366 W | pkg/flags: unrecognized environment variable ETCD_PORT_9979_TCP=tcp://172.30.221.236:9979
+2021-08-03T09:27:01.949376796Z 2021-08-03 09:27:01.949370 W | pkg/flags: unrecognized environment variable ETCD_PORT=tcp://172.30.221.236:2379
+2021-08-03T09:27:01.949552752Z {"level":"info","ts":"2021-08-03T09:27:01.949Z","caller":"etcdmain/etcd.go:134","msg":"server has been already initialized","data-dir":"/var/lib/etcd","dir-type":"member"}
+2021-08-03T09:27:01.950019004Z {"level":"info","ts":"2021-08-03T09:27:01.949Z","caller":"embed/etcd.go:117","msg":"configuring socket options","reuse-address":true,"reuse-port":false}
+2021-08-03T09:27:01.950031166Z {"level":"info","ts":"2021-08-03T09:27:01.950Z","caller":"embed/etcd.go:125","msg":"configuring peer listeners","listen-peer-urls":["https://0.0.0.0:2380"]}
+2021-08-03T09:27:01.950056029Z {"level":"info","ts":"2021-08-03T09:27:01.950Z","caller":"embed/etcd.go:477","msg":"starting with peer TLS","tls-info":"cert = /etc/kubernetes/static-pod-certs/secrets/etcd-all-certs/etcd-peer-ip-10-0-187-218.ec2.internal.crt, key = /etc/kubernetes/static-pod-certs/secrets/etcd-all-certs/etcd-peer-ip-10-0-187-218.ec2.internal.key, trusted-ca = /etc/kubernetes/static-pod-certs/configmaps/etcd-peer-client-ca/ca-bundle.crt, client-cert-auth = true, crl-file = ","cipher-suites":["TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256","TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256","TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384","TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"]}
+2021-08-03T09:27:01.950526581Z {"level":"info","ts":"2021-08-03T09:27:01.950Z","caller":"embed/etcd.go:135","msg":"configuring client listeners","listen-client-urls":["https://0.0.0.0:2379","unixs://10.0.187.218:0"]}
+2021-08-03T09:27:01.950534943Z {"level":"info","ts":"2021-08-03T09:27:01.950Z","caller":"embed/etcd.go:618","msg":"pprof is enabled","path":"/debug/pprof"}
+2021-08-03T09:27:01.950850948Z {"level":"info","ts":"2021-08-03T09:27:01.950Z","caller":"embed/etcd.go:311","msg":"starting an etcd server","etcd-version":"3.4.14","git-sha":"1710af8","go-version":"go1.12.12","go-os":"linux","go-arch":"amd64","max-cpu-set":4,"max-cpu-available":4,"member-initialized":true,"name":"ip-10-0-187-218.ec2.internal","data-dir":"/var/lib/etcd","wal-dir":"","wal-dir-dedicated":"","member-dir":"/var/lib/etcd/member","force-new-cluster":false,"heartbeat-interval":"100ms","election-timeout":"1s","initial-election-tick-advance":true,"snapshot-count":100000,"snapshot-catchup-entries":5000,"initial-advertise-peer-urls":["https://10.0.187.218:2380"],"listen-peer-urls":["https://0.0.0.0:2380"],"advertise-client-urls":["https://10.0.187.218:2379","unixs://10.0.187.218:0"],"listen-client-urls":["https://0.0.0.0:2379","unixs://10.0.187.218:0"],"listen-metrics-urls":["https://0.0.0.0:9978"],"cors":["*"],"host-whitelist":["*"],"initial-cluster":"","initial-cluster-state":"existing","initial-cluster-token":"","quota-size-bytes":7516192768,"pre-vote":false,"initial-corrupt-check":false,"corrupt-check-time-interval":"0s","auto-compaction-mode":"periodic","auto-compaction-retention":"0s","auto-compaction-interval":"0s","discovery-url":"","discovery-proxy":""}
+2021-08-03T09:27:01.950877817Z 2021-08-03 09:27:01.950864 W | pkg/fileutil: check file permission: directory "/var/lib/etcd" exist, but the permission is "drwxr-xr-x". The recommended permission is "-rwx------" to prevent possible unprivileged access to the data.
+2021-08-03T09:27:01.977026553Z {"level":"info","ts":"2021-08-03T09:27:01.976Z","caller":"etcdserver/backend.go:80","msg":"opened backend db","path":"/var/lib/etcd/member/snap/db","took":"25.908796ms"}
+2021-08-03T09:27:02.176524394Z {"level":"info","ts":"2021-08-03T09:27:02.176Z","caller":"etcdserver/raft.go:536","msg":"restarting local member","cluster-id":"171b106d5e39eae","local-member-id":"5a492cc498c39e02","commit-index":18735}
+2021-08-03T09:27:02.177518409Z {"level":"info","ts":"2021-08-03T09:27:02.177Z","caller":"raft/raft.go:1530","msg":"5a492cc498c39e02 switched to configuration voters=()"}
+2021-08-03T09:27:02.177546572Z {"level":"info","ts":"2021-08-03T09:27:02.177Z","caller":"raft/raft.go:700","msg":"5a492cc498c39e02 became follower at term 7"}
+2021-08-03T09:27:02.177546572Z {"level":"info","ts":"2021-08-03T09:27:02.177Z","caller":"raft/raft.go:383","msg":"newRaft 5a492cc498c39e02 [peers: [], term: 7, commit: 18735, applied: 0, lastindex: 18735, lastterm: 7]"}
+2021-08-03T09:27:02.179045442Z {"level":"warn","ts":"2021-08-03T09:27:02.179Z","caller":"auth/store.go:1366","msg":"simple token is not cryptographically signed"}
+2021-08-03T09:27:02.222741595Z {"level":"info","ts":"2021-08-03T09:27:02.222Z","caller":"etcdserver/quota.go:126","msg":"enabled backend quota","quota-name":"v3-applier","quota-size-bytes":7516192768,"quota-size":"7.5 GB"}
+2021-08-03T09:27:02.224131620Z {"level":"info","ts":"2021-08-03T09:27:02.224Z","caller":"etcdserver/server.go:803","msg":"starting etcd server","local-member-id":"5a492cc498c39e02","local-server-version":"3.4.14","cluster-version":"to_be_decided"}
+2021-08-03T09:27:02.224294309Z {"level":"info","ts":"2021-08-03T09:27:02.224Z","caller":"etcdserver/server.go:691","msg":"starting initial election tick advance","election-ticks":10}
+2021-08-03T09:27:02.224415798Z {"level":"info","ts":"2021-08-03T09:27:02.224Z","caller":"raft/raft.go:1530","msg":"5a492cc498c39e02 switched to configuration voters=(8490907642962314480)"}
+2021-08-03T09:27:02.224533239Z {"level":"info","ts":"2021-08-03T09:27:02.224Z","caller":"membership/cluster.go:392","msg":"added member","cluster-id":"171b106d5e39eae","local-member-id":"5a492cc498c39e02","added-peer-id":"75d5c383b76b04f0","added-peer-peer-urls":["https://10.0.22.225:2380"]}
+2021-08-03T09:27:02.224576496Z {"level":"info","ts":"2021-08-03T09:27:02.224Z","caller":"rafthttp/peer.go:128","msg":"starting remote peer","remote-peer-id":"75d5c383b76b04f0"}

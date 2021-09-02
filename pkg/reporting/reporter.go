@@ -19,7 +19,7 @@ type Reporter interface {
 	// WriteReport writes the final report into the given path, will create folders if necessary.
 	WriteReport(path string) error
 
-	// CollectOmitterReport will call the Report method on the obfuscator and collect its omissions.
+	// CollectOmitterReport will call the Report method on the omitter and collect its omissions.
 	CollectOmitterReport(omitter omitter.ReportingOmitter)
 
 	// CollectObfuscatorReport will call the Report method on the obfuscator and collect the individual obfuscation results.
