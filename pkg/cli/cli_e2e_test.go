@@ -100,7 +100,7 @@ func verifyOmissions(t *testing.T, inputDir string, outputDir string, report *re
 
 	// the remainder should equal the reported omissions
 	var remainder []string
-	for k, _ := range inputAsMap {
+	for k := range inputAsMap {
 		k = filepath.Join(inputDir, searchPath, k)
 		remainder = append(remainder, k)
 	}
