@@ -34,7 +34,7 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 		return fmt.Errorf("failed to read config at %s: %w", configPath, err)
 	}
 
-	multiObfuscator, err := createObfuscatorsFromConfig(config)
+	mo, err := createObfuscatorsFromConfig(config)
 	if err != nil {
 		return fmt.Errorf("failed to create obfuscators via config at %s: %w", configPath, err)
 	}
@@ -62,8 +62,8 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 		}
 	}
 
-	multiReportingOmitter := omitter.NewMultiReportingOmitter(fileOmitters, k8sOmitters)
-	fileCleaner := cleaner.NewFileCleaner(inputPath, outputPath, multiObfuscator, multiReportingOmitter)
+	mro := omitter.NewMultiReportingOmitter(fileOmitters, k8sOmitters)
+	fileCleaner := cleaner.NewFileCleaner(inputPath, outputPath, mo, mro)
 
 	workerFactory := func(id int) traversal.QueueProcessor {
 		return traversal.NewWorker(id, fileCleaner)
@@ -72,8 +72,8 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 	traversal.NewParallelFileWalker(inputPath, workerCount, workerFactory).Traverse()
 
 	reporter := reporting.NewSimpleReporter()
-	reporter.CollectOmitterReport(multiReportingOmitter.Report())
-	reporter.CollectObfuscatorReport(multiObfuscator.ReportPerObfuscator())
+	reporter.CollectOmitterReport(mro.Report())
+	reporter.CollectObfuscatorReport(mo.ReportPerObfuscator())
 	return reporter.WriteReport(filepath.Join(reportingFolder, reportFileName))
 }
 

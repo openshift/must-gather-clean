@@ -36,18 +36,17 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-func initFlags() {
+func init() {
 	flags := rootCmd.Flags()
 	flags.StringVarP(&ConfigFile, "config", "c", "", "The path to the obfuscation configuration")
+	_ = rootCmd.MarkFlagRequired("config")
 	flags.StringVarP(&InputFolder, "input", "i", "", "The directory of the must-gather dump")
+	_ = rootCmd.MarkFlagRequired("input")
 	flags.StringVarP(&OutputFolder, "output", "o", "", "The directory of the obfuscated output")
+	_ = rootCmd.MarkFlagRequired("output")
 	flags.BoolVarP(&DeleteOutputFolder, "overwrite", "d", false, "If the output directory exists, setting this flag will delete the folder and all its contents before cleaning.")
 	flags.IntVarP(&WorkerCount, "worker-count", "w", runtime.NumCPU(), "The number of workers for processing")
 	flags.StringVarP(&ReportingFolder, "report", "r", ".", "The directory of the reporting output folder, default is the current working directory")
-
-	_ = rootCmd.MarkFlagRequired("config")
-	_ = rootCmd.MarkFlagRequired("input")
-	_ = rootCmd.MarkFlagRequired("output")
 
 	fs := goflag.NewFlagSet("", goflag.ExitOnError)
 	klog.InitFlags(fs)
@@ -55,8 +54,6 @@ func initFlags() {
 }
 
 func main() {
-	initFlags()
-
 	rand.Seed(time.Now().UTC().UnixNano())
 	cobra.CheckErr(rootCmd.Execute())
 }

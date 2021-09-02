@@ -1,6 +1,7 @@
 package obfuscator
 
 // NoopObfuscator is only used for testing purposes across packages. It does obfuscate nothing.
+// It also can't be defined in a test file, since it's won't be exported and needed by other packages.
 type NoopObfuscator struct {
 	Replacements map[string]string
 }

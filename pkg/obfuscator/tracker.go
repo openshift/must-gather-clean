@@ -8,9 +8,9 @@ import (
 
 type GenerateReplacement func(string) string
 
-// ReplacementTracker is used to track and generate Replacements used by obfuscators
+// ReplacementTracker is used to track and generate replacements used by obfuscators
 type ReplacementTracker interface {
-	// Initialize initializes the tracker with some existing Replacements. It should be called only once and before
+	// Initialize initializes the tracker with some existing replacements. It should be called only once and before
 	// the first use of GetReplacement or AddReplacement
 	Initialize(replacements map[string]string)
 
@@ -72,7 +72,7 @@ func (s *SimpleTracker) Initialize(replacements map[string]string) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if len(s.mapping) > 0 {
-		klog.Exitf("tracker was initialized more than once or after some Replacements were already added.")
+		klog.Exitf("tracker was initialized more than once or after some replacements were already added.")
 	}
 	for k, v := range replacements {
 		s.mapping[k] = v
