@@ -19,7 +19,7 @@ type macAddressObfuscator struct {
 	ReplacementTracker
 	replacementType schema.ObfuscateReplacementType
 	regex           *regexp.Regexp
-	obfsGenerator   obfsGenerator
+	obfsGenerator   generator
 }
 
 func (m *macAddressObfuscator) Path(s string) string {
@@ -55,14 +55,12 @@ func NewMacAddressObfuscator(replacementType schema.ObfuscateReplacementType) (O
 	regex := regexp.MustCompile(`([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}`)
 
 	reporter := NewSimpleTracker()
-	generator := obfsGenerator{
-		static:   staticMacReplacement,
-		template: consistentMACTemplate,
-	}
+	// creating a new generator object
+	generator := NewGenerator(consistentMACTemplate, staticMacReplacement, 0)
 	return &macAddressObfuscator{
 		ReplacementTracker: reporter,
 		replacementType:    replacementType,
 		regex:              regex,
-		obfsGenerator:      generator,
+		obfsGenerator:      *generator,
 	}, nil
 }
