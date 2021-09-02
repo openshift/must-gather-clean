@@ -6,7 +6,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-type GenerateReplacement func(string) string
+type GenerateReplacement func() string
 
 // ReplacementTracker is used to track and generate replacements used by obfuscators
 type ReplacementTracker interface {
@@ -21,10 +21,10 @@ type ReplacementTracker interface {
 	// If there is an existing value that does not match the given replacement, it will exit with a non-zero status.
 	AddReplacement(original string, replacement string)
 
-	// GenerateIfAbsent returns the previously used replacement if already set. If the replacement is not present then it
-	// uses the GenerateReplacement function to generate a replacement. Generator should not be empty. The original
-	// parameter must be used for lookup and the key parameter to generate the replacement.
-	GenerateIfAbsent(original string, key string, generator GenerateReplacement) string
+	// GenerateIfAbsent returns the previously used replacement along with a true boolean conveying the entry is already present.
+	// If the replacement is not present then it uses the GenerateReplacement function to generate a replacement. Returns a false boolean.
+	// The "key" parameter must be used for lookup and the "generator" parameter to generate the replacement.
+	GenerateIfAbsent(key string, generator GenerateReplacement) (string, bool)
 }
 
 type SimpleTracker struct {
@@ -54,18 +54,23 @@ func (s *SimpleTracker) AddReplacement(original string, replacement string) {
 	s.mapping[original] = replacement
 }
 
-func (s *SimpleTracker) GenerateIfAbsent(original string, key string, generator GenerateReplacement) string {
+func (s *SimpleTracker) GenerateIfAbsent(key string, generator GenerateReplacement) (string, bool) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	if val, ok := s.mapping[original]; ok {
-		return val
+	// returning the empty string if the replacement is already present
+	// GenerateIfAbsent only should generate the replacement if the key is a new one
+	// This helps in avoiding the addition of case-sensitive alternatives to the report
+	if val, ok := s.mapping[key]; ok {
+		return val, ok
 	}
 	if generator == nil {
-		return ""
+		return "", false
 	}
-	r := generator(key)
-	s.mapping[original] = r
-	return r
+	r := generator()
+	// commenting the next line as the Generate function should generate the alternative and return.
+	// Addition of the entry should be ideally taken care by the AddReplacement method.
+	//	s.mapping[key] = r
+	return r, false
 }
 
 func (s *SimpleTracker) Initialize(replacements map[string]string) {
