@@ -29,7 +29,7 @@ type QueueProcessor interface {
 
 type Worker struct {
 	id      int
-	cleaner cleaner.CleaningProcessor
+	cleaner cleaner.Processor
 }
 
 func (w *Worker) ProcessQueue(queue chan workerInput, errorCh chan error) {
@@ -37,7 +37,7 @@ func (w *Worker) ProcessQueue(queue chan workerInput, errorCh chan error) {
 		path := string(wf)
 		klog.V(3).Infof("[Worker %02d] Processing %s\n", w.id, path)
 
-		err := w.cleaner.ProcessFile(path)
+		err := w.cleaner.Process(path)
 		if err != nil {
 			errorCh <- &fileProcessingError{
 				path:  path,
@@ -49,7 +49,7 @@ func (w *Worker) ProcessQueue(queue chan workerInput, errorCh chan error) {
 	}
 }
 
-func NewWorker(id int, cleaner cleaner.CleaningProcessor) QueueProcessor {
+func NewWorker(id int, cleaner cleaner.Processor) QueueProcessor {
 	return &Worker{
 		id:      id,
 		cleaner: cleaner,

@@ -12,7 +12,7 @@ type noOpCleaner struct {
 	desiredError *error
 }
 
-func (n noOpCleaner) ProcessFile(_ string) error {
+func (n noOpCleaner) Process(_ string) error {
 	if n.desiredError != nil {
 		return *n.desiredError
 	}

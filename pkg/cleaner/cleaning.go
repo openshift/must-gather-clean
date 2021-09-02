@@ -12,27 +12,27 @@ import (
 	"github.com/openshift/must-gather-clean/pkg/omitter"
 )
 
-type CleaningProcessor interface {
-	// ProcessFile is the end2end method for cleaning (omit + obfuscate path and content of) a file on disk.
+type Processor interface {
+	// Process is the end2end method for cleaning (omit + obfuscate path and content of) a file on disk.
 	// Will return nil if the file was processed without an error (e.g. through omission) or the error otherwise.
-	ProcessFile(inputFile string) error
+	Process(inputFile string) error
 }
 
-type ReaderWriterObfuscator interface {
-	// ObfuscateInputReader obfuscates on an agnostic line-based reader and writes to an agnostic writer facility
-	ObfuscateInputReader(inputReader io.Reader, outputWriter io.Writer) error
+type ReadWriteObfuscator interface {
+	// ObfuscateReader obfuscates on an agnostic line-based reader and writes to an agnostic writer facility
+	ObfuscateReader(inputReader io.Reader, outputWriter io.Writer) error
 }
 
 type FileObfuscator interface {
-	// ObfuscatePlainTextFile obfuscates a text file and writes the result into the outputFile.
-	ObfuscatePlainTextFile(inputFile string, outputFile string) error
+	// ObfuscateFile obfuscates a text file and writes the result into the outputFile.
+	ObfuscateFile(inputFile string, outputFile string) error
 }
 
 type ContentObfuscator struct {
 	Obfuscator obfuscator.ReportingObfuscator
 }
 
-type FileCleaner struct {
+type FileProcessor struct {
 	ContentObfuscator
 
 	inputFolder  string
@@ -41,7 +41,7 @@ type FileCleaner struct {
 	omitter omitter.ReportingOmitter
 }
 
-func (c *FileCleaner) ProcessFile(path string) error {
+func (c *FileProcessor) Process(path string) error {
 	omit, err := c.omitter.OmitPath(path)
 	if err != nil {
 		return err
@@ -73,10 +73,10 @@ func (c *FileCleaner) ProcessFile(path string) error {
 	}
 
 	// obfuscate the text file with updated path name, which can also contain confidential information
-	return c.ObfuscatePlainTextFile(path, c.ContentObfuscator.Obfuscator.Path(path))
+	return c.ObfuscateFile(path, c.ContentObfuscator.Obfuscator.Path(path))
 }
 
-func (c *FileCleaner) ObfuscatePlainTextFile(inputFile string, outputFile string) error {
+func (c *FileProcessor) ObfuscateFile(inputFile string, outputFile string) error {
 	readPath := filepath.Join(c.inputFolder, inputFile)
 	writePath := filepath.Join(c.outputFolder, outputFile)
 	writePathParentDir := filepath.Dir(writePath)
@@ -128,8 +128,8 @@ func (c *ContentObfuscator) ObfuscateReader(inputReader io.Reader, outputWriter 
 	return writer.Flush()
 }
 
-func NewFileCleaner(inputPath string, outputPath string, obfuscator obfuscator.ReportingObfuscator, omitter omitter.ReportingOmitter) CleaningProcessor {
-	return &FileCleaner{
+func NewFileCleaner(inputPath string, outputPath string, obfuscator obfuscator.ReportingObfuscator, omitter omitter.ReportingOmitter) Processor {
+	return &FileProcessor{
 		ContentObfuscator: ContentObfuscator{Obfuscator: obfuscator},
 		inputFolder:       inputPath,
 		outputFolder:      outputPath,

@@ -167,7 +167,7 @@ metadata:
 			multiOmitter := omitter.NewMultiReportingOmitter(tc.fileOmitters, tc.k8sOmitters)
 			fileCleaner := NewFileCleaner(tmpInputDir, tmpOutputDir, reportingObfuscator, multiOmitter)
 
-			err = fileCleaner.ProcessFile(testFileName)
+			err = fileCleaner.Process(testFileName)
 			if tc.err != nil {
 				require.NotNil(t, err)
 				require.Equal(t, tc.err, err)
