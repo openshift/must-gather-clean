@@ -8,7 +8,7 @@
 bin/
 
 # reports created by debugging/testing
-report.yaml
+/report.yaml
 
 # cleaning result from e2e test
 pkg/cli/testfiles/release-4.8.cleaned
