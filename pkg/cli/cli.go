@@ -40,7 +40,11 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 		case schema.ObfuscateTypeKeywords:
 			obfuscators = append(obfuscators, obfuscator.NewKeywordsObfuscator(o.Replacement))
 		case schema.ObfuscateTypeMAC:
-			obfuscators = append(obfuscators, obfuscator.NewMacAddressObfuscator())
+			o, err := obfuscator.NewMacAddressObfuscator(o.ReplacementType)
+			if err != nil {
+				return err
+			}
+			obfuscators = append(obfuscators, o)
 		case schema.ObfuscateTypeRegex:
 			o, err := obfuscator.NewRegexObfuscator(*o.Regex, o.Target)
 			if err != nil {
