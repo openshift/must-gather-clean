@@ -12,3 +12,6 @@ bin/
 
 # cleaning result from e2e test
 pkg/cli/testfiles/release-4.8.cleaned
+
+# Compiled files
+/dist
