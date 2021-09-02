@@ -13,11 +13,12 @@ import (
 )
 
 type CleaningProcessor interface {
-	// ProcessFile is the end2end method for cleaning (omit + obfuscate path and content of) a file on disk
+	// ProcessFile is the end2end method for cleaning (omit + obfuscate path and content of) a file on disk.
+	// Will return nil if the file was processed without an error (e.g. through omission) or the error otherwise.
 	ProcessFile(inputFile string) error
 }
 
-type FileContentObfuscator interface {
+type ReaderWriterObfuscator interface {
 	// ObfuscateInputReader obfuscates on an agnostic line-based reader and writes to an agnostic writer facility
 	ObfuscateInputReader(inputReader io.Reader, outputWriter io.Writer) error
 }
@@ -71,13 +72,8 @@ func (c *FileCleaner) ProcessFile(path string) error {
 		}
 	}
 
-	newObfuscatedPath := c.ContentObfuscator.Obfuscator.Path(path)
-	err = c.ObfuscatePlainTextFile(path, newObfuscatedPath)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	// obfuscate the text file with updated path name, which can also contain confidential information
+	return c.ObfuscatePlainTextFile(path, c.ContentObfuscator.Obfuscator.Path(path))
 }
 
 func (c *FileCleaner) ObfuscatePlainTextFile(inputFile string, outputFile string) error {

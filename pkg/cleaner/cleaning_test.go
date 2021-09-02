@@ -70,6 +70,13 @@ func TestCleaner(t *testing.T) {
 			k8sOmitters:  []omitter.KubernetesResourceOmitter{},
 		},
 		{
+			name:         "simple omission by filename",
+			input:        "whatever is in there",
+			obfuscators:  []obfuscator.ReportingObfuscator{noErrorIpObfuscator(t)},
+			fileOmitters: []omitter.FileOmitter{newFilePatternOmitter(t, "test.yaml")},
+			k8sOmitters:  []omitter.KubernetesResourceOmitter{},
+		},
+		{
 			name: "ip obfuscated in yaml when its in a k8s resource",
 			input: `apiVersion: v1
 kind: Secret
@@ -180,4 +187,10 @@ metadata:
 		})
 	}
 
+}
+
+func newFilePatternOmitter(t *testing.T, pattern string) omitter.FileOmitter {
+	o, err := omitter.NewFilenamePatternOmitter(pattern)
+	require.NoError(t, err)
+	return o
 }
