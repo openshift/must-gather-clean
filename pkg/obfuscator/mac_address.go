@@ -5,8 +5,6 @@ import (
 	"regexp"
 	"strings"
 
-	"k8s.io/klog/v2"
-
 	"github.com/openshift/must-gather-clean/pkg/schema"
 )
 
@@ -21,18 +19,7 @@ type macAddressObfuscator struct {
 	ReplacementTracker
 	replacementType schema.ObfuscateReplacementType
 	regex           *regexp.Regexp
-	// count helps in keeping track of the number of MAC obfuscations.
-	count int
-}
-
-// consistentObfuscation helps in generating the consistent MAC obfuscation that happens within the count limit
-func (m *macAddressObfuscator) consistentObfuscation() string {
-	m.count++
-	if m.count > maximumSupportedObfuscations {
-		klog.Exitf("maximum number of mac obfuscations exceeded: %d", maximumSupportedObfuscations)
-	}
-	r := fmt.Sprintf(consistentMACTemplate, m.count)
-	return r
+	obfsGenerator   obfsGenerator
 }
 
 func (m *macAddressObfuscator) Path(s string) string {
@@ -45,9 +32,9 @@ func (m *macAddressObfuscator) Contents(s string) string {
 		var replacement string
 		switch m.replacementType {
 		case schema.ObfuscateReplacementTypeStatic:
-			replacement = staticMacReplacement
+			replacement = m.GenerateIfAbsent(match, match, m.obfsGenerator.generateStaticReplacement)
 		case schema.ObfuscateReplacementTypeConsistent:
-			replacement = m.consistentObfuscation()
+			replacement = m.GenerateIfAbsent(match, match, m.obfsGenerator.generateConsistentReplacement)
 		}
 		s = strings.Replace(s, match, replacement, -1)
 		m.ReplacementTracker.AddReplacement(match, replacement)
@@ -68,9 +55,14 @@ func NewMacAddressObfuscator(replacementType schema.ObfuscateReplacementType) (O
 	regex := regexp.MustCompile(`([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}`)
 
 	reporter := NewSimpleTracker()
+	generator := obfsGenerator{
+		static:   staticMacReplacement,
+		template: consistentMACTemplate,
+	}
 	return &macAddressObfuscator{
 		ReplacementTracker: reporter,
 		replacementType:    replacementType,
 		regex:              regex,
+		obfsGenerator:      generator,
 	}, nil
 }

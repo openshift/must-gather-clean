@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/openshift/must-gather-clean/pkg/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/openshift/must-gather-clean/pkg/schema"
 )
 
 func TestMacStaticReplacement(t *testing.T) {
@@ -16,9 +16,9 @@ func TestMacStaticReplacement(t *testing.T) {
 }
 
 func TestMacConsistentReplacement(t *testing.T) {
-        o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent)
-        assert.Equal(t, "x-mac-000001-x", o.Contents("29-7E-8C-8C-60-C9"))
-        assert.Equal(t, map[string]string{"29-7E-8C-8C-60-C9": "x-mac-000001-x"}, o.Report())
+	o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent)
+	assert.Equal(t, "x-mac-000001-x", o.Contents("29-7E-8C-8C-60-C9"))
+	assert.Equal(t, map[string]string{"29-7E-8C-8C-60-C9": "x-mac-000001-x"}, o.Report())
 }
 
 func TestMacReplacementManyMatchLine(t *testing.T) {
@@ -82,7 +82,7 @@ func TestMACConsistentObfuscator(t *testing.T) {
 			output: []string{"MAC addresses of the two network interfaces are x-mac-000001-x and x-mac-000002-x"},
 			report: map[string]string{
 				"2C:54:91:88:C9:E3": "x-mac-000001-x",
-				"2C:56:83:91:C9:E6":  "x-mac-000002-x",
+				"2C:56:83:91:C9:E6": "x-mac-000002-x",
 			},
 		},
 		{
