@@ -3,7 +3,6 @@ package main
 import (
 	goflag "flag"
 	"math/rand"
-	"os"
 	"runtime"
 	"time"
 
@@ -14,7 +13,6 @@ import (
 )
 
 var (
-	PipeModeEnabled    bool
 	ConfigFile         string
 	DeleteOutputFolder bool
 	InputFolder        string
@@ -31,16 +29,9 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		defer klog.Flush()
 
-		if PipeModeEnabled {
-			err := cli.RunPipe(ConfigFile)
-			if err != nil {
-				klog.Exitf("%v\n", err)
-			}
-		} else {
-			err := cli.Run(ConfigFile, InputFolder, OutputFolder, DeleteOutputFolder, ReportingFolder, WorkerCount)
-			if err != nil {
-				klog.Exitf("%v\n", err)
-			}
+		err := cli.Run(ConfigFile, InputFolder, OutputFolder, DeleteOutputFolder, ReportingFolder, WorkerCount)
+		if err != nil {
+			klog.Exitf("%v\n", err)
 		}
 	},
 }
@@ -54,11 +45,9 @@ func initFlags() {
 	flags.IntVarP(&WorkerCount, "worker-count", "w", runtime.NumCPU(), "The number of workers for processing")
 	flags.StringVarP(&ReportingFolder, "report", "r", ".", "The directory of the reporting output folder, default is the current working directory")
 
-	if !PipeModeEnabled {
-		_ = rootCmd.MarkFlagRequired("config")
-		_ = rootCmd.MarkFlagRequired("input")
-		_ = rootCmd.MarkFlagRequired("output")
-	}
+	_ = rootCmd.MarkFlagRequired("config")
+	_ = rootCmd.MarkFlagRequired("input")
+	_ = rootCmd.MarkFlagRequired("output")
 
 	fs := goflag.NewFlagSet("", goflag.ExitOnError)
 	klog.InitFlags(fs)
@@ -66,11 +55,6 @@ func initFlags() {
 }
 
 func main() {
-	stat, _ := os.Stdin.Stat()
-	if (stat.Mode() & os.ModeCharDevice) == 0 {
-		PipeModeEnabled = true
-	}
-
 	initFlags()
 
 	rand.Seed(time.Now().UTC().UnixNano())
