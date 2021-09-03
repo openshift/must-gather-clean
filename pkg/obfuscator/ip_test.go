@@ -82,6 +82,7 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			output: "obfuscate xxx.xxx.xxx.xxx and xxx.xxx.xxx.xxx",
 			report: map[string]string{
 				"10.0.129.220": "xxx.xxx.xxx.xxx",
+				"10-0-129-220": "xxx.xxx.xxx.xxx",
 			},
 		},
 		{
