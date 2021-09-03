@@ -207,7 +207,7 @@ func TestIPObfuscatorConsistent(t *testing.T) {
 			},
 		},
 		{
-			name:   "standard ipv4 with colons and standard ipv4 with dashes inbetween should map to the same obfuscation value",
+			name:   "standard ipv4 with colons and standard ipv4 with dashes between should map to the same obfuscation value",
 			input:  []string{"obfuscate 10.0.129.220 and 10-0-129-220"},
 			output: []string{"obfuscate x-ipv4-000001-x and x-ipv4-000001-x"},
 			report: map[string]string{
