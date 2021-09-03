@@ -6,8 +6,6 @@ import (
 	"regexp"
 	"strings"
 
-	"k8s.io/klog/v2"
-
 	"github.com/openshift/must-gather-clean/pkg/schema"
 )
 
@@ -32,30 +30,9 @@ var (
 	}
 )
 
-// ipGenerator generates templated static and consistent obfuscated IP address. The caller should ensure that the
-// generator is not called concurrently.
-type ipGenerator struct {
-	template   string
-	obfuscated string
-	count      int
-}
-
-func (g *ipGenerator) consistent(_ string) string {
-	g.count++
-	if g.count > maximumSupportedObfuscations {
-		klog.Exitf("maximum number of ip obfuscations exceeded: %d", maximumSupportedObfuscations)
-	}
-	r := fmt.Sprintf(g.template, g.count)
-	return r
-}
-
-func (g *ipGenerator) static(_ string) string {
-	return g.obfuscated
-}
-
 type ipObfuscator struct {
 	ReplacementTracker
-	replacements    map[*regexp.Regexp]*ipGenerator
+	replacements    map[*regexp.Regexp]*generator
 	replacementType schema.ObfuscateReplacementType
 }
 
@@ -84,11 +61,12 @@ func (o *ipObfuscator) replace(s string) string {
 				var replacement string
 				switch o.replacementType {
 				case schema.ObfuscateReplacementTypeStatic:
-					replacement = o.GenerateIfAbsent(m, cleaned, gen.static)
+					replacement = o.GenerateIfAbsent(cleaned, gen.generateStaticReplacement)
 				case schema.ObfuscateReplacementTypeConsistent:
-					replacement = o.GenerateIfAbsent(m, cleaned, gen.consistent)
+					replacement = o.GenerateIfAbsent(cleaned, gen.generateConsistentReplacement)
 				}
 				output = strings.ReplaceAll(output, m, replacement)
+				o.ReplacementTracker.AddReplacement(m, replacement)
 			}
 		}
 	}
@@ -101,9 +79,9 @@ func NewIPObfuscator(replacementType schema.ObfuscateReplacementType) (Obfuscato
 	}
 	return &ipObfuscator{
 		ReplacementTracker: NewSimpleTracker(),
-		replacements: map[*regexp.Regexp]*ipGenerator{
-			ipv4Pattern: {template: consistentIPv4Template, obfuscated: obfuscatedStaticIPv4},
-			ipv6Pattern: {template: consistentIPv6Template, obfuscated: obfuscatedStaticIPv6},
+		replacements: map[*regexp.Regexp]*generator{
+			ipv4Pattern: {template: consistentIPv4Template, static: obfuscatedStaticIPv4},
+			ipv6Pattern: {template: consistentIPv6Template, static: obfuscatedStaticIPv6},
 		},
 		replacementType: replacementType,
 	}, nil
