@@ -93,7 +93,11 @@ func createObfuscatorsFromConfig(config *schema.SchemaJson) (*obfuscator.MultiOb
 			k = obfuscator.NewTargetObfuscator(o.Target, k)
 			obfuscators = append(obfuscators, k)
 		case schema.ObfuscateTypeMAC:
-			k := obfuscator.NewTargetObfuscator(o.Target, obfuscator.NewMacAddressObfuscator())
+			k, err := obfuscator.NewMacAddressObfuscator(o.ReplacementType)
+			if err != nil {
+				return err
+			}
+			k = obfuscator.NewTargetObfuscator(o.Target, k)
 			obfuscators = append(obfuscators, k)
 		case schema.ObfuscateTypeRegex:
 			k, err := obfuscator.NewRegexObfuscator(*o.Regex)
