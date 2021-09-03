@@ -2,27 +2,43 @@ package cleaner
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
+	"github.com/openshift/must-gather-clean/pkg/kube"
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
 	"github.com/openshift/must-gather-clean/pkg/omitter"
 	"github.com/openshift/must-gather-clean/pkg/schema"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 type errOmitter struct {
-	contents bool
-	err      error
+	pathResult bool
+	pathErr    error
+
+	k8sResult bool
+	k8sErr    error
 }
 
 func (e *errOmitter) OmitPath(_ string) (bool, error) {
-	if !e.contents {
-		return false, e.err
-	}
-	return false, nil
+	return e.pathResult, e.pathErr
+}
+
+func (e *errOmitter) OmitKubeResource(_ *kube.ResourceListWithPath) (bool, error) {
+	return e.k8sResult, e.k8sErr
+}
+
+type errWriter struct{}
+
+var UnwritableErr = errors.New("unwritable")
+
+func (errWriter) Write(_ []byte) (n int, err error) {
+	return 0, UnwritableErr
 }
 
 func pString(s string) *string {
@@ -41,8 +57,66 @@ func noErrorK8sSecretOmitter(t *testing.T) omitter.KubernetesResourceOmitter {
 	return resourceOmitter
 }
 
-// TODO(thomas): this is more of an end2end test, we should do more unit testing of the specific methods
-func TestCleaner(t *testing.T) {
+func TestProcessNotExistingFile(t *testing.T) {
+	fileCleaner := NewFileCleaner("tmpInputDir", "tmpOutputDir", obfuscator.NoopObfuscator{}, &omitter.NoopOmitter{})
+	err := fileCleaner.Process("not-existing.yaml")
+	assert.ErrorIs(t, err, os.ErrNotExist)
+}
+
+func TestProcessNoK8sResource(t *testing.T) {
+	fileCleaner := NewFileCleaner("tmpInputDir", "tmpOutputDir", obfuscator.NoopObfuscator{}, &omitter.NoopOmitter{})
+	err := fileCleaner.Process("not-existing.zzzz")
+	assert.ErrorIs(t, err, os.ErrNotExist)
+}
+
+func TestObfuscateReaderHappyPath(t *testing.T) {
+	cf := ContentObfuscator{Obfuscator: noErrorIpObfuscator(t)}
+
+	output := &strings.Builder{}
+	err := cf.ObfuscateReader(strings.NewReader(`
+this is one line with an ip 10.0.129.220
+and another with another ip 192.168.2.11
+`), output)
+	require.NoError(t, err)
+	assert.Equal(t, `
+this is one line with an ip xxx.xxx.xxx.xxx
+and another with another ip xxx.xxx.xxx.xxx
+`, output.String())
+}
+
+func TestObfuscateReaderIOErrorPropagates(t *testing.T) {
+	cf := ContentObfuscator{Obfuscator: noErrorIpObfuscator(t)}
+	err := cf.ObfuscateReader(strings.NewReader("a line"), &errWriter{})
+	require.ErrorIs(t, err, UnwritableErr)
+}
+
+func TestObfuscateFileOutputExistsFails(t *testing.T) {
+	tmpInputDir, err := os.MkdirTemp("", "Worker-test-*")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(tmpInputDir)
+	}()
+
+	tmpOutputDir, err := os.MkdirTemp("", "Worker-test-*")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(tmpOutputDir)
+	}()
+
+	existingFile := "existing.file"
+	require.NoError(t, ioutil.WriteFile(filepath.Join(tmpInputDir, existingFile), []byte("hello world"), 0666))
+	require.NoError(t, ioutil.WriteFile(filepath.Join(tmpOutputDir, existingFile), []byte("hello world"), 0666))
+	fco := &FileContentObfuscator{
+		ContentObfuscator: ContentObfuscator{Obfuscator: obfuscator.NoopObfuscator{}},
+		inputFolder:       tmpInputDir,
+		outputFolder:      tmpOutputDir,
+	}
+
+	err = fco.ObfuscateFile(existingFile, existingFile)
+	assert.Equal(t, err, fmt.Errorf("file %s already exists, check whether the obfuscators overwrite each other", filepath.Join(tmpOutputDir, existingFile)))
+}
+
+func TestCleanerProcessor(t *testing.T) {
 	for _, tc := range []struct {
 		name             string
 		output           string
@@ -133,12 +207,28 @@ metadata:
 			obfuscators: []obfuscator.ReportingObfuscator{obfuscator.NoopObfuscator{}},
 			fileOmitters: []omitter.FileOmitter{
 				&errOmitter{
-					contents: false,
-					err:      errors.New("omitter error"),
+					pathResult: false,
+					pathErr:    errors.New("omitter error"),
 				},
 			},
 			k8sOmitters: []omitter.KubernetesResourceOmitter{},
 			err:         errors.New("omitter error"),
+		},
+
+		{
+			name: "error k8s omitter",
+			input: `apiVersion: v1
+kind: Secret
+metadata:
+    namespace: kube-system
+    name: 192.178.1.2
+`,
+			obfuscators:  []obfuscator.ReportingObfuscator{obfuscator.NoopObfuscator{}},
+			fileOmitters: []omitter.FileOmitter{},
+			k8sOmitters: []omitter.KubernetesResourceOmitter{&errOmitter{
+				k8sErr: errors.New("omitter error"),
+			}},
+			err: errors.New("omitter error"),
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

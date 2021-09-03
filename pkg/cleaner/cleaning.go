@@ -32,11 +32,15 @@ type ContentObfuscator struct {
 	Obfuscator obfuscator.Obfuscator
 }
 
-type FileProcessor struct {
+type FileContentObfuscator struct {
 	ContentObfuscator
 
 	inputFolder  string
 	outputFolder string
+}
+
+type FileProcessor struct {
+	FileContentObfuscator
 
 	omitter omitter.Omitter
 }
@@ -73,10 +77,10 @@ func (c *FileProcessor) Process(path string) error {
 	}
 
 	// obfuscate the text file with updated path name, which can also contain confidential information
-	return c.ObfuscateFile(path, c.ContentObfuscator.Obfuscator.Path(path))
+	return c.ObfuscateFile(path, c.FileContentObfuscator.Obfuscator.Path(path))
 }
 
-func (c *FileProcessor) ObfuscateFile(inputFile string, outputFile string) error {
+func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile string) error {
 	readPath := filepath.Join(c.inputFolder, inputFile)
 	writePath := filepath.Join(c.outputFolder, outputFile)
 	writePathParentDir := filepath.Dir(writePath)
@@ -91,24 +95,35 @@ func (c *FileProcessor) ObfuscateFile(inputFile string, outputFile string) error
 		return fmt.Errorf("failed to create directory %s: %c", writePathParentDir, err)
 	}
 
+	// we need to assess whether the file exists already to ensure we don't overwrite existing obfuscated data.
+	// that can happen while obfuscating file names and their paths.
+	// Additionally, the stat check is required because os.O_CREATE will implicitly os.O_TRUNC if a file already exist
+	_, err = os.Stat(writePath)
+	if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("failed to determine if %s already exists: %w", writePath, err)
+	}
+	if err == nil {
+		return fmt.Errorf("file %s already exists, check whether the obfuscators overwrite each other", writePath)
+	}
+
 	outputOsFile, err := os.OpenFile(writePath, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create and open '%s': %w", writePath, err)
 	}
 
 	err = c.ObfuscateReader(inputOsFile, outputOsFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to obfuscate input file '%s': %w", readPath, err)
 	}
 
 	err = inputOsFile.Close()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to close input file '%s': %w", readPath, err)
 	}
 
 	err = outputOsFile.Close()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to close output file '%s': %w", writePath, err)
 	}
 
 	return nil
@@ -130,9 +145,11 @@ func (c *ContentObfuscator) ObfuscateReader(inputReader io.Reader, outputWriter 
 
 func NewFileCleaner(inputPath string, outputPath string, obfuscator obfuscator.Obfuscator, omitter omitter.Omitter) Processor {
 	return &FileProcessor{
-		ContentObfuscator: ContentObfuscator{Obfuscator: obfuscator},
-		inputFolder:       inputPath,
-		outputFolder:      outputPath,
-		omitter:           omitter,
+		FileContentObfuscator: FileContentObfuscator{
+			ContentObfuscator: ContentObfuscator{Obfuscator: obfuscator},
+			inputFolder:       inputPath,
+			outputFolder:      outputPath,
+		},
+		omitter: omitter,
 	}
 }
