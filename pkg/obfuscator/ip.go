@@ -58,25 +58,15 @@ func (o *ipObfuscator) replace(s string) string {
 
 			cleaned := strings.ReplaceAll(m, "-", ".")
 			if ip := net.ParseIP(cleaned); ip != nil {
-				var (
-					replacement string
-					isPresent   bool
-				)
+				var replacement string
 				switch o.replacementType {
 				case schema.ObfuscateReplacementTypeStatic:
-					replacement, isPresent = o.GenerateIfAbsent(cleaned, gen.generateStaticReplacement)
+					replacement = o.GenerateIfAbsent(cleaned, gen.generateStaticReplacement)
 				case schema.ObfuscateReplacementTypeConsistent:
-					replacement, isPresent = o.GenerateIfAbsent(cleaned, gen.generateConsistentReplacement)
+					replacement = o.GenerateIfAbsent(cleaned, gen.generateConsistentReplacement)
 				}
-				// replacement would be either consistent or static and hence not appending to the report if it is an empty string
-				if replacement != "" {
-					// replacing the input string with the obtained replacement
-					output = strings.ReplaceAll(output, m, replacement)
-					// adding the replacement to the report if not already present
-					if !isPresent {
-						o.ReplacementTracker.AddReplacement(cleaned, replacement)
-					}
-				}
+				output = strings.ReplaceAll(output, m, replacement)
+				o.ReplacementTracker.AddReplacement(m, replacement)
 			}
 		}
 	}

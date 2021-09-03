@@ -21,10 +21,10 @@ type ReplacementTracker interface {
 	// If there is an existing value that does not match the given replacement, it will exit with a non-zero status.
 	AddReplacement(original string, replacement string)
 
-	// GenerateIfAbsent returns the previously used replacement along with a true boolean conveying the entry is already present.
-	// If the replacement is not present then it uses the GenerateReplacement function to generate a replacement. Returns a false boolean.
+	// GenerateIfAbsent returns the previously used replacement if the entry is already present.
+	// If the replacement is not present then it uses the GenerateReplacement function to generate a replacement.
 	// The "key" parameter must be used for lookup and the "generator" parameter to generate the replacement.
-	GenerateIfAbsent(key string, generator GenerateReplacement) (string, bool)
+	GenerateIfAbsent(key string, generator GenerateReplacement) string
 }
 
 type SimpleTracker struct {
@@ -54,23 +54,18 @@ func (s *SimpleTracker) AddReplacement(original string, replacement string) {
 	s.mapping[original] = replacement
 }
 
-func (s *SimpleTracker) GenerateIfAbsent(key string, generator GenerateReplacement) (string, bool) {
+func (s *SimpleTracker) GenerateIfAbsent(key string, generator GenerateReplacement) string {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	// returning the empty string if the replacement is already present
-	// GenerateIfAbsent only should generate the replacement if the key is a new one
-	// This helps in avoiding the addition of case-sensitive alternatives to the report
 	if val, ok := s.mapping[key]; ok {
-		return val, ok
+		return val
 	}
 	if generator == nil {
-		return "", false
+		return ""
 	}
 	r := generator()
-	// commenting the next line as the Generate function should generate the alternative and return.
-	// Addition of the entry should be ideally taken care by the AddReplacement method.
-	//	s.mapping[key] = r
-	return r, false
+	s.mapping[key] = r
+	return r
 }
 
 func (s *SimpleTracker) Initialize(replacements map[string]string) {

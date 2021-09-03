@@ -12,13 +12,14 @@ import (
 func TestMacStaticReplacement(t *testing.T) {
 	o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeStatic)
 	assert.Equal(t, staticMacReplacement, o.Contents("29-7E-8C-8C-60-C9"))
-	assert.Equal(t, map[string]string{"29:7E:8C:8C:60:C9": staticMacReplacement}, o.Report())
+	assert.Equal(t, map[string]string{"29:7E:8C:8C:60:C9": staticMacReplacement, "29-7E-8C-8C-60-C9": staticMacReplacement}, o.Report())
 }
 
 func TestMacConsistentReplacement(t *testing.T) {
 	o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent)
 	assert.Equal(t, "xxx-mac-000001-xxx", o.Contents("29-7E-8C-8C-60-C9"))
-	assert.Equal(t, map[string]string{"29:7E:8C:8C:60:C9": "xxx-mac-000001-xxx"}, o.Report())
+	// This testcase reports both the original detected MAC address as well as the normalized MAC address
+	assert.Equal(t, map[string]string{"29:7E:8C:8C:60:C9": "xxx-mac-000001-xxx", "29-7E-8C-8C-60-C9": "xxx-mac-000001-xxx"}, o.Report())
 }
 
 func TestMacReplacementManyMatchLine(t *testing.T) {
@@ -28,7 +29,10 @@ func TestMacReplacementManyMatchLine(t *testing.T) {
 	assert.Equal(t, expected, o.Contents(input))
 	assert.Equal(t, map[string]string{
 		"eb:a1:2a:b2:09:bf": staticMacReplacement,
+		"eb-a1-2a-b2-09-bf": staticMacReplacement,
+		"EB:A1:2A:B2:09:BF": staticMacReplacement,
 		"29:7E:8C:8C:60:C9": staticMacReplacement,
+		"29-7E-8C-8C-60-C9": staticMacReplacement,
 	}, o.Report())
 }
 
@@ -67,7 +71,7 @@ func TestMACConsistentObfuscator(t *testing.T) {
 			name:   "valid MAC address",
 			input:  []string{"received request from 29-7E-8C-8C-60-C9"},
 			output: []string{"received request from xxx-mac-000001-xxx"},
-			report: map[string]string{"29:7E:8C:8C:60:C9": "xxx-mac-000001-xxx"},
+			report: map[string]string{"29:7E:8C:8C:60:C9": "xxx-mac-000001-xxx", "29-7E-8C-8C-60-C9": "xxx-mac-000001-xxx"},
 		},
 		{
 			name:   "MAC address mentioned in a sentence",
@@ -79,13 +83,13 @@ func TestMACConsistentObfuscator(t *testing.T) {
 			name:   "Same MAC address in different notations",
 			input:  []string{"A MAC address 2C:54:91:88:C9:E3 can be displayed as 2C-54-91-88-C9-E3 in a filename"},
 			output: []string{"A MAC address xxx-mac-000001-xxx can be displayed as xxx-mac-000001-xxx in a filename"},
-			report: map[string]string{"2C:54:91:88:C9:E3": "xxx-mac-000001-xxx"},
+			report: map[string]string{"2C:54:91:88:C9:E3": "xxx-mac-000001-xxx", "2C-54-91-88-C9-E3": "xxx-mac-000001-xxx"},
 		},
 		{
 			name:   "MAC Address mentioned as case sensitive strings",
 			input:  []string{"A MAC address 2C:54:91:88:C9:E3 can also be displayed as 2c:54:91:88:c9:e3"},
 			output: []string{"A MAC address xxx-mac-000001-xxx can also be displayed as xxx-mac-000001-xxx"},
-			report: map[string]string{"2C:54:91:88:C9:E3": "xxx-mac-000001-xxx"},
+			report: map[string]string{"2C:54:91:88:C9:E3": "xxx-mac-000001-xxx", "2c:54:91:88:c9:e3": "xxx-mac-000001-xxx"},
 		},
 		{
 			name:   "Multiple MAC addresses",

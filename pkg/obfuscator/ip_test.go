@@ -61,10 +61,12 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			},
 		},
 		{
+			// This testcase reports both the detected IP address as well as the Normalized/Cleaned IP address
 			name:   "non standard ipv4",
 			input:  "ip-10-0-129-220.ec2.aws.yaml",
 			output: "ip-xxx.xxx.xxx.xxx.ec2.aws.yaml",
 			report: map[string]string{
+				"10-0-129-220": obfuscatedStaticIPv4,
 				"10.0.129.220": obfuscatedStaticIPv4,
 			},
 		},
@@ -80,6 +82,7 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			output: "obfuscate xxx.xxx.xxx.xxx and xxx.xxx.xxx.xxx",
 			report: map[string]string{
 				"10.0.129.220": "xxx.xxx.xxx.xxx",
+				"10-0-129-220": "xxx.xxx.xxx.xxx",
 			},
 		},
 		{
@@ -212,6 +215,7 @@ func TestIPObfuscatorConsistent(t *testing.T) {
 			output: []string{"obfuscate x-ipv4-000001-x and x-ipv4-000001-x"},
 			report: map[string]string{
 				"10.0.129.220": "x-ipv4-000001-x",
+				"10-0-129-220": "x-ipv4-000001-x",
 			},
 		},
 	} {
