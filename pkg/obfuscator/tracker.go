@@ -6,7 +6,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-type GenerateReplacement func(string) string
+type GenerateReplacement func() string
 
 // ReplacementTracker is used to track and generate replacements used by obfuscators
 type ReplacementTracker interface {
@@ -22,9 +22,9 @@ type ReplacementTracker interface {
 	AddReplacement(original string, replacement string)
 
 	// GenerateIfAbsent returns the previously used replacement if already set. If the replacement is not present then it
-	// uses the GenerateReplacement function to generate a replacement. Generator should not be empty. The original
-	// parameter must be used for lookup and the key parameter to generate the replacement.
-	GenerateIfAbsent(original string, key string, generator GenerateReplacement) string
+	// uses the GenerateReplacement function to generate a replacement. Generator should not be empty.
+	// The key parameter must be used for lookup and the generator parameter to generate the replacement.
+	GenerateIfAbsent(key string, generator GenerateReplacement) string
 }
 
 type SimpleTracker struct {
@@ -54,17 +54,17 @@ func (s *SimpleTracker) AddReplacement(original string, replacement string) {
 	s.mapping[original] = replacement
 }
 
-func (s *SimpleTracker) GenerateIfAbsent(original string, key string, generator GenerateReplacement) string {
+func (s *SimpleTracker) GenerateIfAbsent(key string, generator GenerateReplacement) string {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	if val, ok := s.mapping[original]; ok {
+	if val, ok := s.mapping[key]; ok {
 		return val
 	}
 	if generator == nil {
 		return ""
 	}
-	r := generator(key)
-	s.mapping[original] = r
+	r := generator()
+	s.mapping[key] = r
 	return r
 }
 

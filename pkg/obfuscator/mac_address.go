@@ -12,7 +12,7 @@ const (
 	// staticMacReplacement refers to a static replacement for any identified MAC address.
 	staticMacReplacement = "xx:xx:xx:xx:xx:xx"
 	// consistentMACTemplate refers to a consistent replacement for any identified MAC address
-	consistentMACTemplate = "x-mac-%06d-x"
+	consistentMACTemplate = "xxx-mac-%06d-xxx"
 )
 
 type macAddressObfuscator struct {
@@ -28,15 +28,16 @@ func (m *macAddressObfuscator) Path(s string) string {
 
 func (m *macAddressObfuscator) Contents(s string) string {
 	matches := m.regex.FindAllString(s, -1)
-	for _, match := range matches {
+	for _, mac := range matches {
+		match := strings.ReplaceAll(mac, "-", ":")
 		var replacement string
 		switch m.replacementType {
 		case schema.ObfuscateReplacementTypeStatic:
-			replacement = m.GenerateIfAbsent(match, match, m.obfsGenerator.generateStaticReplacement)
+			replacement = m.GenerateIfAbsent(match, m.obfsGenerator.generateStaticReplacement)
 		case schema.ObfuscateReplacementTypeConsistent:
-			replacement = m.GenerateIfAbsent(match, match, m.obfsGenerator.generateConsistentReplacement)
+			replacement = m.GenerateIfAbsent(match, m.obfsGenerator.generateConsistentReplacement)
 		}
-		s = strings.Replace(s, match, replacement, -1)
+		s = strings.ReplaceAll(s, mac, replacement)
 		m.ReplacementTracker.AddReplacement(match, replacement)
 	}
 	return s
@@ -56,7 +57,7 @@ func NewMacAddressObfuscator(replacementType schema.ObfuscateReplacementType) (O
 
 	reporter := NewSimpleTracker()
 	// creating a new generator object
-	generator := NewGenerator(consistentMACTemplate, staticMacReplacement, 0)
+	generator := newGenerator(consistentMACTemplate, staticMacReplacement)
 	return &macAddressObfuscator{
 		ReplacementTracker: reporter,
 		replacementType:    replacementType,

@@ -61,9 +61,9 @@ func (o *ipObfuscator) replace(s string) string {
 				var replacement string
 				switch o.replacementType {
 				case schema.ObfuscateReplacementTypeStatic:
-					replacement = o.GenerateIfAbsent(m, cleaned, gen.generateStaticReplacement)
+					replacement = o.GenerateIfAbsent(cleaned, gen.generateStaticReplacement)
 				case schema.ObfuscateReplacementTypeConsistent:
-					replacement = o.GenerateIfAbsent(m, cleaned, gen.generateConsistentReplacement)
+					replacement = o.GenerateIfAbsent(cleaned, gen.generateConsistentReplacement)
 				}
 				output = strings.ReplaceAll(output, m, replacement)
 			}

@@ -17,11 +17,11 @@ func TestSimpleTrackerHappyPath(t *testing.T) {
 func TestSimpleTrackerGetReplacement(t *testing.T) {
 	tracker := NewSimpleTracker()
 	tracker.AddReplacement("a", "b")
-	assert.Equal(t, tracker.GenerateIfAbsent("a", "a", nil), "b")
-	assert.Equal(t, tracker.GenerateIfAbsent("c", "c", nil), "")
-	assert.Equal(t, tracker.GenerateIfAbsent("D", "D", strings.ToLower), "d")
-	assert.Equal(t, tracker.GenerateIfAbsent("E", "F", strings.ToLower), "f")
-	assert.Equal(t, map[string]string{"D": "d", "a": "b", "E": "f"}, tracker.Report())
+	assert.Equal(t, tracker.GenerateIfAbsent("a", nil), "b")
+	assert.Equal(t, tracker.GenerateIfAbsent("c", nil), "")
+	assert.Equal(t, tracker.GenerateIfAbsent("D", func() string { return strings.ToLower("D") }), "d")
+	assert.Equal(t, tracker.GenerateIfAbsent("F", func() string { return strings.ToLower("F") }), "f")
+	assert.Equal(t, map[string]string{"D": "d", "a": "b", "F": "f"}, tracker.Report())
 }
 
 func TestReportLeakingBack(t *testing.T) {
@@ -29,14 +29,14 @@ func TestReportLeakingBack(t *testing.T) {
 	tracker.AddReplacement("foo", "bar")
 	mapping := tracker.Report()
 	mapping["foo"] = "baz"
-	assert.Equal(t, "bar", tracker.GenerateIfAbsent("foo", "foo", nil))
+	assert.Equal(t, "bar", tracker.GenerateIfAbsent("foo", nil))
 }
 
 func TestSimpleReporterInitialize(t *testing.T) {
 	tracker := NewSimpleTracker()
 	tracker.Initialize(map[string]string{"a": "b"})
-	assert.Equal(t, "b", tracker.GenerateIfAbsent("a", "a", nil))
-	assert.Equal(t, "b", tracker.GenerateIfAbsent("a", "a", strings.ToUpper))
-	assert.Equal(t, "", tracker.GenerateIfAbsent("c", "c", nil))
-	assert.Equal(t, "C", tracker.GenerateIfAbsent("c", "c", strings.ToUpper))
+	assert.Equal(t, "b", tracker.GenerateIfAbsent("a", nil))
+	assert.Equal(t, "b", tracker.GenerateIfAbsent("a", func() string { return strings.ToUpper("a") }))
+	assert.Equal(t, "", tracker.GenerateIfAbsent("c", nil))
+	assert.Equal(t, "C", tracker.GenerateIfAbsent("c", func() string { return strings.ToUpper("c") }))
 }

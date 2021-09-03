@@ -14,7 +14,7 @@ type generator struct {
 	count    int
 }
 
-func (g *generator) generateConsistentReplacement(_ string) string {
+func (g *generator) generateConsistentReplacement() string {
 	g.count++
 	if g.count > maximumSupportedObfuscations {
 		klog.Exitf("maximum number of obfuscations exceeded: %d", maximumSupportedObfuscations)
@@ -23,11 +23,11 @@ func (g *generator) generateConsistentReplacement(_ string) string {
 	return r
 }
 
-func (g *generator) generateStaticReplacement(_ string) string {
+func (g *generator) generateStaticReplacement() string {
 	return g.static
 }
 
-// NewGenerator creates a generator objects and populates with the provided arguments
-func NewGenerator(template, static string, count int) *generator {
-	return &generator{template, static, count}
+// newGenerator creates a generator objects and populates with the provided arguments
+func newGenerator(template, static string) *generator {
+	return &generator{template: template, static: static}
 }
