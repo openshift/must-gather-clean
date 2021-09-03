@@ -48,7 +48,7 @@ func (m *macAddressObfuscator) Report() map[string]string {
 	return m.ReplacementTracker.Report()
 }
 
-func NewMacAddressObfuscator(replacementType schema.ObfuscateReplacementType) (Obfuscator, error) {
+func NewMacAddressObfuscator(replacementType schema.ObfuscateReplacementType) (ReportingObfuscator, error) {
 	if replacementType != schema.ObfuscateReplacementTypeStatic && replacementType != schema.ObfuscateReplacementTypeConsistent {
 		return nil, fmt.Errorf("unsupported replacement type: %s", replacementType)
 	}
