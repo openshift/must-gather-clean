@@ -82,6 +82,12 @@ func TestMACConsistentObfuscator(t *testing.T) {
 			report: map[string]string{"2C:54:91:88:C9:E3": "xxx-mac-000001-xxx"},
 		},
 		{
+			name:   "MAC Address mentioned as case sensitive strings",
+			input:  []string{"A MAC address 2C:54:91:88:C9:E3 can also be displayed as 2c:54:91:88:c9:e3"},
+			output: []string{"A MAC address xxx-mac-000001-xxx can also be displayed as xxx-mac-000001-xxx"},
+			report: map[string]string{"2C:54:91:88:C9:E3": "xxx-mac-000001-xxx"},
+		},
+		{
 			name:   "Multiple MAC addresses",
 			input:  []string{"MAC addresses of the two network interfaces are 2C:54:91:88:C9:E3 and 2C:56:83:91:C9:E6"},
 			output: []string{"MAC addresses of the two network interfaces are xxx-mac-000001-xxx and xxx-mac-000002-xxx"},

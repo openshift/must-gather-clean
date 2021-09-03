@@ -30,15 +30,27 @@ func (m *macAddressObfuscator) Contents(s string) string {
 	matches := m.regex.FindAllString(s, -1)
 	for _, mac := range matches {
 		match := strings.ReplaceAll(mac, "-", ":")
-		var replacement string
+		// normalizing the MAC Address string to the Uppercase so as to avoid the duplicate reporting
+		uppercaseMAC := strings.ToUpper(match)
+		var (
+			replacement string
+			isPresent   bool
+		)
 		switch m.replacementType {
 		case schema.ObfuscateReplacementTypeStatic:
-			replacement = m.GenerateIfAbsent(match, m.obfsGenerator.generateStaticReplacement)
+			replacement, isPresent = m.GenerateIfAbsent(uppercaseMAC, m.obfsGenerator.generateStaticReplacement)
 		case schema.ObfuscateReplacementTypeConsistent:
-			replacement = m.GenerateIfAbsent(match, m.obfsGenerator.generateConsistentReplacement)
+			replacement, isPresent = m.GenerateIfAbsent(uppercaseMAC, m.obfsGenerator.generateConsistentReplacement)
 		}
-		s = strings.ReplaceAll(s, mac, replacement)
-		m.ReplacementTracker.AddReplacement(match, replacement)
+		// replacement would be either consistent or static and hence not appending to the report if it is an empty string
+		if replacement != "" {
+			// replacing the input string with the obtained replacement
+			s = strings.ReplaceAll(s, mac, replacement)
+			// adding the replacement to the report if not already present
+			if !isPresent {
+				m.ReplacementTracker.AddReplacement(match, replacement)
+			}
+		}
 	}
 	return s
 }
