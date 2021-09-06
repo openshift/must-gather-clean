@@ -29,7 +29,7 @@ func (m *macAddressObfuscator) Path(s string) string {
 func (m *macAddressObfuscator) Contents(s string) string {
 	matches := m.regex.FindAllString(s, -1)
 	for _, mac := range matches {
-		// normalizing the MAC Address string to the Uppercase so as to avoid the duplicate reporting
+		// normalizing the MAC Address string to the Uppercase to avoid the duplicate reporting
 		match := strings.ToUpper(strings.ReplaceAll(mac, "-", ":"))
 		var replacement string
 		switch m.replacementType {
@@ -39,6 +39,7 @@ func (m *macAddressObfuscator) Contents(s string) string {
 			replacement = m.GenerateIfAbsent(match, m.obfsGenerator.generateConsistentReplacement)
 		}
 		s = strings.ReplaceAll(s, mac, replacement)
+		// also add the original (non-cleaned) string, this is only used for human review in the final report
 		m.ReplacementTracker.AddReplacement(mac, replacement)
 	}
 	return s

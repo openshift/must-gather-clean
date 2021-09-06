@@ -66,6 +66,7 @@ func (o *ipObfuscator) replace(s string) string {
 					replacement = o.GenerateIfAbsent(cleaned, gen.generateConsistentReplacement)
 				}
 				output = strings.ReplaceAll(output, m, replacement)
+				// also add the original (non-cleaned) string, this is only used for human review in the final report
 				o.ReplacementTracker.AddReplacement(m, replacement)
 			}
 		}
