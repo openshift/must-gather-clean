@@ -4,7 +4,11 @@ config:
       replacementType: Consistent
       target: All
     - type: MAC
+      replacementType: Consistent
+      target: All
     - type: Domain
+      replacementType: Consistent
+      target: All
   omit:
     - type: File
       pattern: "*secret*"
