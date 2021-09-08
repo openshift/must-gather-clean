@@ -35,11 +35,11 @@ The obfuscators will then be applied to each non-omitted file and on a line-by-l
 
 The following obfuscation types are supported:
 
-* [MAC address](#MAC address obfuscation)
-* [IP address](#IP address obfuscation)
-* [Domain name](#Domain name obfuscation)
-* [Keywords](#Keywords)
-* [Regex](#Regex)
+* [MAC address](#mac-address-obfuscation)
+* [IP address](#ip-address-obfuscation)
+* [Domain name](#domain-name-obfuscation)
+* [Keywords](#keywords)
+* [Regex](#regex)
 
 ### MAC address obfuscation
 
