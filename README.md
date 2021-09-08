@@ -19,20 +19,31 @@ The cleaned must-gather can then be found in the `must-gather-output-cleaned` fo
 # Configuration
 
 A very basic default configuration you can supply as the above `-c` flag for OpenShift can be found
-under [examples/openshift_default.yaml](examples/openshift_default.yaml). If you want to obfuscate your domain names (e.g. DNS entries), then you have to adjust the list of `domainNames` to include yours.
+under [examples/openshift_default.yaml](examples/openshift_default.yaml). If you want to obfuscate your domain names (for example DNS entries), then you have to adjust the list of `domainNames` to include yours.
 
-In case you don't need networking or SDN information in the must-gather, you can run the configuration under [examples/openshift_omit_network.yaml](examples/openshift_omit_network.yaml). 
+In case you don't need to share networking or SDN information in the must-gather, you can run the configuration under [examples/openshift_omit_network.yaml](examples/openshift_omit_network.yaml). 
 This will ignore the largest files that also take a long time to obfuscate.
 
-The configuration is explained along examples below, a fully supported schema defined in [JSON schema](https://json-schema.org/)
-can be found in [schema.json](pkg/schema/schema.json) along with more examples and documentation. A more browsable
-alternative can be found here
-on [json-schema.app](https://json-schema.app/view/%23?url=https%3A%2F%2Fraw.githubusercontent.com%2Fopenshift%2Fmust-gather-clean%2Fmain%2Fpkg%2Fschema%2Fschema.json).
+The configuration is explained along examples below. The whole schema is defined in [JSON schema](https://json-schema.org/)
+can be found in [schema.json](pkg/schema/schema.json) with more examples and documentation for each property. A more browsable
+alternative can be found on [json-schema.app](https://json-schema.app/view/%23?url=https%3A%2F%2Fraw.githubusercontent.com%2Fopenshift%2Fmust-gather-clean%2Fmain%2Fpkg%2Fschema%2Fschema.json).
 
 ## Obfuscation
 
-The configured obfuscation logic will be applied to each non-omitted file and on a line-by-line basis.
-Let's start with a very minimal obfuscation example:
+You can define obfuscators as a list of "types", usually customized by a couple of parameters.
+The obfuscators will then be applied to each non-omitted file and on a line-by-line basis in case of text files. 
+
+The following obfuscation types are supported:
+
+* [MAC address](#MAC address obfuscation)
+* [IP address](#IP address obfuscation)
+* [Domain name](#Domain name obfuscation)
+* [Keywords](#Keywords)
+* [Regex](#Regex)
+
+### MAC address obfuscation
+
+A minimal working example with MAC address obfuscation can be defined as following:
 
 ```
 config:
@@ -40,7 +51,7 @@ config:
   - type: MAC
 ```
 
-This configuration applied on a `must-gather` will detect all MAC addresses recursively in all the files. 
+This configuration applied on a `must-gather` folder will detect all MAC addresses recursively in all the files. 
 Since obfuscation is about replacing the found information, the above will simply replace the found MAC address with `xx:xx:xx:xx:xx:xx`. We call this a `Static` replacement, which is the default for all types of obfuscators.
 
 There is another type of replacement called `Consistent`, that can be configured like this:
@@ -53,10 +64,12 @@ config:
 ```
 
 This will detect all MAC addresses and replace them with a "consistent" identifier that looks like this `xxx-mac-000001-xxx`. 
-Let's say one of your eth interfaces has the mac address `52:54:00:5e:ee:c6` and was logged, then `must-gather-clean`  will guarantee that it will always be assigned the same obfuscated consistent identifier across all files in a must-gather. 
+For example, one of your network interfaces has the mac address `52:54:00:5e:ee:c6` and was logged, then `must-gather-clean`  will guarantee that it will always be assigned the same obfuscated consistent identifier across all files in a must-gather. 
 That primarily helps our support and engineers to ensure we can still understand and reproduces challenges that you were facing without putting your classified information at risk.
 
-Let's look at another obfuscation type named `IP`. This type can be used to clean IP addresses, we support both IPv4 and IPv6 except for local interfaces (`127.0.0.1`, `0.0.0.0` and `::1`) that will be preserved.
+### IP address obfuscation
+
+Another obfuscation type named `IP` can be used to clean IP addresses, we support both IPv4 and IPv6 except for the usual local interfaces (`127.0.0.1`, `0.0.0.0` and `::1`) that will always be preserved.
 
 You can configure this along with the MAC obfuscator like this:
 
@@ -69,10 +82,10 @@ config:
     replacementType: Consistent
 ```
 
-On a line-by-line basis, this will always execute the MAC obfuscation first and then the IP obfuscator - we'll go through this behaviour in more detail in the `Chaining obfuscators and side effects` section below. 
+On a line-by-line basis, this will always execute the MAC obfuscation first and then the IP obfuscator - we'll go through this behaviour in more detail in the following [`Chaining obfuscators and side effects`](#Chaining obfuscators and side effects) section. 
 
 Another configuration flag that we support for each obfuscation type is the `target`. The target is useful when the confidential information can be found not only in the file content, but also in the folder or file names. 
-This can very frequently happen with IP addresses, for example through node names. You can control that independently for each type like this:
+This can very frequently happen with IP addresses, for example, through node names. You can control that independently for each type as following:
 
 ```
 config:
@@ -86,7 +99,9 @@ config:
 ```
 
 As you can see, the MAC obfuscator would work on file content whereas the IP obfuscator would work only on FilePaths. There is a mixed target called `All`, that will obfuscate on both paths and contents. 
-The default if no target is specified is `FileContents`, it is thus always recommended using the IP obfuscator with `target: All` to not accidentally leak IP information through folder names.
+The default if no target is specified is `FileContents`. It is, thus, always recommended to use the IP obfuscator with `target: All` to not accidentally leak IP information through folder names.
+
+### Domain name obfuscation
 
 The third built-in type of obfuscation is `Domain`, let's take a look how this can be configured:
 
@@ -100,21 +115,21 @@ config:
 ```
 
 As you can see, this type must be customized by supplying domain names. 
-Kubernetes resources are defined along with their domain names (eg "apps.openshift.io/v1") and thus would be automatically recognized as such and obfuscated as a false-positive.
+Kubernetes resources are defined along with their domain names (for example "apps.openshift.io/v1") and thus would be automatically recognized as such and obfuscated as a false-positive.
 We thus kindly ask the user to supply their confidential domain names manually through the configuration.
 
 The above definition will obfuscate `rhcloud.com` as `domain0000001` (consistent) or as `xxxxxxxxxxxxx` (static). 
 Note that this does not include subdomains, they would need to be separately obfuscated. 
-A domain name defined as `staging.rhcloud.com` would only be obfuscated as `staging.domain0000001`, thus, it makes sense to also include all common subdomains as done in the example with "dev".
+A domain name defined as `staging.rhcloud.com` would only be obfuscated as `staging.domain0000001`, thus, you should include all subdomains you want to have obfuscated (for example `dev.rhcloud.com`) in the list as well.
 
 ### Custom Obfuscations
 
-Aside from the above three built-in types to obfuscate, we also offer custom obfuscators that allow users to fine-tune the replacement of certain strings (eg custom auth token formats, confidential domain knowledge or keywords).
-This comes through two custom types, one is replacement via type `Keywords` the other via type `Regex`.
+Aside from the above three built-in types to obfuscate, we also offer custom obfuscators that allow users to fine-tune the replacement of certain strings (for example custom auth token formats, confidential domain knowledge or keywords).
+This can be customized through those two types:
+* [Keywords](#Keywords)
+* [Regex](#Regex)
 
 #### Keywords
-
-Let's start by looking into `Keywords` first:
 
 ```
 config:
@@ -201,6 +216,3 @@ So what happened here? First off, we would replace all `a` with a `b`, that `b` 
 
 You can ensure that this does not happen, by providing custom obfuscators at the very bottom of the definition, preferably after all built-ins, and by ensuring you match on very specific terms (eg by supplying word boundaries in regular expressions).
 
-## Omission
-
-TODO(thomas)
