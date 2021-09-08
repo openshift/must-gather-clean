@@ -4,18 +4,22 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/openshift/must-gather-clean/pkg/schema"
 )
 
 const (
-	domainPattern      = `([a-zA-Z0-9\.]*\.)?(%s)`
-	obfuscatedTemplate = "domain%07d"
+	domainPattern           = `([a-zA-Z0-9\.]*\.)?(%s)`
+	obfuscatedTemplate      = "domain%07d"
+	staticDomainReplacement = "example-domain.com"
 )
 
 type domainObfuscator struct {
 	ReplacementTracker
-	domainCount    int
-	domainPatterns []*regexp.Regexp
-	domainMapping  map[string]string
+	replacementType schema.ObfuscateReplacementType
+	domainPatterns  []*regexp.Regexp
+	domainMapping   map[string]string
+	obfsGenerator   generator
 }
 
 func (d *domainObfuscator) Path(s string) string {
@@ -54,13 +58,18 @@ func (d *domainObfuscator) obfuscatedDomain(domain string) string {
 	if replacement, ok := d.domainMapping[domain]; ok {
 		return replacement
 	}
-	d.domainCount++
-	replacement := fmt.Sprintf(obfuscatedTemplate, d.domainCount)
+	var replacement string
+	switch d.replacementType {
+	case schema.ObfuscateReplacementTypeStatic:
+		replacement = d.obfsGenerator.generateStaticReplacement()
+	case schema.ObfuscateReplacementTypeConsistent:
+		replacement = d.obfsGenerator.generateConsistentReplacement()
+	}
 	d.domainMapping[domain] = replacement
 	return replacement
 }
 
-func NewDomainObfuscator(domains []string) (Obfuscator, error) {
+func NewDomainObfuscator(domains []string, replacementType schema.ObfuscateReplacementType) (Obfuscator, error) {
 	patterns := make([]*regexp.Regexp, len(domains))
 	for i, d := range domains {
 		dd := strings.ReplaceAll(d, ".", "\\.")
@@ -70,9 +79,13 @@ func NewDomainObfuscator(domains []string) (Obfuscator, error) {
 		}
 		patterns[i] = p
 	}
+	// creating a new generator object
+	generator := newGenerator(obfuscatedTemplate, staticDomainReplacement)
 	return &domainObfuscator{
 		ReplacementTracker: NewSimpleTracker(),
 		domainPatterns:     patterns,
 		domainMapping:      map[string]string{},
+		replacementType:    replacementType,
+		obfsGenerator:      *generator,
 	}, nil
 }
