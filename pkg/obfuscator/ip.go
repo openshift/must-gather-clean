@@ -10,11 +10,15 @@ import (
 )
 
 const (
-	obfuscatedStaticIPv4         = "xxx.xxx.xxx.xxx"
-	obfuscatedStaticIPv6         = "xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx"
-	consistentIPv4Template       = "x-ipv4-%06d-x"
-	consistentIPv6Template       = "xxxxxxxxxxxxx-ipv6-%06d-xxxxxxxxxxxxx"
-	maximumSupportedObfuscations = 999999
+	obfuscatedStaticIPv4 = "xxx.xxx.xxx.xxx"
+	obfuscatedStaticIPv6 = "xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx"
+
+	maximumSupportedObfuscations = 9999999999
+	// there are 2^32 (4,294,967,296) addresses in total, we can support that with 10 characters
+	consistentIPv4Template = "x-ipv4-%010d-x"
+	// there are 2^128 possible v6 IPs, but we keep them down to the same amount as the v4s.
+	// must-gathers today don't have any v6 IPs in them yet, so this should be enough to be future-proof
+	consistentIPv6Template = "x-ipv6-%010d-x"
 )
 
 var (
@@ -80,8 +84,8 @@ func NewIPObfuscator(replacementType schema.ObfuscateReplacementType) (Obfuscato
 	return &ipObfuscator{
 		ReplacementTracker: NewSimpleTracker(),
 		replacements: map[*regexp.Regexp]*generator{
-			ipv4Pattern: {template: consistentIPv4Template, static: obfuscatedStaticIPv4},
-			ipv6Pattern: {template: consistentIPv6Template, static: obfuscatedStaticIPv6},
+			ipv4Pattern: newGenerator(consistentIPv4Template, obfuscatedStaticIPv4, maximumSupportedObfuscations),
+			ipv6Pattern: newGenerator(consistentIPv6Template, obfuscatedStaticIPv6, maximumSupportedObfuscations),
 		},
 		replacementType: replacementType,
 	}, nil
