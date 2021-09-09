@@ -280,7 +280,7 @@ config:
        namespaces: ["kube-system", "default"]
 ```
 
-which will only omit the secrets in the defined namespaces.
+which will omit only the secrets in the defined namespaces.
 
 Since those resources are usually versioned and fenced off by their own naming schema, you can supply an API version that must be omitted:
 
