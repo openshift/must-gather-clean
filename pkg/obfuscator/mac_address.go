@@ -11,8 +11,9 @@ import (
 const (
 	// staticMacReplacement refers to a static replacement for any identified MAC address.
 	staticMacReplacement = "xx:xx:xx:xx:xx:xx"
-	// consistentMACTemplate refers to a consistent replacement for any identified MAC address
-	consistentMACTemplate = "xxx-mac-%06d-xxx"
+	// there are 2^32 (4,294,967,296) addresses in total, we can support that with 10 characters
+	consistentMACTemplate           = "x-mac-%010d-x"
+	maximumSupportedObfuscationsMAC = 9999999999
 )
 
 type macAddressObfuscator struct {
@@ -59,7 +60,7 @@ func NewMacAddressObfuscator(replacementType schema.ObfuscateReplacementType) (R
 
 	reporter := NewSimpleTracker()
 	// creating a new generator object
-	generator := newGenerator(consistentMACTemplate, staticMacReplacement)
+	generator := newGenerator(consistentMACTemplate, staticMacReplacement, maximumSupportedObfuscationsMAC)
 	return &macAddressObfuscator{
 		ReplacementTracker: reporter,
 		replacementType:    replacementType,
