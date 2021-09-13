@@ -159,12 +159,10 @@ func TestDomainObfuscationStatic(t *testing.T) {
 			name:    "Multiple-Matching Domains",
 			domains: []string{"test.com"},
 			input: []string{
-				"The first domain is report.test.com",
-				"The second domain is example-test.com",
+				"The first domain is report.test.com and the second domain is example-test.com",
 			},
 			output: []string{
-				"The first domain is report." + staticDomainReplacement,
-				"The second domain is example-" + staticDomainReplacement,
+				"The first domain is report." + staticDomainReplacement + " and the second domain is example-" + staticDomainReplacement,
 			},
 			report: map[string]string{
 				"test.com": staticDomainReplacement,

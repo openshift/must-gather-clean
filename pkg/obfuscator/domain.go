@@ -9,16 +9,16 @@ import (
 )
 
 const (
-	domainPattern           = `([a-zA-Z0-9\.]*\.)?(%s)`
-	obfuscatedTemplate      = "domain%07d"
-	staticDomainReplacement = "obfuscated.com"
+	domainPattern                      = `([a-zA-Z0-9\.]*\.)?(%s)`
+	obfuscatedTemplate                 = "domain%07d"
+	staticDomainReplacement            = "obfuscated.com"
+	maximumSupportedObfuscationDomains = 9999999999
 )
 
 type domainObfuscator struct {
 	ReplacementTracker
-	replacementType schema.ObfuscateReplacementType
-	domainPatterns  []*regexp.Regexp
-	obfsGenerator   generator
+	domainPatterns []*regexp.Regexp
+	obfsGenerator  generator
 }
 
 func (d *domainObfuscator) Path(s string) string {
@@ -39,7 +39,7 @@ func (d *domainObfuscator) replaceDomains(input string) string {
 			}
 			baseDomain := m[2]
 			subDomain := m[1]
-			obfuscatedBaseDomain := d.obfuscatedDomain(baseDomain)
+			obfuscatedBaseDomain := d.obfsGenerator.generateReplacement(baseDomain, d.ReplacementTracker)
 			var replacement string
 			if subDomain != "" {
 				replacement = fmt.Sprintf("%s%s", subDomain, obfuscatedBaseDomain)
@@ -50,11 +50,6 @@ func (d *domainObfuscator) replaceDomains(input string) string {
 		}
 	}
 	return output
-}
-
-func (d *domainObfuscator) obfuscatedDomain(domain string) string {
-	replacement := d.obfsGenerator.generateReplacement(d.replacementType, domain, d.ReplacementTracker)
-	return replacement
 }
 
 func NewDomainObfuscator(domains []string, replacementType schema.ObfuscateReplacementType) (Obfuscator, error) {
@@ -68,14 +63,13 @@ func NewDomainObfuscator(domains []string, replacementType schema.ObfuscateRepla
 		patterns[i] = p
 	}
 	// creating a new generator object
-	generator, err := newGenerator(obfuscatedTemplate, staticDomainReplacement, replacementType)
+	generator, err := newGenerator(obfuscatedTemplate, staticDomainReplacement, maximumSupportedObfuscationDomains, replacementType)
 	if err != nil {
 		return nil, err
 	}
 	return &domainObfuscator{
 		ReplacementTracker: NewSimpleTracker(),
 		domainPatterns:     patterns,
-		replacementType:    replacementType,
 		obfsGenerator:      *generator,
 	}, nil
 }
