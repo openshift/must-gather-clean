@@ -25,12 +25,12 @@ func TestDomainObfuscatorContents(t *testing.T) {
 				"received request on https://docs.okd.io",
 			},
 			output: []string{
-				"received request on domain0000001",
-				"received request on https://docs.domain0000002",
+				"received request on domain0000000001",
+				"received request on https://docs.domain0000000002",
 			},
 			report: map[string]string{
-				"openshift.com": "domain0000001",
-				"okd.io":        "domain0000002",
+				"openshift.com": "domain0000000001",
+				"okd.io":        "domain0000000002",
 			},
 		},
 		{
@@ -47,13 +47,13 @@ func TestDomainObfuscatorContents(t *testing.T) {
 			},
 			output: []string{
 				"okd.io",
-				"domain0000001",
-				"domain0000002",
-				"beta.domain0000002",
+				"domain0000000001",
+				"domain0000000002",
+				"beta.domain0000000002",
 			},
 			report: map[string]string{
-				"docs.okd.io":      "domain0000001",
-				"cloud.redhat.com": "domain0000002",
+				"docs.okd.io":      "domain0000000001",
+				"cloud.redhat.com": "domain0000000002",
 			},
 		},
 		{
@@ -66,14 +66,14 @@ func TestDomainObfuscatorContents(t *testing.T) {
 				"received request on pqr.ghi.abc.test.com",
 			},
 			output: []string{
-				"received request on abc.domain0000001",
-				"received request on def.domain0000002",
-				"received request on ghi.abc.domain0000001",
-				"received request on pqr.ghi.abc.domain0000001",
+				"received request on abc.domain0000000001",
+				"received request on def.domain0000000002",
+				"received request on ghi.abc.domain0000000001",
+				"received request on pqr.ghi.abc.domain0000000001",
 			},
 			report: map[string]string{
-				"test.com":  "domain0000001",
-				"test.info": "domain0000002",
+				"test.com":  "domain0000000001",
+				"test.info": "domain0000000002",
 			},
 		},
 	} {
@@ -101,9 +101,9 @@ func TestDomainObfuscator_FileName(t *testing.T) {
 			name:    "domain with extension",
 			domains: []string{"test.com"},
 			input:   "requests.test.com.log",
-			output:  "requests.domain0000001.log",
+			output:  "requests.domain0000000001.log",
 			report: map[string]string{
-				"test.com": "domain0000001",
+				"test.com": "domain0000000001",
 			},
 		},
 		{

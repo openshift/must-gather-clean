@@ -10,7 +10,7 @@ import (
 
 const (
 	domainPattern                      = `([a-zA-Z0-9\.]*\.)?(%s)`
-	obfuscatedTemplate                 = "domain%07d"
+	obfuscatedTemplate                 = "domain%010d"
 	staticDomainReplacement            = "obfuscated.com"
 	maximumSupportedObfuscationDomains = 9999999999
 )

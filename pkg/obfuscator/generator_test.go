@@ -6,10 +6,12 @@ import (
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGeneratorHappyPath(t *testing.T) {
-	g, _ := newGenerator("%d", "x", 10, schema.ObfuscateReplacementTypeStatic)
+	g, err := newGenerator("%d", "x", 10, schema.ObfuscateReplacementTypeStatic)
+	require.NoError(t, err)
 	assert.Equal(t, "1", g.generateConsistentReplacement())
 	assert.Equal(t, "2", g.generateConsistentReplacement())
 	assert.Equal(t, "x", g.generateStaticReplacement())
