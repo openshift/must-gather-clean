@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
 )
@@ -19,6 +20,7 @@ type domainObfuscator struct {
 	replacementType schema.ObfuscateReplacementType
 	domainPatterns  []*regexp.Regexp
 	domainMapping   map[string]string
+	lock            sync.Mutex
 	obfsGenerator   generator
 }
 
@@ -55,17 +57,17 @@ func (d *domainObfuscator) replaceDomains(input string) string {
 }
 
 func (d *domainObfuscator) obfuscatedDomain(domain string) string {
+	d.lock.Lock()
 	if replacement, ok := d.domainMapping[domain]; ok {
+		d.lock.Unlock()
 		return replacement
 	}
-	var replacement string
-	switch d.replacementType {
-	case schema.ObfuscateReplacementTypeStatic:
-		replacement = d.obfsGenerator.generateStaticReplacement()
-	case schema.ObfuscateReplacementTypeConsistent:
-		replacement = d.obfsGenerator.generateConsistentReplacement()
-	}
+	d.lock.Unlock()
+	replacement := d.obfsGenerator.generateReplacement(d.replacementType, domain, d.ReplacementTracker)
+	// ensuring the safety during concurrent Map access calls
+	d.lock.Lock()
 	d.domainMapping[domain] = replacement
+	d.lock.Unlock()
 	return replacement
 }
 

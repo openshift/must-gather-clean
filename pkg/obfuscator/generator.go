@@ -3,6 +3,7 @@ package obfuscator
 import (
 	"fmt"
 
+	"github.com/openshift/must-gather-clean/pkg/schema"
 	"k8s.io/klog/v2"
 )
 
@@ -25,6 +26,18 @@ func (g *generator) generateConsistentReplacement() string {
 
 func (g *generator) generateStaticReplacement() string {
 	return g.static
+}
+
+// generateReplacement returns the replacement based on the replacementType argument
+func (g *generator) generateReplacement(replacementType schema.ObfuscateReplacementType, key string, tracker ReplacementTracker) string {
+	var replacement string
+	switch replacementType {
+	case schema.ObfuscateReplacementTypeStatic:
+		replacement = tracker.GenerateIfAbsent(key, g.generateStaticReplacement)
+	case schema.ObfuscateReplacementTypeConsistent:
+		replacement = tracker.GenerateIfAbsent(key, g.generateConsistentReplacement)
+	}
+	return replacement
 }
 
 // newGenerator creates a generator objects and populates with the provided arguments

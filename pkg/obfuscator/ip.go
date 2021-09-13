@@ -58,13 +58,7 @@ func (o *ipObfuscator) replace(s string) string {
 
 			cleaned := strings.ReplaceAll(m, "-", ".")
 			if ip := net.ParseIP(cleaned); ip != nil {
-				var replacement string
-				switch o.replacementType {
-				case schema.ObfuscateReplacementTypeStatic:
-					replacement = o.GenerateIfAbsent(cleaned, gen.generateStaticReplacement)
-				case schema.ObfuscateReplacementTypeConsistent:
-					replacement = o.GenerateIfAbsent(cleaned, gen.generateConsistentReplacement)
-				}
+				replacement := gen.generateReplacement(o.replacementType, cleaned, o.ReplacementTracker)
 				output = strings.ReplaceAll(output, m, replacement)
 				o.ReplacementTracker.AddReplacement(m, replacement)
 			}
