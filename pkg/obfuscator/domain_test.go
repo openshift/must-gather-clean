@@ -30,7 +30,7 @@ func TestDomainObfuscatorContents(t *testing.T) {
 			},
 			report: map[string]string{
 				"openshift.com": "domain0000001",
-				"docs.okd.io":   "docs.domain0000002",
+				"okd.io":        "domain0000002",
 			},
 		},
 		{
@@ -52,9 +52,8 @@ func TestDomainObfuscatorContents(t *testing.T) {
 				"beta.domain0000002",
 			},
 			report: map[string]string{
-				"docs.okd.io":           "domain0000001",
-				"cloud.redhat.com":      "domain0000002",
-				"beta.cloud.redhat.com": "beta.domain0000002",
+				"docs.okd.io":      "domain0000001",
+				"cloud.redhat.com": "domain0000002",
 			},
 		},
 		{
@@ -73,10 +72,8 @@ func TestDomainObfuscatorContents(t *testing.T) {
 				"received request on pqr.ghi.abc.domain0000001",
 			},
 			report: map[string]string{
-				"abc.test.com":         "abc.domain0000001",
-				"def.test.info":        "def.domain0000002",
-				"ghi.abc.test.com":     "ghi.abc.domain0000001",
-				"pqr.ghi.abc.test.com": "pqr.ghi.abc.domain0000001",
+				"test.com":  "domain0000001",
+				"test.info": "domain0000002",
 			},
 		},
 	} {
@@ -106,7 +103,7 @@ func TestDomainObfuscator_FileName(t *testing.T) {
 			input:   "requests.test.com.log",
 			output:  "requests.domain0000001.log",
 			report: map[string]string{
-				"requests.test.com": "requests.domain0000001",
+				"test.com": "domain0000001",
 			},
 		},
 		{
@@ -148,7 +145,7 @@ func TestDomainObfuscationStatic(t *testing.T) {
 			input:   []string{"requests.test.com.log"},
 			output:  []string{"requests." + staticDomainReplacement + ".log"},
 			report: map[string]string{
-				"requests.test.com": "requests." + staticDomainReplacement,
+				"test.com": staticDomainReplacement,
 			},
 		},
 		{
@@ -170,8 +167,7 @@ func TestDomainObfuscationStatic(t *testing.T) {
 				"The second domain is example-" + staticDomainReplacement,
 			},
 			report: map[string]string{
-				"report.test.com": "report." + staticDomainReplacement,
-				"test.com":        staticDomainReplacement,
+				"test.com": staticDomainReplacement,
 			},
 		},
 	} {

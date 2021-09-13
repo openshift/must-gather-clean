@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"sync"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
 )
@@ -12,15 +11,13 @@ import (
 const (
 	domainPattern           = `([a-zA-Z0-9\.]*\.)?(%s)`
 	obfuscatedTemplate      = "domain%07d"
-	staticDomainReplacement = "example-domain.com"
+	staticDomainReplacement = "obfuscated.com"
 )
 
 type domainObfuscator struct {
 	ReplacementTracker
 	replacementType schema.ObfuscateReplacementType
 	domainPatterns  []*regexp.Regexp
-	domainMapping   map[string]string
-	lock            sync.Mutex
 	obfsGenerator   generator
 }
 
@@ -50,24 +47,13 @@ func (d *domainObfuscator) replaceDomains(input string) string {
 				replacement = obfuscatedBaseDomain
 			}
 			output = strings.ReplaceAll(output, m[0], replacement)
-			d.AddReplacement(m[0], replacement)
 		}
 	}
 	return output
 }
 
 func (d *domainObfuscator) obfuscatedDomain(domain string) string {
-	d.lock.Lock()
-	if replacement, ok := d.domainMapping[domain]; ok {
-		d.lock.Unlock()
-		return replacement
-	}
-	d.lock.Unlock()
 	replacement := d.obfsGenerator.generateReplacement(d.replacementType, domain, d.ReplacementTracker)
-	// ensuring the safety during concurrent Map access calls
-	d.lock.Lock()
-	d.domainMapping[domain] = replacement
-	d.lock.Unlock()
 	return replacement
 }
 
@@ -82,11 +68,13 @@ func NewDomainObfuscator(domains []string, replacementType schema.ObfuscateRepla
 		patterns[i] = p
 	}
 	// creating a new generator object
-	generator := newGenerator(obfuscatedTemplate, staticDomainReplacement)
+	generator, err := newGenerator(obfuscatedTemplate, staticDomainReplacement, replacementType)
+	if err != nil {
+		return nil, err
+	}
 	return &domainObfuscator{
 		ReplacementTracker: NewSimpleTracker(),
 		domainPatterns:     patterns,
-		domainMapping:      map[string]string{},
 		replacementType:    replacementType,
 		obfsGenerator:      *generator,
 	}, nil

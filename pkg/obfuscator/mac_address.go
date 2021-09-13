@@ -52,7 +52,10 @@ func NewMacAddressObfuscator(replacementType schema.ObfuscateReplacementType) (O
 
 	reporter := NewSimpleTracker()
 	// creating a new generator object
-	generator := newGenerator(consistentMACTemplate, staticMacReplacement)
+	generator, err := newGenerator(consistentMACTemplate, staticMacReplacement, replacementType)
+	if err != nil {
+		return nil, err
+	}
 	return &macAddressObfuscator{
 		ReplacementTracker: reporter,
 		replacementType:    replacementType,

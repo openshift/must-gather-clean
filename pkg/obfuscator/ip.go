@@ -74,8 +74,8 @@ func NewIPObfuscator(replacementType schema.ObfuscateReplacementType) (Obfuscato
 	return &ipObfuscator{
 		ReplacementTracker: NewSimpleTracker(),
 		replacements: map[*regexp.Regexp]*generator{
-			ipv4Pattern: {template: consistentIPv4Template, static: obfuscatedStaticIPv4},
-			ipv6Pattern: {template: consistentIPv6Template, static: obfuscatedStaticIPv6},
+			ipv4Pattern: {template: consistentIPv4Template, static: obfuscatedStaticIPv4, replacementType: replacementType},
+			ipv6Pattern: {template: consistentIPv6Template, static: obfuscatedStaticIPv6, replacementType: replacementType},
 		},
 		replacementType: replacementType,
 	}, nil

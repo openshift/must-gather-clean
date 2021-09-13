@@ -10,9 +10,10 @@ import (
 // generator consists of the required fields for the consistent,static obfuscations and the count of the obfuscations
 // This implements the methods static, consistent inorder to return the required replacement based on the replacementType
 type generator struct {
-	template string
-	static   string
-	count    int
+	template        string
+	static          string
+	replacementType schema.ObfuscateReplacementType
+	count           int
 }
 
 func (g *generator) generateConsistentReplacement() string {
@@ -41,6 +42,9 @@ func (g *generator) generateReplacement(replacementType schema.ObfuscateReplacem
 }
 
 // newGenerator creates a generator objects and populates with the provided arguments
-func newGenerator(template, static string) *generator {
-	return &generator{template: template, static: static}
+func newGenerator(template, static string, replacementType schema.ObfuscateReplacementType) (*generator, error) {
+	if replacementType != schema.ObfuscateReplacementTypeStatic && replacementType != schema.ObfuscateReplacementTypeConsistent {
+		return nil, fmt.Errorf("unsupported replacement type: %s", replacementType)
+	}
+	return &generator{template: template, static: static, replacementType: replacementType}, nil
 }
