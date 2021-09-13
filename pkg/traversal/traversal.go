@@ -8,6 +8,10 @@ import (
 	"k8s.io/klog/v2"
 )
 
+type Traverser interface {
+	Traverse()
+}
+
 type FileWalker struct {
 	inputPath     string
 	workerCount   int
