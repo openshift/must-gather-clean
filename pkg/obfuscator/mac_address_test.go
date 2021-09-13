@@ -17,9 +17,9 @@ func TestMacStaticReplacement(t *testing.T) {
 
 func TestMacConsistentReplacement(t *testing.T) {
 	o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent)
-	assert.Equal(t, "xxx-mac-000001-xxx", o.Contents("29-7E-8C-8C-60-C9"))
+	assert.Equal(t, "x-mac-0000000001-x", o.Contents("29-7E-8C-8C-60-C9"))
 	// This testcase reports both the original detected MAC address as well as the normalized MAC address
-	assert.Equal(t, map[string]string{"29:7E:8C:8C:60:C9": "xxx-mac-000001-xxx", "29-7E-8C-8C-60-C9": "xxx-mac-000001-xxx"}, o.Report())
+	assert.Equal(t, map[string]string{"29:7E:8C:8C:60:C9": "x-mac-0000000001-x", "29-7E-8C-8C-60-C9": "x-mac-0000000001-x"}, o.Report())
 }
 
 func TestMacReplacementManyMatchLine(t *testing.T) {
@@ -70,34 +70,34 @@ func TestMACConsistentObfuscator(t *testing.T) {
 		{
 			name:   "valid MAC address",
 			input:  []string{"received request from 29-7E-8C-8C-60-C9"},
-			output: []string{"received request from xxx-mac-000001-xxx"},
-			report: map[string]string{"29:7E:8C:8C:60:C9": "xxx-mac-000001-xxx", "29-7E-8C-8C-60-C9": "xxx-mac-000001-xxx"},
+			output: []string{"received request from x-mac-0000000001-x"},
+			report: map[string]string{"29:7E:8C:8C:60:C9": "x-mac-0000000001-x", "29-7E-8C-8C-60-C9": "x-mac-0000000001-x"},
 		},
 		{
 			name:   "MAC address mentioned in a sentence",
 			input:  []string{"A MAC address of 2c549188c9e3 is typically displayed as 2C:54:91:88:C9:E3"},
-			output: []string{"A MAC address of 2c549188c9e3 is typically displayed as xxx-mac-000001-xxx"},
-			report: map[string]string{"2C:54:91:88:C9:E3": "xxx-mac-000001-xxx"},
+			output: []string{"A MAC address of 2c549188c9e3 is typically displayed as x-mac-0000000001-x"},
+			report: map[string]string{"2C:54:91:88:C9:E3": "x-mac-0000000001-x"},
 		},
 		{
 			name:   "Same MAC address in different notations",
 			input:  []string{"A MAC address 2C:54:91:88:C9:E3 can be displayed as 2C-54-91-88-C9-E3 in a filename"},
-			output: []string{"A MAC address xxx-mac-000001-xxx can be displayed as xxx-mac-000001-xxx in a filename"},
-			report: map[string]string{"2C:54:91:88:C9:E3": "xxx-mac-000001-xxx", "2C-54-91-88-C9-E3": "xxx-mac-000001-xxx"},
+			output: []string{"A MAC address x-mac-0000000001-x can be displayed as x-mac-0000000001-x in a filename"},
+			report: map[string]string{"2C:54:91:88:C9:E3": "x-mac-0000000001-x", "2C-54-91-88-C9-E3": "x-mac-0000000001-x"},
 		},
 		{
 			name:   "MAC Address mentioned as case sensitive strings",
 			input:  []string{"A MAC address 2C:54:91:88:C9:E3 can also be displayed as 2c:54:91:88:c9:e3"},
-			output: []string{"A MAC address xxx-mac-000001-xxx can also be displayed as xxx-mac-000001-xxx"},
-			report: map[string]string{"2C:54:91:88:C9:E3": "xxx-mac-000001-xxx", "2c:54:91:88:c9:e3": "xxx-mac-000001-xxx"},
+			output: []string{"A MAC address x-mac-0000000001-x can also be displayed as x-mac-0000000001-x"},
+			report: map[string]string{"2C:54:91:88:C9:E3": "x-mac-0000000001-x", "2c:54:91:88:c9:e3": "x-mac-0000000001-x"},
 		},
 		{
 			name:   "Multiple MAC addresses",
 			input:  []string{"MAC addresses of the two network interfaces are 2C:54:91:88:C9:E3 and 2C:56:83:91:C9:E6"},
-			output: []string{"MAC addresses of the two network interfaces are xxx-mac-000001-xxx and xxx-mac-000002-xxx"},
+			output: []string{"MAC addresses of the two network interfaces are x-mac-0000000001-x and x-mac-0000000002-x"},
 			report: map[string]string{
-				"2C:54:91:88:C9:E3": "xxx-mac-000001-xxx",
-				"2C:56:83:91:C9:E6": "xxx-mac-000002-xxx",
+				"2C:54:91:88:C9:E3": "x-mac-0000000001-x",
+				"2C:56:83:91:C9:E6": "x-mac-0000000002-x",
 			},
 		},
 		{
@@ -107,12 +107,12 @@ func TestMACConsistentObfuscator(t *testing.T) {
 				"MAC addresses of the two network interfaces are 2C:54:91:88:C9:E3 and 2C:56:83:91:C9:E6",
 			},
 			output: []string{
-				"MAC addresses of the two network interfaces are xxx-mac-000001-xxx and xxx-mac-000002-xxx",
-				"MAC addresses of the two network interfaces are xxx-mac-000001-xxx and xxx-mac-000002-xxx",
+				"MAC addresses of the two network interfaces are x-mac-0000000001-x and x-mac-0000000002-x",
+				"MAC addresses of the two network interfaces are x-mac-0000000001-x and x-mac-0000000002-x",
 			},
 			report: map[string]string{
-				"2C:54:91:88:C9:E3": "xxx-mac-000001-xxx",
-				"2C:56:83:91:C9:E6": "xxx-mac-000002-xxx",
+				"2C:54:91:88:C9:E3": "x-mac-0000000001-x",
+				"2C:56:83:91:C9:E6": "x-mac-0000000002-x",
 			},
 		},
 	} {
