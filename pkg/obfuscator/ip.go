@@ -1,7 +1,6 @@
 package obfuscator
 
 import (
-	"fmt"
 	"net"
 	"regexp"
 	"strings"
@@ -36,8 +35,7 @@ var (
 
 type ipObfuscator struct {
 	ReplacementTracker
-	replacements    map[*regexp.Regexp]*generator
-	replacementType schema.ObfuscateReplacementType
+	replacements map[*regexp.Regexp]*generator
 }
 
 func (o *ipObfuscator) Path(s string) string {
@@ -62,13 +60,7 @@ func (o *ipObfuscator) replace(s string) string {
 
 			cleaned := strings.ReplaceAll(m, "-", ".")
 			if ip := net.ParseIP(cleaned); ip != nil {
-				var replacement string
-				switch o.replacementType {
-				case schema.ObfuscateReplacementTypeStatic:
-					replacement = o.GenerateIfAbsent(cleaned, gen.generateStaticReplacement)
-				case schema.ObfuscateReplacementTypeConsistent:
-					replacement = o.GenerateIfAbsent(cleaned, gen.generateConsistentReplacement)
-				}
+				replacement := gen.generateReplacement(cleaned, o.ReplacementTracker)
 				output = strings.ReplaceAll(output, m, replacement)
 				// also add the original (non-cleaned) string, this is only used for human review in the final report
 				o.ReplacementTracker.AddReplacement(m, replacement)
@@ -79,15 +71,19 @@ func (o *ipObfuscator) replace(s string) string {
 }
 
 func NewIPObfuscator(replacementType schema.ObfuscateReplacementType) (ReportingObfuscator, error) {
-	if replacementType != schema.ObfuscateReplacementTypeStatic && replacementType != schema.ObfuscateReplacementTypeConsistent {
-		return nil, fmt.Errorf("unsupported replacement type: %s", replacementType)
+	genIPv4, err := newGenerator(consistentIPv4Template, obfuscatedStaticIPv4, maximumSupportedObfuscationsIP, replacementType)
+	if err != nil {
+		return nil, err
+	}
+	genIPv6, err := newGenerator(consistentIPv6Template, obfuscatedStaticIPv6, maximumSupportedObfuscationsIP, replacementType)
+	if err != nil {
+		return nil, err
 	}
 	return &ipObfuscator{
 		ReplacementTracker: NewSimpleTracker(),
 		replacements: map[*regexp.Regexp]*generator{
-			ipv4Pattern: newGenerator(consistentIPv4Template, obfuscatedStaticIPv4, maximumSupportedObfuscationsIP),
-			ipv6Pattern: newGenerator(consistentIPv6Template, obfuscatedStaticIPv6, maximumSupportedObfuscationsIP),
+			ipv4Pattern: genIPv4,
+			ipv6Pattern: genIPv6,
 		},
-		replacementType: replacementType,
 	}, nil
 }

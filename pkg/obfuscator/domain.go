@@ -4,18 +4,21 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/openshift/must-gather-clean/pkg/schema"
 )
 
 const (
-	domainPattern      = `([a-zA-Z0-9\.]*\.)?(%s)`
-	obfuscatedTemplate = "domain%07d"
+	domainPattern                      = `([a-zA-Z0-9\.]*\.)?(%s)`
+	obfuscatedTemplate                 = "domain%010d"
+	staticDomainReplacement            = "obfuscated.com"
+	maximumSupportedObfuscationDomains = 9999999999
 )
 
 type domainObfuscator struct {
 	ReplacementTracker
-	domainCount    int
 	domainPatterns []*regexp.Regexp
-	domainMapping  map[string]string
+	obfsGenerator  generator
 }
 
 func (d *domainObfuscator) Path(s string) string {
@@ -36,7 +39,7 @@ func (d *domainObfuscator) replaceDomains(input string) string {
 			}
 			baseDomain := m[2]
 			subDomain := m[1]
-			obfuscatedBaseDomain := d.obfuscatedDomain(baseDomain)
+			obfuscatedBaseDomain := d.obfsGenerator.generateReplacement(baseDomain, d.ReplacementTracker)
 			var replacement string
 			if subDomain != "" {
 				replacement = fmt.Sprintf("%s%s", subDomain, obfuscatedBaseDomain)
@@ -44,23 +47,12 @@ func (d *domainObfuscator) replaceDomains(input string) string {
 				replacement = obfuscatedBaseDomain
 			}
 			output = strings.ReplaceAll(output, m[0], replacement)
-			d.AddReplacement(m[0], replacement)
 		}
 	}
 	return output
 }
 
-func (d *domainObfuscator) obfuscatedDomain(domain string) string {
-	if replacement, ok := d.domainMapping[domain]; ok {
-		return replacement
-	}
-	d.domainCount++
-	replacement := fmt.Sprintf(obfuscatedTemplate, d.domainCount)
-	d.domainMapping[domain] = replacement
-	return replacement
-}
-
-func NewDomainObfuscator(domains []string) (ReportingObfuscator, error) {
+func NewDomainObfuscator(domains []string, replacementType schema.ObfuscateReplacementType) (ReportingObfuscator, error) {
 	patterns := make([]*regexp.Regexp, len(domains))
 	for i, d := range domains {
 		dd := strings.ReplaceAll(d, ".", "\\.")
@@ -70,9 +62,14 @@ func NewDomainObfuscator(domains []string) (ReportingObfuscator, error) {
 		}
 		patterns[i] = p
 	}
+	// creating a new generator object
+	generator, err := newGenerator(obfuscatedTemplate, staticDomainReplacement, maximumSupportedObfuscationDomains, replacementType)
+	if err != nil {
+		return nil, err
+	}
 	return &domainObfuscator{
 		ReplacementTracker: NewSimpleTracker(),
 		domainPatterns:     patterns,
-		domainMapping:      map[string]string{},
+		obfsGenerator:      *generator,
 	}, nil
 }
