@@ -6,6 +6,10 @@ type Obfuscator interface {
 	Path(string) string
 	// Contents takes string as input and return the obfuscated string
 	Contents(string) string
-	// Report returns a map of words and their replacements
+}
+
+type ReportingObfuscator interface {
+	Obfuscator
+	// Report returns a map of words and their Replacements
 	Report() map[string]string
 }

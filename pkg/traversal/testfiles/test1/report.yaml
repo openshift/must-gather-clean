@@ -1,5 +1,0 @@
-replacements:
-  - secret: xxxxxx
-omissions:
-  - pods/pod1/application.log
-  - pods/pod2/application.log

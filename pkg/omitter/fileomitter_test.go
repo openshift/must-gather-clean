@@ -1,7 +1,6 @@
 package omitter
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -18,12 +17,6 @@ func TestFileOmitter(t *testing.T) {
 			name:     "log files",
 			pattern:  "*.log",
 			input:    "application.log",
-			expected: true,
-		},
-		{
-			name:     "log files with path",
-			pattern:  "*.log",
-			input:    "ingress/pods/application.log",
 			expected: true,
 		},
 		{
@@ -48,8 +41,7 @@ func TestFileOmitter(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			omitter, err := NewFilenamePatternOmitter(tc.pattern)
 			require.NoError(t, err)
-			parts := strings.Split(tc.input, "/")
-			omit, err := omitter.Omit(parts[len(parts)-1], tc.input)
+			omit, err := omitter.OmitPath(tc.input)
 			require.NoError(t, err)
 			require.Equal(t, tc.expected, omit)
 		})

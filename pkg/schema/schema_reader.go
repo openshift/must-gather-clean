@@ -25,7 +25,6 @@ func (u UnsupportedFileTypeError) Error() string {
 }
 
 func ReadConfigFromPath(path string) (*SchemaJson, error) {
-
 	extension := filepath.Ext(path)
 	isYaml := isYamlExtension(extension)
 	if extension != jsonExtension && !isYaml {

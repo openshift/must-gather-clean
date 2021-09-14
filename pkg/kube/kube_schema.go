@@ -16,5 +16,11 @@ type ResourceList struct {
 	Items []Resource `yaml:"items" json:"items"`
 }
 
+// ResourceListWithPath is a composite structure that contains the parsed content of a Resource and its originating path.
+type ResourceListWithPath struct {
+	ResourceList
+	Path string
+}
+
 // ResourceUnmarshaller is a helper type to abstract yaml and json marshalling
 type ResourceUnmarshaller func(in []byte, out interface{}) (err error)

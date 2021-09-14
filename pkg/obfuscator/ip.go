@@ -62,6 +62,7 @@ func (o *ipObfuscator) replace(s string) string {
 			if ip := net.ParseIP(cleaned); ip != nil {
 				replacement := gen.generateReplacement(cleaned, o.ReplacementTracker)
 				output = strings.ReplaceAll(output, m, replacement)
+				// also add the original (non-cleaned) string, this is only used for human review in the final report
 				o.ReplacementTracker.AddReplacement(m, replacement)
 			}
 		}
@@ -69,7 +70,7 @@ func (o *ipObfuscator) replace(s string) string {
 	return output
 }
 
-func NewIPObfuscator(replacementType schema.ObfuscateReplacementType) (Obfuscator, error) {
+func NewIPObfuscator(replacementType schema.ObfuscateReplacementType) (ReportingObfuscator, error) {
 	genIPv4, err := newGenerator(consistentIPv4Template, obfuscatedStaticIPv4, maximumSupportedObfuscationsIP, replacementType)
 	if err != nil {
 		return nil, err

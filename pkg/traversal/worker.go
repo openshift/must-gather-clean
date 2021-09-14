@@ -3,13 +3,8 @@ package traversal
 import (
 	"fmt"
 
-	"github.com/openshift/must-gather-clean/pkg/kube"
+	"github.com/openshift/must-gather-clean/pkg/cleaner"
 	"k8s.io/klog/v2"
-
-	"github.com/openshift/must-gather-clean/pkg/input"
-	"github.com/openshift/must-gather-clean/pkg/obfuscator"
-	"github.com/openshift/must-gather-clean/pkg/omitter"
-	"github.com/openshift/must-gather-clean/pkg/output"
 )
 
 type fileProcessingError struct {
@@ -25,176 +20,38 @@ func (f *fileProcessingError) Cause() error {
 	return f.cause
 }
 
-type workerFile struct {
-	f input.File
+// workerInput here is a relative path to the must-gather root folder
+type workerInput string
+
+type QueueProcessor interface {
+	ProcessQueue(queue chan workerInput, errorCh chan error)
 }
 
-type worker struct {
-	id           int
-	obfuscators  []obfuscator.Obfuscator
-	fileOmitters []omitter.FileOmitter
-	k8sOmitters  []omitter.KubernetesResourceOmitter
-	queue        <-chan workerFile
-	omittedFiles map[string]struct{}
-	writer       output.Outputter
-	errorCh      chan<- error
+type Worker struct {
+	id      int
+	cleaner cleaner.Processor
 }
 
-func newWorker(id int,
-	obfuscators []obfuscator.Obfuscator,
-	fileOmitters []omitter.FileOmitter,
-	k8sOmitters []omitter.KubernetesResourceOmitter,
-	queue <-chan workerFile,
-	writer output.Outputter,
-	errorCh chan<- error) *worker {
-	return &worker{
-		id:           id,
-		obfuscators:  obfuscators,
-		omittedFiles: map[string]struct{}{},
-		fileOmitters: fileOmitters,
-		k8sOmitters:  k8sOmitters,
-		queue:        queue,
-		writer:       writer,
-		errorCh:      errorCh,
-	}
-}
+func (w *Worker) ProcessQueue(queue chan workerInput, errorCh chan error) {
+	for wf := range queue {
+		path := string(wf)
+		klog.V(3).Infof("[Worker %02d] Processing %s\n", w.id, path)
 
-func (w *worker) run() {
-	for wf := range w.queue {
-		klog.V(3).Infof("[worker %02d] Processing %s\n", w.id, wf.f.Path())
-
-		// check if the file should be omitted
-		omit, err := w.shouldOmitFile(wf.f)
+		err := w.cleaner.Process(path)
 		if err != nil {
-			w.errorCh <- &fileProcessingError{
-				path:  wf.f.Path(),
-				cause: err,
-			}
-			continue
-		}
-
-		// If the file should be omitted then stop processing.
-		if omit {
-			w.omittedFiles[wf.f.Path()] = struct{}{}
-			klog.V(2).Infof("[worker %02d] Omitting file %s", w.id, wf.f.Path())
-			continue
-		}
-
-		isKubernetesResource := true
-		kubeResource, err := kube.ReadKubernetesResourceFromPath(wf.f.AbsPath())
-		if err != nil {
-			if err == kube.NoKubernetesResourceError {
-				isKubernetesResource = false
-			} else {
-				w.errorCh <- &fileProcessingError{
-					path:  wf.f.Path(),
-					cause: err,
-				}
-				continue
-			}
-		}
-
-		if isKubernetesResource {
-			omit, err := w.shouldOmitK8sResource(kubeResource)
-			if err != nil {
-				w.errorCh <- &fileProcessingError{
-					path:  wf.f.Path(),
-					cause: err,
-				}
-				continue
-			}
-
-			if omit {
-				w.omittedFiles[wf.f.Path()] = struct{}{}
-				klog.V(2).Infof("[worker %02d] Omitting k8s resource '%s'", w.id, wf.f.Path())
-				continue
-			}
-		}
-
-		originalPath := wf.f.Path()
-		newPath := originalPath
-		for _, o := range w.obfuscators {
-			newPath = o.Path(newPath)
-		}
-
-		if originalPath != newPath {
-			klog.V(2).Infof("[worker %02d] Obfuscating file '%s' as '%s'", w.id, originalPath, newPath)
-		}
-
-		err = w.obfuscateFile(wf, newPath)
-		if err != nil {
-			w.errorCh <- &fileProcessingError{
-				path:  wf.f.Path(),
-				cause: err,
-			}
-			continue
-		}
-		klog.V(3).Infof("[worker %02d] Finished processing %s\n", w.id, wf.f.Path())
-	}
-}
-
-func (w *worker) shouldOmitFile(f input.File) (bool, error) {
-	for _, o := range w.fileOmitters {
-		omit, err := o.Omit(f.Name(), f.Path())
-		if err != nil {
-			return false, err
-		}
-		if omit {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
-func (w *worker) shouldOmitK8sResource(resource *kube.ResourceList) (bool, error) {
-	for _, o := range w.k8sOmitters {
-		omit, err := o.Omit(resource)
-		if err != nil {
-			return false, err
-		}
-		if omit {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
-func (w *worker) obfuscateFile(wf workerFile, relativePathToFile string) error {
-	closeWriter, writer, err := w.writer.Writer(relativePathToFile, wf.f.Permissions())
-	if err != nil {
-		return err
-	}
-	// close the output file when done
-	defer func() {
-		if err := closeWriter(); err != nil {
-			w.errorCh <- &fileProcessingError{
-				path:  wf.f.Path(),
+			errorCh <- &fileProcessingError{
+				path:  path,
 				cause: err,
 			}
 		}
-	}()
 
-	scanner, closeReader, err := wf.f.Scanner()
-	if err != nil {
-		return err
+		klog.V(3).Infof("[Worker %02d] Finished processing %s\n", w.id, path)
 	}
-	defer func() {
-		if err := closeReader(); err != nil {
-			w.errorCh <- &fileProcessingError{
-				path:  wf.f.Path(),
-				cause: err,
-			}
-		}
-	}()
-	for scanner.Scan() {
-		contents := scanner.Text()
-		for _, o := range w.obfuscators {
-			contents = o.Contents(contents)
-		}
-		_, err = writer.WriteString(fmt.Sprintf("%s\n", contents))
-		if err != nil {
-			return err
-		}
+}
+
+func NewWorker(id int, cleaner cleaner.Processor) QueueProcessor {
+	return &Worker{
+		id:      id,
+		cleaner: cleaner,
 	}
-	return nil
 }

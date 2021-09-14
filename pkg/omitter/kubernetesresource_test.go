@@ -227,7 +227,7 @@ items:
 			resourceList, err := kube.ReadKubernetesResourceFromPath(file.Name())
 			require.NoError(t, err)
 
-			omit, err := omitter.Omit(resourceList)
+			omit, err := omitter.OmitKubeResource(resourceList)
 			require.NoError(t, err)
 			require.Equal(t, tc.omit, omit)
 		})

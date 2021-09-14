@@ -6,10 +6,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"sigs.k8s.io/yaml"
+
 	"github.com/stretchr/testify/require"
 )
 
-func TestKubernetesResourceReader(t *testing.T) {
+func TestKubernetesResourceReaderYaml(t *testing.T) {
 	for _, tc := range []struct {
 		name           string
 		resource       string
@@ -96,24 +98,57 @@ items: []
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			file, err := ioutil.TempFile("", "kube-schema-read-*.yaml")
+			file, err := asYaml(t, tc.resource)
 			require.NoError(t, err)
 			defer func(name string) {
 				_ = os.Remove(name)
 			}(file.Name())
-			_, err = file.Write([]byte(tc.resource))
-			require.NoError(t, err)
-			err = file.Close()
-			require.NoError(t, err)
 
-			resource, err := ReadKubernetesResourceFromPath(file.Name())
-			assert.Equal(t, tc.expectedError, err)
-			assert.Equal(t, tc.expectedOutput, resource)
+			assertOutput(t, file.Name(), tc.expectedError, tc.expectedOutput)
+
+			file, err = fromYamlToJson(t, tc.resource)
+			require.NoError(t, err)
+			defer func(name string) {
+				_ = os.Remove(name)
+			}(file.Name())
+
+			assertOutput(t, file.Name(), tc.expectedError, tc.expectedOutput)
 		})
 	}
 }
 
-func TestNonYamlJsonReading(t *testing.T) {
+func assertOutput(t *testing.T, fileName string, expectedError error, expectedOutput *ResourceList) {
+	resource, err := ReadKubernetesResourceFromPath(fileName)
+	assert.Equal(t, expectedError, err)
+	if expectedOutput != nil {
+		assert.Equal(t, fileName, resource.Path)
+		assert.Equal(t, expectedOutput, &resource.ResourceList)
+	} else {
+		assert.Nil(t, resource)
+	}
+}
+
+func asYaml(t *testing.T, resource string) (*os.File, error) {
+	file, err := ioutil.TempFile("", "kube-schema-read-*.yaml")
+	require.NoError(t, err)
+	_, err = file.Write([]byte(resource))
+	require.NoError(t, err)
+	require.NoError(t, file.Close())
+	return file, err
+}
+
+func fromYamlToJson(t *testing.T, resource string) (*os.File, error) {
+	file, err := ioutil.TempFile("", "kube-schema-read-*.json")
+	require.NoError(t, err)
+	bytes, err := yaml.YAMLToJSON([]byte(resource))
+	require.NoError(t, err)
+	_, err = file.Write(bytes)
+	require.NoError(t, err)
+	require.NoError(t, file.Close())
+	return file, err
+}
+
+func TestNonYamlNonJsonReading(t *testing.T) {
 	_, err := ReadKubernetesResourceFromPath("some.path")
 	require.Equal(t, NoKubernetesResourceError, err)
 }

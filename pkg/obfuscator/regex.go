@@ -30,7 +30,7 @@ func (r *regexObfuscator) replace(input string) string {
 	return output
 }
 
-func NewRegexObfuscator(pattern string) (Obfuscator, error) {
+func NewRegexObfuscator(pattern string) (ReportingObfuscator, error) {
 	regex, err := regexp.Compile(pattern)
 	if err != nil {
 		return nil, fmt.Errorf("pattern %s is invalid: %w", pattern, err)
