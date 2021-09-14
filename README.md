@@ -303,12 +303,12 @@ To have optimal performance, it is important that the most selective omitters sh
 
 This project is a community supported open source project under the OpenShift umbrella. We're a small cross-functional team that initially built this tool and want to foster a community around it.
 
-Contributions to the code and documentation are always welcome and will be reviewed in due time by a member of our team. For larger changes, we would appreciate starting a discussion in an [Github Issue][issues] before.
+Contributions to the code and documentation are always welcome and will be reviewed in due time by a member of our team. For larger changes, we would appreciate starting a discussion in an [Github Issue](https://github.com/openshift/must-gather-clean/issues) before.
 
 You can find more information in [CONTRIB](CONTRIB.md).
 
 ## Reporting bugs
 
-Before filing a bug report, ensure the bug hasn't already been reported by searching through the project [Issues][issues]. 
+Before filing a bug report, ensure the bug hasn't already been reported by searching through the project [Issues](https://github.com/openshift/must-gather-clean/issues). 
 
-Please choose the `Bug Report` template when creating an issue and fill the required sections in the template - this helps us to triage the issue get it fixed faster. 
+Please choose the `Bug Report` template when creating an issue and fill the required sections in the template - this helps us to triage the issue get it fixed faster.

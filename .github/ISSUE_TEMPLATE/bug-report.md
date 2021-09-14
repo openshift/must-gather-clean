@@ -10,7 +10,8 @@ assignees: ''
 ## Bug Report
 
 <!-- 
-Note: Make sure to first check the prerequisites that can be found in the main README file!
+
+Note: before filing a bug report, ensure the bug hasn't already been reported by searching through the project [Issues](https://github.com/openshift/must-gather-clean/issues).
 
 Thanks for filing an issue! Before hitting the button, please answer these questions.
 Fill in as much of the template below as you can. If you leave out information, we can't help you as well.
