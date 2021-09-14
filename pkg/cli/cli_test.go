@@ -185,3 +185,85 @@ func TestCreateOmitter(t *testing.T) {
 	require.NoError(t, err)
 	assert.Truef(t, match, "k8s resource with the exact same input should match")
 }
+
+func TestRunPipeNoConfig(t *testing.T) {
+	file, err := os.CreateTemp("", "temp-file")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(file.Name())
+	}()
+
+	_, err = file.WriteString("some IP 192.167.122.2 that needs to be obfuscated\nand some mac eb:a1:2a:b2:09:bf\n")
+	require.NoError(t, err)
+
+	require.NoError(t, file.Close())
+	inputFile, err := os.Open(file.Name())
+	require.NoError(t, err)
+	defer func() {
+		_ = inputFile.Close()
+	}()
+
+	outputFile, err := os.CreateTemp("", "temp-file")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(outputFile.Name())
+	}()
+
+	err = RunPipe("", inputFile, outputFile)
+	require.NoError(t, err)
+	require.NoError(t, outputFile.Close())
+
+	bytes, err := ioutil.ReadFile(outputFile.Name())
+	require.NoError(t, err)
+
+	assert.Equal(t, "some IP x-ipv4-0000000001-x that needs to be obfuscated\nand some mac x-mac-0000000001-x\n", string(bytes))
+}
+
+func TestRunPipeConfigMacOnly(t *testing.T) {
+	cfgFile, err := os.CreateTemp("", "temp-file-*.yaml")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(cfgFile.Name())
+	}()
+
+	_, err = cfgFile.WriteString(`
+config:
+  obfuscate:
+    - type: MAC
+      replacementType: Consistent
+      target: All
+`)
+	require.NoError(t, err)
+	require.NoError(t, cfgFile.Close())
+
+	file, err := os.CreateTemp("", "temp-file")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(file.Name())
+	}()
+
+	_, err = file.WriteString("some IP 192.167.122.2 that should not to be obfuscated\nand some mac eb:a1:2a:b2:09:bf\n")
+	require.NoError(t, err)
+
+	require.NoError(t, file.Close())
+	inputFile, err := os.Open(file.Name())
+	require.NoError(t, err)
+	defer func() {
+		_ = inputFile.Close()
+	}()
+
+	outputFile, err := os.CreateTemp("", "temp-file")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(outputFile.Name())
+	}()
+
+	err = RunPipe(cfgFile.Name(), inputFile, outputFile)
+	require.NoError(t, err)
+	require.NoError(t, outputFile.Close())
+
+	bytes, err := ioutil.ReadFile(outputFile.Name())
+	require.NoError(t, err)
+
+	assert.Equal(t, "some IP 192.167.122.2 that should not to be obfuscated\nand some mac x-mac-0000000001-x\n", string(bytes))
+}
