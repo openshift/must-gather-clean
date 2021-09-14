@@ -298,3 +298,17 @@ config:
 
 Similar to obfuscators, you can also chain the omitters. The guarantee is that each omission type will be called for each file path in order of their definition. The first omitter to match a file path is used as the final decision, subsequently defined omitters will be skipped. 
 To have optimal performance, it is important that the most selective omitters should be defined first, the most specific at the bottom.
+
+# Contributing to must-gather-clean
+
+This project is a community supported open source project under the OpenShift umbrella. We're a small cross-functional team that initially built this tool and want to foster a community around it.
+
+Contributions to the code and documentation are always welcome and will be reviewed in due time by a member of our team. For larger changes, we would appreciate starting a discussion in an [Github Issue][issues] before.
+
+You can find more information in [CONTRIB](CONTRIB.md).
+
+## Reporting bugs
+
+Before filing a bug report, ensure the bug hasn't already been reported by searching through the project [Issues][issues]. 
+
+Please choose the `Bug Report` template when creating an issue and fill the required sections in the template - this helps us to triage the issue get it fixed faster. 
