@@ -12,3 +12,7 @@ bin/
 
 # Compiled files
 /dist
+
+# end2end tests
+pkg/cli/testfiles/aws
+pkg/cli/testfiles/aws.cleaned
