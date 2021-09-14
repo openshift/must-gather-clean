@@ -1,3 +1,4 @@
+// Package cleaner contains all the business logic of cleaning (obfuscation + omission) files on different types of content (k8s resources, text files, paths).
 package cleaner
 
 import (
@@ -12,26 +13,31 @@ import (
 	"github.com/openshift/must-gather-clean/pkg/omitter"
 )
 
+// Processor is responsible for processing a single input file.
 type Processor interface {
 	// Process is the end2end method for cleaning (omit + obfuscate path and content of) a file on disk.
 	// Will return nil if the file was processed without an error (e.g. through omission) or the error otherwise.
 	Process(inputFile string) error
 }
 
+// ReadWriteObfuscator is responsible for obfuscating input from an io.Reader and outputting to an io.Writer
 type ReadWriteObfuscator interface {
 	// ObfuscateReader obfuscates on an agnostic line-based reader and writes to an agnostic writer facility
 	ObfuscateReader(inputReader io.Reader, outputWriter io.Writer) error
 }
 
+// FileObfuscator is responsible for obfuscating a file on the filesystem and output the result into another file.
 type FileObfuscator interface {
 	// ObfuscateFile obfuscates a text file and writes the result into the outputFile.
 	ObfuscateFile(inputFile string, outputFile string) error
 }
 
+// ContentObfuscator wraps any obfuscator and implements ReadWriteObfuscator
 type ContentObfuscator struct {
 	Obfuscator obfuscator.Obfuscator
 }
 
+// FileContentObfuscator obfuscates a file by implementing FileObfuscator and ReadWriteObfuscator.
 type FileContentObfuscator struct {
 	ContentObfuscator
 
@@ -39,6 +45,7 @@ type FileContentObfuscator struct {
 	outputFolder string
 }
 
+// FileProcessor cleans (either omit or obfuscates) a path by implementing Processor.
 type FileProcessor struct {
 	FileContentObfuscator
 
