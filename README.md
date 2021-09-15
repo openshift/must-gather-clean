@@ -1,8 +1,56 @@
-# must-gather-clean
+# Overview
 
-This tool is used for obfuscating and omitting sensitive data from [must-gather](https://github.com/openshift/must-gather) dumps.
+`must-gather-clean` can be used for obfuscating and omitting sensitive data from [must-gathers](https://github.com/openshift/must-gather).
 
-# Running the tool
+# Key Features
+
+`must-gather-clean` is designed to be fast and extensible, yet simple to use. It has the following key features:
+* Obfuscation for many common types of confidential information, for example IPs, MACs, DNS
+* Granular control over what files should be shared
+* Replace confidential information consistently to preserve debuggability
+* Ability to parse and understand Kubernetes and OpenShift resources
+* Concise and feature rich tool configuration
+* Community supported, contributions are welcome
+
+# Installation
+
+You can download the latest version of `must-gather-clean` from the [GitHub Release](https://github.com/openshift/must-gather-clean/releases) page. We currently support Linux, Mac and Windows (all ADM64+ARM64).
+
+Optionally, you can validate against the checksum file found on the release page, here using the linux binary:
+```sh 
+$ echo "$(<SHA256_SUM) must-gather-clean-linux-amd64" | sha256sum --check
+```
+
+On Linux, you can add the binary to the path with:
+```sh
+$ chmod +x must-gather-clean
+$ sudo mv ./must-gather-clean /usr/local/bin/must-gather-clean
+```
+
+Then you should be able to run:
+```sh
+$ must-gather-clean version
+```
+
+## Installing from source
+
+Building this tool requires [Golang 1.16](https://golang.org/dl/) or later and GNU `make`.
+
+1. Clone the repository
+```sh
+$ git clone https://github.com/openshift/must-gather-clean
+$ cd must-gather-clean
+```
+2. Run make to build the tool
+```sh
+$ make
+```
+3. Check the build version to verify it was built properly
+```sh
+$ ./must-gather-clean version
+```
+
+# Running must-gather-clean
 
 `must-gather-clean` should be pointed to the root folder of an already generated must-gather.
 
@@ -18,7 +66,7 @@ The cleaned must-gather can then be found in the `must-gather-output-cleaned` fo
 
 The configuration passed via `-c` is explained in the below [Configuration](#configuration) section.
 
-By default, the tool runs using multiple threads and is designed to utilize the whole CPU. The number of threads can be adjusted any time with the `-w` argument, defaulting to the number of cores available on the host.
+By default, the tool runs using multiple threads and is designed to utilize the whole CPU. The number of threads can be adjusted any time with the `-w` argument, defaulting to the number of CPU cores available on the host.
 
 # Configuration
 
@@ -27,7 +75,7 @@ By default, the tool runs using multiple threads and is designed to utilize the 
 A very basic default configuration you can supply as the above `-c` flag for OpenShift can be found
 under [examples/openshift_default.yaml](examples/openshift_default.yaml). If you want to obfuscate your domain names (for example DNS entries), then you have to adjust the list of `domainNames` to include yours.
 
-In case you don't need to share networking or SDN information in the must-gather, you can run the configuration under [examples/openshift_omit_network.yaml](examples/openshift_omit_network.yaml). 
+In case you don't need to share networking or SDN information in the must-gather, you can run the configuration under [examples/openshift_omit_network.yaml](examples/openshift_omit_network.yaml).
 This will ignore the largest log files that also take a long time to obfuscate.
 
 ## Schema
@@ -38,14 +86,14 @@ In general the schema consists of two major sections:
 
 The omission section is used to define the omission behaviour, so to define what files to include and what not. The obfuscation section is then used to determine, on each of the included files, what content to replace (detection) and how (replacement).
 
-The different types are explained along examples below. The whole schema itself is defined in [JSON schema](https://json-schema.org/) and 
+The different types are explained along examples below. The whole schema itself is defined in [JSON schema](https://json-schema.org/) and
 can be found in [schema.json](pkg/schema/schema.json) with more examples and documentation for each property. A more browsable
 alternative can be found on [json-schema.app](https://json-schema.app/view/%23?url=https%3A%2F%2Fraw.githubusercontent.com%2Fopenshift%2Fmust-gather-clean%2Fmain%2Fpkg%2Fschema%2Fschema.json).
 
 ## Obfuscation
 
 You can define obfuscators as a list of "types", usually customized by a couple of parameters.
-The obfuscators will then be applied to each non-omitted file and on a line-by-line basis in case of text files. 
+The obfuscators will then be applied to each non-omitted file and on a line-by-line basis in case of text files.
 
 The following obfuscation types are supported:
 
@@ -65,7 +113,7 @@ config:
   - type: MAC
 ```
 
-This configuration applied on a `must-gather` folder will detect all MAC addresses recursively in all the files. 
+This configuration applied on a `must-gather` folder will detect all MAC addresses recursively in all the files.
 Since obfuscation is about replacing the found information, the above will simply replace the found MAC address with `xx:xx:xx:xx:xx:xx`. We call this a `Static` replacement, which is the default for all types of obfuscators.
 
 There is another type of replacement called `Consistent`, that can be configured like this:
@@ -77,8 +125,8 @@ config:
     replacementType: Consistent
 ```
 
-This will detect all MAC addresses and replace them with a "consistent" identifier that looks like this `xxx-mac-000001-xxx`. 
-For example, one of your network interfaces has the mac address `52:54:00:5e:ee:c6` and was logged, then `must-gather-clean`  will guarantee that it will always be assigned the same obfuscated consistent identifier across all files in a must-gather. 
+This will detect all MAC addresses and replace them with a "consistent" identifier that looks like this `xxx-mac-000001-xxx`.
+For example, one of your network interfaces has the mac address `52:54:00:5e:ee:c6` and was logged, then `must-gather-clean`  will guarantee that it will always be assigned the same obfuscated consistent identifier across all files in a must-gather.
 That primarily helps our support and engineers to ensure we can still understand and reproduces challenges that you were facing without putting your classified information at risk.
 
 ### IP address obfuscation
@@ -96,9 +144,9 @@ config:
     replacementType: Consistent
 ```
 
-On a line-by-line basis, this will always execute the MAC obfuscation first and then the IP obfuscator - we'll go through this behaviour in more detail in the following [`Chaining obfuscators and side effects`](#Chaining obfuscators and side effects) section. 
+On a line-by-line basis, this will always execute the MAC obfuscation first and then the IP obfuscator - we'll go through this behaviour in more detail in the following [`Chaining obfuscators and side effects`](#Chaining obfuscators and side effects) section.
 
-Another configuration flag that we support for each obfuscation type is the `target`. The target is useful when the confidential information can be found not only in the file content, but also in the folder or file names. 
+Another configuration flag that we support for each obfuscation type is the `target`. The target is useful when the confidential information can be found not only in the file content, but also in the folder or file names.
 This can very frequently happen with IP addresses, for example, through node names. You can control that independently for each type as following:
 
 ```
@@ -112,7 +160,7 @@ config:
     target: FilePath
 ```
 
-As you can see, the MAC obfuscator would work on file content whereas the IP obfuscator would work only on FilePaths. There is a mixed target called `All`, that will obfuscate on both paths and contents. 
+As you can see, the MAC obfuscator would work on file content whereas the IP obfuscator would work only on FilePaths. There is a mixed target called `All`, that will obfuscate on both paths and contents.
 The default if no target is specified is `FileContents`. It is, thus, always recommended to use the IP obfuscator with `target: All` to not accidentally leak IP information through folder names.
 
 ### Domain name obfuscation
@@ -128,12 +176,12 @@ config:
     - "dev.rhcloud.com"
 ```
 
-As you can see, this type must be customized by supplying domain names. 
+As you can see, this type must be customized by supplying domain names.
 Kubernetes resources are defined along with their domain names (for example "apps.openshift.io/v1") and thus would be automatically recognized as such and obfuscated as a false-positive.
 We thus kindly ask the user to supply their confidential domain names manually through the configuration.
 
-The above definition will obfuscate `rhcloud.com` as `domain0000001` (consistent) or as `xxxxxxxxxxxxx` (static). 
-Note that this does not include subdomains, they would need to be separately obfuscated. 
+The above definition will obfuscate `rhcloud.com` as `domain0000001` (consistent) or as `xxxxxxxxxxxxx` (static).
+Note that this does not include subdomains, they would need to be separately obfuscated.
 A domain name defined as `staging.rhcloud.com` would only be obfuscated as `staging.domain0000001`, thus, you should include all subdomains you want to have obfuscated (for example `dev.rhcloud.com`) in the list as well.
 
 ### Custom Obfuscations
@@ -154,7 +202,7 @@ config:
        tomorrow: yesterday
 ```
 
-This configuration will simply replace the strings on the left-hand side with the values on the right-hand side. 
+This configuration will simply replace the strings on the left-hand side with the values on the right-hand side.
 The `target` variable here is supported as well, so you can also target specific files and obfuscate their name, for example:
 
 ```
@@ -184,7 +232,7 @@ Since the replacement is already supplied, configuring the `replacementType` wil
 
 #### Regex
 
-Another common approach to detect strings by their format is using regular expressions. Internally this uses the [Golang regexp package](https://pkg.go.dev/regexp) if you need further details on how to express a pattern. 
+Another common approach to detect strings by their format is using regular expressions. Internally this uses the [Golang regexp package](https://pkg.go.dev/regexp) if you need further details on how to express a pattern.
 
 Let's take a brief example on both FilePath and FileContents:
 
@@ -199,12 +247,12 @@ config:
     regex: ".*ssl-min-ver TLSv1.2$"
 ```
 
-The first regex would match a path like: `release-4.1/ingress_controllers/something/haproxy.log` and would `x` out the whole path. 
+The first regex would match a path like: `release-4.1/ingress_controllers/something/haproxy.log` and would `x` out the whole path.
 The resulting filename would literally be: `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`, thus there is very little practical use for using the regex like that.
 
 This however, is much more useful in the second example where we want to obfuscate that we were using TLSv1.2 as the min version - which would also be replaced as `xxxxxxxxxxxxxxxxxxxxxxx`.
 
-There is currently no support for consistent replacement as in the built-in types, there is a feature upcoming for capture groups and individual replacements thereof. 
+There is currently no support for consistent replacement as in the built-in types, there is a feature upcoming for capture groups and individual replacements thereof.
 
 
 #### Chaining obfuscators and side effects
@@ -226,18 +274,18 @@ config:
 
 Running the above obfuscation on the string `a wonderful evening to go dancing` would yield the following result:
 `xxx.xxx.xxx.xxx wonderful evening to go dxxx.xxx.xxx.xxxncing`, which might be counter-intuitive.
-So what happened here? First off, we would replace all `a` with a `b`, that `b` in turn would be replaced with `192.168.2.1` that later matches as an IPv4 and gets obfuscated in a static manner. 
+So what happened here? First off, we would replace all `a` with a `b`, that `b` in turn would be replaced with `192.168.2.1` that later matches as an IPv4 and gets obfuscated in a static manner.
 
 You can ensure that this does not happen, by providing custom obfuscators at the very bottom of the definition, preferably after all built-ins, and by ensuring you match on very specific terms (for example by supplying word boundaries in regular expressions).
 
 ## Omission
 
-To ensure certain files will never be shared, must-gather-clean helps you to omit files. 
+To ensure certain files will never be shared, must-gather-clean helps you to omit files.
 There is support for the most common types of files in the must-gather:
 * [File Pattern](#file-pattern)
 * [Kubernetes Resource](#kubernetes-resource)
 
-### File Pattern 
+### File Pattern
 
 File patterns can be useful to omit certain folders and files by their path. The paths are always relative to the root of the must-gather that was supplied by the "-i" flag.
 
@@ -248,14 +296,14 @@ config:
     pattern: "*/namespaces/openshift-sdn/pods/*/*/*/logs/*.log"
 ```
 
-This example illustrates how the globbing of the path works, you need to supply the respective folder structure down to the specific files you want to omit. A simple `*.log` will not suffice to omit all files matching the log extension in the must-gather. 
+This example illustrates how the globbing of the path works, you need to supply the respective folder structure down to the specific files you want to omit. A simple `*.log` will not suffice to omit all files matching the log extension in the must-gather.
 The rationale here is to be explicit about what is being omitted to later avoid chasing the accidentally missing files.
 
 For more information about the supported syntax refer to the documentation on [filepath.Match](https://pkg.go.dev/path/filepath#Match) that powers this feature.
 
 ### Kubernetes Resource
 
-Most of the very confidential information, for example authentication tokens and certificates, are stored in Kubernetes resources and its yaml representation. We added the ability to omit those resources by their familiar Kubernetes resource identifiers. 
+Most of the very confidential information, for example authentication tokens and certificates, are stored in Kubernetes resources and its yaml representation. We added the ability to omit those resources by their familiar Kubernetes resource identifiers.
 
 You can configure to omit all secrets by its kind as follows:
 
@@ -296,7 +344,7 @@ config:
 
 ### Chaining omitters
 
-Similar to obfuscators, you can also chain the omitters. The guarantee is that each omission type will be called for each file path in order of their definition. The first omitter to match a file path is used as the final decision, subsequently defined omitters will be skipped. 
+Similar to obfuscators, you can also chain the omitters. The guarantee is that each omission type will be called for each file path in order of their definition. The first omitter to match a file path is used as the final decision, subsequently defined omitters will be skipped.
 To have optimal performance, it is important that the most selective omitters should be defined first, the most specific at the bottom.
 
 # Contributing to must-gather-clean
@@ -309,6 +357,6 @@ You can find more information in [CONTRIB](CONTRIB.md).
 
 ## Reporting bugs
 
-Before filing a bug report, ensure the bug hasn't already been reported by searching through the project [Issues][issues]. 
+Before filing a bug report, ensure the bug hasn't already been reported by searching through the project [Issues][issues].
 
 Please choose the `Bug Report` template when creating an issue and fill the required sections in the template - this helps us to triage the issue get it fixed faster. 
