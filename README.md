@@ -16,9 +16,14 @@
 
 You can download the latest version of `must-gather-clean` from the [GitHub Release](https://github.com/openshift/must-gather-clean/releases) page. We currently support Linux, Mac and Windows (all ADM64+ARM64).
 
+Unpack the binary that you downloaded, for Linux the tar file can be extracted with:
+```sh 
+$ tar xzf must-gather-clean-linux-amd64.tar.gz
+```
+
 Optionally, you can validate against the checksum file found on the release page, here using the linux binary:
 ```sh 
-$ echo "$(<SHA256_SUM) must-gather-clean-linux-amd64" | sha256sum --check
+$ echo "$(<SHA256_SUM) must-gather-clean" | sha256sum --check
 ```
 
 On Linux, you can add the binary to the path with:

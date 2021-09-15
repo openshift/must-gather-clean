@@ -104,4 +104,4 @@ total 29428
 
 You can then go to [GitHub Releases](https://github.com/openshift/must-gather-clean/releases/new) and create a new release from that tag. 
 
-You can attach all the binaries (archives are not that useful, but you can include them) from the dist/release folder and upload them. Hit the release button and don't forget to :party-doge:.
+You can attach all the archives from the dist/release folder and upload them. Hit the release button and don't forget to :party-doge:.

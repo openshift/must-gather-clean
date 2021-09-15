@@ -1,18 +1,6 @@
 COMMON_GOFLAGS := -mod=vendor
 COMMON_LDFLAGS := -X $(PROJECT)/pkg/version.GITCOMMIT=$(GITCOMMIT)
 BUILD_FLAGS := $(COMMON_GOFLAGS) -ldflags="$(COMMON_LDFLAGS)"
-GO ?=go
-GO_PACKAGE ?=$(shell $(GO) list $(GO_MOD_FLAGS) -m -f '{{ .Path }}' || echo 'no_package_detected')
-SOURCE_GIT_TAG ?=$(shell git describe --long --tags --abbrev=7 --match 'v[0-9]*' || echo 'v0.0.0-unknown')
-SOURCE_GIT_COMMIT ?=$(shell git rev-parse --short "HEAD^{commit}" 2>/dev/null)
-SOURCE_GIT_TREE_STATE ?=$(shell ( ( [ ! -d ".git/" ] || git diff --quiet ) && echo 'clean' ) || echo 'dirty')
-define version-ldflags
--X $(GO_PACKAGE)/pkg/version.versionFromGit="$(SOURCE_GIT_TAG)" \
--X $(GO_PACKAGE)/pkg/version.commitFromGit="$(SOURCE_GIT_COMMIT)" \
--X $(GO_PACKAGE)/pkg/version.gitTreeState="$(SOURCE_GIT_TREE_STATE)" \
--X $(GO_PACKAGE)/pkg/version.buildDate="$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')"
-endef
-CROSS_BUILD_FLAGS := $(COMMON_GOFLAGS) -ldflags="-s -w $(version-ldflags)"
 
 all: build
 .PHONY: all
@@ -45,8 +33,8 @@ verify: verify-scripts lint
 
 
 .PHONY: cross
-cross: ## compile for multiple platforms
-	./hack/compile.sh $(CROSS_BUILD_FLAGS)
+cross: build test ## depends on https://github.com/openshift/build-machinery-go/blob/2b271bb3a0ad466045cd6da5c9423084e9cf68f0/make/lib/golang.mk
+	./hack/compile.sh $(GO_LD_FLAGS)
 
 .PHONY: prepare-release
 prepare-release: cross ## create gzipped binaries in ./dist/release/ for uploading to GitHub release page
