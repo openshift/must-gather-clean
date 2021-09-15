@@ -106,10 +106,6 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 		return fmt.Errorf("failed to create directory %s: %c", writePathParentDir, err)
 	}
 
-	// we need to assess whether the file exists already to ensure we don't overwrite existing obfuscated data.
-	// that can happen while obfuscating file names and their paths.
-	// Additionally, the stat check is required because os.O_CREATE will implicitly os.O_TRUNC if a file already exist
-
 	outputOsFile, err := c.generateNewFile(writePath)
 	if err != nil {
 		return fmt.Errorf("failed to create and open '%s': %w", writePath, err)
@@ -141,6 +137,10 @@ func (c *FileContentObfuscator) generateNewFile(inputFilePath string) (*os.File,
 	c.pathCollisionMutex.Lock()
 	defer c.pathCollisionMutex.Unlock()
 
+	// we need to assess whether the file exists already to ensure we don't overwrite existing obfuscated data.
+	// that can happen while obfuscating file names and their paths.
+	// Additionally, the stat check is required because os.O_CREATE will implicitly os.O_TRUNC if a file already exist
+
 	_, err := os.Stat(inputFilePath)
 	if err != nil && !os.IsNotExist(err) {
 		return nil, fmt.Errorf("failed to determine if %s already exists: %w", inputFilePath, err)
@@ -151,11 +151,13 @@ func (c *FileContentObfuscator) generateNewFile(inputFilePath string) (*os.File,
 			fileExt++
 			samplePath := inputFilePath + "." + strconv.Itoa(fileExt)
 			_, err := os.Stat(samplePath)
-			if err != nil && os.IsNotExist(err) {
-				inputFilePath = samplePath
-				break
-			} else if err != nil && !os.IsNotExist(err) {
-				return nil, fmt.Errorf("failed to determine if %s already exists: %w", samplePath, err)
+			if err != nil {
+				if os.IsNotExist(err) {
+					inputFilePath = samplePath
+					break
+				} else {
+					return nil, fmt.Errorf("failed to determine if %s already exists: %w", samplePath, err)
+				}
 			}
 		}
 	}
