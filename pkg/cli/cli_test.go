@@ -125,7 +125,7 @@ func TestCreateObfuscatorFromFullConfig(t *testing.T) {
 			},
 			{
 				Type:            schema.ObfuscateTypeDomain,
-				Domains:         []string{"something.com"},
+				DomainNames:     []string{"something.com"},
 				Target:          schema.ObfuscateTargetFileContents,
 				ReplacementType: schema.ObfuscateReplacementTypeStatic,
 			},

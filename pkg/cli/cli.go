@@ -145,7 +145,7 @@ func createObfuscatorsFromConfig(config *schema.SchemaJson) (*obfuscator.MultiOb
 			k = obfuscator.NewTargetObfuscator(o.Target, k)
 			obfuscators = append(obfuscators, k)
 		case schema.ObfuscateTypeDomain:
-			k, err := obfuscator.NewDomainObfuscator(o.Domains, o.ReplacementType)
+			k, err := obfuscator.NewDomainObfuscator(o.DomainNames, o.ReplacementType)
 			if err != nil {
 				return nil, err
 			}

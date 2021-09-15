@@ -129,9 +129,9 @@
                         "MAC",
                         "Regex"
                     ],
-                    "description": "type defines the kind of detection you want to use. For example IP will find IP addresses, whereas Keywords will find keywords defined in the 'replacement' mapping. Domain must be used in conjunction with the 'domains' property, that defines what domains should be obfuscated. MAC currently only supports static replacement where a detected mac address will be replaced by 'x'. Regex should be used with the 'regex' property that will define the regex, here the replacement also will be static by 'x'-ing out the matched string."
+                    "description": "type defines the kind of detection you want to use. For example IP will find IP addresses, whereas Keywords will find keywords defined in the 'replacement' mapping. Domain must be used in conjunction with the 'domainNames' property, that defines what domains should be obfuscated. MAC currently only supports static replacement where a detected mac address will be replaced by 'x'. Regex should be used with the 'regex' property that will define the regex, here the replacement also will be static by 'x'-ing out the matched string."
                 },
-                "domains": {
+                "domainNames": {
                     "description": "The list of domains and their subdomains which should be obfuscated in the output, only used with the type Domain obfuscator.",
                     "type": "array",
                     "items": {

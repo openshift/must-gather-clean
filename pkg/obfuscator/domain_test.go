@@ -130,6 +130,12 @@ func TestBadDomainInput(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to generate regex")
 }
 
+func TestNoDomainInput(t *testing.T) {
+	_, err := NewDomainObfuscator([]string{}, schema.ObfuscateReplacementTypeConsistent)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "no domainNames supplied for the obfuscation type: Domain")
+}
+
 func TestDomainObfuscationStatic(t *testing.T) {
 	for _, tc := range []struct {
 		name    string
