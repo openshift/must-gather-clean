@@ -8,6 +8,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
+	"sync"
 
 	"github.com/openshift/must-gather-clean/pkg/kube"
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
@@ -44,6 +46,8 @@ type FileContentObfuscator struct {
 
 	inputFolder  string
 	outputFolder string
+	// defining a lock to avoid collisions while creating the files in a multi-threaded environment
+	pathCollisionMutex sync.Mutex
 }
 
 // FileProcessor cleans (either omit or obfuscates) a path by implementing Processor.
@@ -103,18 +107,7 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 		return fmt.Errorf("failed to create directory %s: %c", writePathParentDir, err)
 	}
 
-	// we need to assess whether the file exists already to ensure we don't overwrite existing obfuscated data.
-	// that can happen while obfuscating file names and their paths.
-	// Additionally, the stat check is required because os.O_CREATE will implicitly os.O_TRUNC if a file already exist
-	_, err = os.Stat(writePath)
-	if err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("failed to determine if %s already exists: %w", writePath, err)
-	}
-	if err == nil {
-		return fmt.Errorf("file %s already exists, check whether the obfuscators overwrite each other", writePath)
-	}
-
-	outputOsFile, err := os.OpenFile(writePath, os.O_CREATE|os.O_WRONLY, 0666)
+	outputOsFile, err := c.generateNewFile(writePath)
 	if err != nil {
 		return fmt.Errorf("failed to create and open '%s': %w", writePath, err)
 	}
@@ -135,6 +128,46 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 	}
 
 	return nil
+}
+
+// generateNewFile takes the inputFilePath as an argument, validates the existence of the inputFilePath
+// If the file exists, this method creates a new file path with the ascending number pattern getting appended to the inputFilePath
+// This method returns the newly created file
+// Ex: If the inputFilePath is "/tmp/aml" and if the file exists, this method generates "/tmp/xyz.yaml.1".
+func (c *FileContentObfuscator) generateNewFile(inputFilePath string) (*os.File, error) {
+	c.pathCollisionMutex.Lock()
+	defer c.pathCollisionMutex.Unlock()
+
+	// we need to assess whether the file exists already to ensure we don't overwrite existing obfuscated data.
+	// that can happen while obfuscating file names and their paths.
+	// Additionally, the stat check is required because os.O_CREATE will implicitly os.O_TRUNC if a file already exist
+
+	_, err := os.Stat(inputFilePath)
+	if err != nil && !os.IsNotExist(err) {
+		return nil, fmt.Errorf("failed to determine if %s already exists: %w", inputFilePath, err)
+	}
+	if err == nil {
+		fileExt := 0
+		for {
+			fileExt++
+			samplePath := inputFilePath + "." + strconv.Itoa(fileExt)
+			_, err := os.Stat(samplePath)
+			if err != nil {
+				if os.IsNotExist(err) {
+					inputFilePath = samplePath
+					break
+				} else {
+					return nil, fmt.Errorf("failed to determine if %s already exists: %w", samplePath, err)
+				}
+			}
+		}
+	}
+
+	outputOsFile, err := os.OpenFile(inputFilePath, os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create and open '%s': %w", inputFilePath, err)
+	}
+	return outputOsFile, nil
 }
 
 func (c *ContentObfuscator) ObfuscateReader(inputReader io.Reader, outputWriter io.Writer) error {
