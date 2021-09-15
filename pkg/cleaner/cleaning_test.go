@@ -84,6 +84,25 @@ and another with another ip xxx.xxx.xxx.xxx
 `, output.String())
 }
 
+func TestObfuscateReaderVeryLongLine(t *testing.T) {
+	cf := ContentObfuscator{Obfuscator: noErrorIpObfuscator(t)}
+
+	superLongLine := strings.Repeat("192.169.2.11 ++ ", 10000) + "\n"
+	superLongLineObfuscated := strings.Repeat("xxx.xxx.xxx.xxx ++ ", 10000) + "\n"
+	output := &strings.Builder{}
+	err := cf.ObfuscateReader(strings.NewReader(superLongLine), output)
+	require.NoError(t, err)
+	assert.Equal(t, superLongLineObfuscated, output.String())
+}
+
+func TestObfuscateReaderSingleLineNoLineFeed(t *testing.T) {
+	cf := ContentObfuscator{Obfuscator: noErrorIpObfuscator(t)}
+	output := &strings.Builder{}
+	err := cf.ObfuscateReader(strings.NewReader("192.169.2.11"), output)
+	require.NoError(t, err)
+	assert.Equal(t, "xxx.xxx.xxx.xxx", output.String())
+}
+
 func TestObfuscateReaderIOErrorPropagates(t *testing.T) {
 	cf := ContentObfuscator{Obfuscator: noErrorIpObfuscator(t)}
 	err := cf.ObfuscateReader(strings.NewReader("a line"), &errWriter{})
@@ -130,7 +149,7 @@ func TestCleanerProcessor(t *testing.T) {
 		{
 			name:         "simple",
 			input:        "test",
-			output:       "test\n",
+			output:       "test",
 			obfuscators:  []obfuscator.ReportingObfuscator{obfuscator.NoopObfuscator{}},
 			fileOmitters: []omitter.FileOmitter{},
 			k8sOmitters:  []omitter.KubernetesResourceOmitter{},
@@ -138,7 +157,7 @@ func TestCleanerProcessor(t *testing.T) {
 		{
 			name:         "simple ip obfuscation",
 			input:        "there is some cow on 192.178.1.2, what do I do?",
-			output:       "there is some cow on xxx.xxx.xxx.xxx, what do I do?\n",
+			output:       "there is some cow on xxx.xxx.xxx.xxx, what do I do?",
 			obfuscators:  []obfuscator.ReportingObfuscator{noErrorIpObfuscator(t)},
 			fileOmitters: []omitter.FileOmitter{},
 			k8sOmitters:  []omitter.KubernetesResourceOmitter{},
