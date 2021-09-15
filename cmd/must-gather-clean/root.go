@@ -3,6 +3,7 @@ package main
 import (
 	goflag "flag"
 	"math/rand"
+	"os"
 	"runtime"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 )
 
 var (
+	PipeModeEnabled    bool
 	ConfigFile         string
 	DeleteOutputFolder bool
 	InputFolder        string
@@ -29,24 +31,34 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		defer klog.Flush()
 
-		err := cli.Run(ConfigFile, InputFolder, OutputFolder, DeleteOutputFolder, ReportingFolder, WorkerCount)
-		if err != nil {
-			klog.Exitf("%v\n", err)
+		if PipeModeEnabled {
+			err := cli.RunPipe(ConfigFile, os.Stdin, os.Stdout)
+			if err != nil {
+				klog.Exitf("%v\n", err)
+			}
+		} else {
+			err := cli.Run(ConfigFile, InputFolder, OutputFolder, DeleteOutputFolder, ReportingFolder, WorkerCount)
+			if err != nil {
+				klog.Exitf("%v\n", err)
+			}
 		}
 	},
 }
 
-func init() {
+func initFlags() {
 	flags := rootCmd.Flags()
 	flags.StringVarP(&ConfigFile, "config", "c", "", "The path to the obfuscation configuration")
-	_ = rootCmd.MarkFlagRequired("config")
 	flags.StringVarP(&InputFolder, "input", "i", "", "The directory of the must-gather dump")
-	_ = rootCmd.MarkFlagRequired("input")
 	flags.StringVarP(&OutputFolder, "output", "o", "", "The directory of the obfuscated output")
-	_ = rootCmd.MarkFlagRequired("output")
 	flags.BoolVarP(&DeleteOutputFolder, "overwrite", "d", false, "If the output directory exists, setting this flag will delete the folder and all its contents before cleaning.")
 	flags.IntVarP(&WorkerCount, "worker-count", "w", runtime.NumCPU(), "The number of workers for processing")
 	flags.StringVarP(&ReportingFolder, "report", "r", ".", "The directory of the reporting output folder, default is the current working directory")
+
+	if !PipeModeEnabled {
+		_ = rootCmd.MarkFlagRequired("config")
+		_ = rootCmd.MarkFlagRequired("input")
+		_ = rootCmd.MarkFlagRequired("output")
+	}
 
 	fs := goflag.NewFlagSet("", goflag.ExitOnError)
 	klog.InitFlags(fs)
@@ -54,6 +66,13 @@ func init() {
 }
 
 func main() {
+	stat, _ := os.Stdin.Stat()
+	if (stat.Mode() & os.ModeCharDevice) == 0 {
+		PipeModeEnabled = true
+	}
+
+	initFlags()
+
 	rand.Seed(time.Now().UTC().UnixNano())
 	cobra.CheckErr(rootCmd.Execute())
 }

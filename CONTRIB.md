@@ -11,7 +11,7 @@ This document outlines some conventions on commit message formatting, contact po
 
 ## Reporting bugs and creating issues
 
-Reporting bugs is one of the best ways to contribute. Before filing a bug report, ensure the bug hasn't already been reported by searching through the project [Issues][issues].
+Reporting bugs is one of the best ways to contribute. Before filing a bug report, ensure the bug hasn't already been reported by searching through the project [Issues](https://github.com/openshift/must-gather-clean/issues).
 
 Any new contribution should be accompanied by a new or existing issue. This issue can help track work, discuss the design and implementation, and help avoid wasted efforts or multiple people working on the same issue, compared to submitting a PR first. Trivial changes, like fixing a typo in the documentation, do not require the creation of a new issue.
 
@@ -22,6 +22,7 @@ This is a rough outline of what a contributor's workflow looks like:
 - Identify or create an issue.
 - Create a topic branch from where to base the contribution. This is usually the main branch.
 - Make commits of logical units, or squash your change into a single commit.
+- Please run `make test` and `make verify` to ensure your change is in good shape.
 - Push changes in a topic branch to a personal fork of the repository.
 - Submit a pull request to the [repository](https://github.com/openshift/must-gather-clean).
 - Wait and respond to feedback from the maintainers listed in the OWNERS file.
@@ -36,7 +37,9 @@ It can be helpful after submitting a PR to self-review your changes. This allows
 
 When opening PRs that are in a rough draft or WIP state create a draft PR. This can help save reviewer's time by communicating the state of a PR ahead of time. Draft PRs can be a good way to get early feedback from reviewers on the implementation, focusing less on smaller details, and more on the general approach of changes.
 
-Each PR must be labeled with at least one "lgtm" label and at least one "approved" label before it can be merged. Maintainers that have approval permissions are listed in the "approvers" column in the root [OWNERS][owners] file.
+We appreciate small and self-contained PRs, if possible,  split your big changes into several smaller PRs. This will help us to review your changes faster.
+
+Each PR must be labeled with at least one "lgtm" label and at least one "approved" label before it can be merged. Maintainers that have approval permissions are listed in the "approvers" column in the root [OWNERS](OWNERS) file.
 
 ### Code style
 
