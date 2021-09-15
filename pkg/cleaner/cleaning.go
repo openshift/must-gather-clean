@@ -45,6 +45,8 @@ type FileContentObfuscator struct {
 
 	inputFolder  string
 	outputFolder string
+	// defining a lock to avoid collisions while creating the files in a multi-threaded environment
+	pathCollisionMutex sync.Mutex
 }
 
 // FileProcessor cleans (either omit or obfuscates) a path by implementing Processor.
@@ -90,7 +92,6 @@ func (c *FileProcessor) Process(path string) error {
 }
 
 func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile string) error {
-	var fileExt int
 	readPath := filepath.Join(c.inputFolder, inputFile)
 	writePath := filepath.Join(c.outputFolder, outputFile)
 	writePathParentDir := filepath.Dir(writePath)
@@ -108,14 +109,15 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 	// we need to assess whether the file exists already to ensure we don't overwrite existing obfuscated data.
 	// that can happen while obfuscating file names and their paths.
 	// Additionally, the stat check is required because os.O_CREATE will implicitly os.O_TRUNC if a file already exist
-	// Also defining a lock to avoid collisions while creation of files in a multi-threaded environment
-	var mutexLock sync.Mutex
-	mutexLock.Lock()
+	c.pathCollisionMutex.Lock()
+	defer c.pathCollisionMutex.Unlock()
+
 	_, err = os.Stat(writePath)
 	if err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to determine if %s already exists: %w", writePath, err)
 	}
 	if err == nil {
+		var fileExt int
 		for {
 			fileExt++
 			samplePath := writePath + "." + strconv.Itoa(fileExt)
@@ -123,8 +125,9 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 			if err != nil && os.IsNotExist(err) {
 				writePath = samplePath
 				break
+			} else if err != nil && !os.IsNotExist(err) {
+				return fmt.Errorf("failed to determine if %s already exists: %w", samplePath, err)
 			}
-			// return fmt.Errorf("file %s already exists, check whether the obfuscators overwrite each other", writePath)
 		}
 	}
 
@@ -132,7 +135,6 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 	if err != nil {
 		return fmt.Errorf("failed to create and open '%s': %w", writePath, err)
 	}
-	mutexLock.Unlock()
 
 	err = c.ObfuscateReader(inputOsFile, outputOsFile)
 	if err != nil {
