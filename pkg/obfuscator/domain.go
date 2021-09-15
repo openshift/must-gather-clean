@@ -53,6 +53,9 @@ func (d *domainObfuscator) replaceDomains(input string) string {
 }
 
 func NewDomainObfuscator(domains []string, replacementType schema.ObfuscateReplacementType) (ReportingObfuscator, error) {
+	if len(domains) == 0 {
+		return nil, fmt.Errorf("no domainNames supplied for the obfuscation type: Domain")
+	}
 	patterns := make([]*regexp.Regexp, len(domains))
 	for i, d := range domains {
 		dd := strings.ReplaceAll(d, ".", "\\.")
