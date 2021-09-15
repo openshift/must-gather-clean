@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -18,6 +19,43 @@ import (
 const (
 	reportFileName = "report.yaml"
 )
+
+func RunPipe(configPath string, stdin io.Reader, stdout io.Writer) error {
+	var multiObfuscator *obfuscator.MultiObfuscator
+	if configPath != "" {
+		config, err := schema.ReadConfigFromPath(configPath)
+		if err != nil {
+			return fmt.Errorf("failed to read config at %s: %w", configPath, err)
+		}
+		multiObfuscator, err = createObfuscatorsFromConfig(config)
+		if err != nil {
+			return fmt.Errorf("failed to create obfuscators via config at %s: %w", configPath, err)
+		}
+	} else {
+		ipObfuscator, err := obfuscator.NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent)
+		if err != nil {
+			return fmt.Errorf("failed to create IP obfuscator: %w", err)
+		}
+
+		macObfuscator, err := obfuscator.NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent)
+		if err != nil {
+			return fmt.Errorf("failed to create MAC obfuscator: %w", err)
+		}
+
+		multiObfuscator = obfuscator.NewMultiObfuscator([]obfuscator.ReportingObfuscator{
+			ipObfuscator,
+			macObfuscator,
+		})
+	}
+
+	contentObfuscator := cleaner.ContentObfuscator{Obfuscator: multiObfuscator}
+	err := contentObfuscator.ObfuscateReader(stdin, stdout)
+	if err != nil {
+		return fmt.Errorf("failed to obfuscate via pipe: %w", err)
+	}
+
+	return nil
+}
 
 func Run(configPath string, inputPath string, outputPath string, deleteOutputFolder bool, reportingFolder string, workerCount int) error {
 	if workerCount < 1 {
