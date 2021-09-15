@@ -59,3 +59,49 @@ $ make verify
 ```
 
 to make sure the schema is up-to-date and all the code conforms to our style.
+
+## Manually releasing to GitHub
+
+First tag the git commit that you want to release using the 'v' prefix and choose the next version you want to release, for example:
+```sh 
+$ git tag v0.0.1
+$ git push --tags
+```
+
+then it's time to compile the binaries, you can do that with:
+```sh 
+$ make cross
+```
+
+There you should already see the tag being populated as the ld flag:
+> ./hack/compile.sh -mod=vendor -ldflags="-s -w -X github.com/openshift/must-gather-clean/pkg/version.versionFromGit="v0.0.1-g8d647ad" -X github.com/openshift/must-gather-clean/pkg/version.commitFromGit="8d647ad" -X github.com/openshift/must-gather-clean/pkg/version.gitTreeState="clean" -X github.com/openshift/must-gather-clean/pkg/version.buildDate="2021-09-15T08:30:58Z""
+
+Double-check the binary was created with the right version:
+```sh 
+$ dist/bin/linux-amd64/must-gather-clean version
+Version: pkg.Version{Version:"v0.0.1-g8d647ad", GitCommit:"8d647ad", BuildDate:"2021-09-15T08:30:58Z", GoOs:"linux", GoArch:"amd64"}
+```
+
+Then you can run the prep release target and you should see the binaries and checksums popping up:
+
+```sh
+$ make prepare-release
+
+$ ls -l dist/release/
+total 29428
+-rwxrwxr-x. 1 tjungblu tjungblu 4572912 15. Sep 10:33 must-gather-clean-darwin-amd64
+-rw-rw-r--. 1 tjungblu tjungblu 1724044 15. Sep 10:33 must-gather-clean-darwin-amd64.tar.gz
+-rwxrwxr-x. 1 tjungblu tjungblu 4534434 15. Sep 10:33 must-gather-clean-darwin-arm64
+-rw-rw-r--. 1 tjungblu tjungblu 1671871 15. Sep 10:33 must-gather-clean-darwin-arm64.tar.gz
+-rwxrwxr-x. 1 tjungblu tjungblu 4251648 15. Sep 10:33 must-gather-clean-linux-amd64
+-rw-rw-r--. 1 tjungblu tjungblu 1655452 15. Sep 10:33 must-gather-clean-linux-amd64.tar.gz
+-rwxrwxr-x. 1 tjungblu tjungblu 4063232 15. Sep 10:33 must-gather-clean-linux-arm64
+-rw-rw-r--. 1 tjungblu tjungblu 1489029 15. Sep 10:33 must-gather-clean-linux-arm64.tar.gz
+-rwxrwxr-x. 1 tjungblu tjungblu 4453888 15. Sep 10:33 must-gather-clean-windows-amd64.exe
+-rw-rw-r--. 1 tjungblu tjungblu 1692325 15. Sep 10:33 must-gather-clean-windows-amd64.exe.zip
+-rw-rw-r--. 1 tjungblu tjungblu     998 15. Sep 10:33 SHA256_SUM
+```
+
+You can then go to [GitHub Releases](https://github.com/openshift/must-gather-clean/releases/new) and create a new release from that tag. 
+
+You can attach all the archives from the dist/release folder and upload them. Hit the release button and don't forget to :party-doge:.
