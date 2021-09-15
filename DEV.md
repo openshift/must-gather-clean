@@ -23,6 +23,14 @@ $ make test
 
 ## Dependency Management
 
+We need to ensure all our binaries can be built without access to the internet. Thus, even though we're making use of gomodules, we still have to vendor all our dependencies - including any tools that we are using.
+
+When you add a new dependency to go.mod, please also update the vendor folder by running:
+```sh
+$ go mod tidy
+$ go mod vendor
+```
+
 ## Formatting Code
 
 To automatically format the code to conform to our style guide, you can run:
