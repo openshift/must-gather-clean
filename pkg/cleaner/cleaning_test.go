@@ -2,7 +2,6 @@ package cleaner
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -90,7 +89,7 @@ func TestObfuscateReaderIOErrorPropagates(t *testing.T) {
 	require.ErrorIs(t, err, UnwritableErr)
 }
 
-func TestObfuscateFileOutputExistsFails(t *testing.T) {
+func TestObfuscateFileOutputExists(t *testing.T) {
 	tmpInputDir, err := os.MkdirTemp("", "Worker-test-*")
 	require.NoError(t, err)
 	defer func() {
@@ -113,7 +112,7 @@ func TestObfuscateFileOutputExistsFails(t *testing.T) {
 	}
 
 	err = fco.ObfuscateFile(existingFile, existingFile)
-	assert.Equal(t, err, fmt.Errorf("file %s already exists, check whether the obfuscators overwrite each other", filepath.Join(tmpOutputDir, existingFile)))
+	require.NoError(t, err)
 }
 
 func TestCleanerProcessor(t *testing.T) {

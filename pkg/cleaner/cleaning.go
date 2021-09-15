@@ -7,6 +7,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
+	"sync"
 
 	"github.com/openshift/must-gather-clean/pkg/kube"
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
@@ -88,6 +90,7 @@ func (c *FileProcessor) Process(path string) error {
 }
 
 func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile string) error {
+	var fileExt int
 	readPath := filepath.Join(c.inputFolder, inputFile)
 	writePath := filepath.Join(c.outputFolder, outputFile)
 	writePathParentDir := filepath.Dir(writePath)
@@ -105,18 +108,31 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 	// we need to assess whether the file exists already to ensure we don't overwrite existing obfuscated data.
 	// that can happen while obfuscating file names and their paths.
 	// Additionally, the stat check is required because os.O_CREATE will implicitly os.O_TRUNC if a file already exist
+	// Also defining a lock to avoid collisions while creation of files in a multi-threaded environment
+	var mutexLock sync.Mutex
+	mutexLock.Lock()
 	_, err = os.Stat(writePath)
 	if err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to determine if %s already exists: %w", writePath, err)
 	}
 	if err == nil {
-		return fmt.Errorf("file %s already exists, check whether the obfuscators overwrite each other", writePath)
+		for {
+			fileExt++
+			samplePath := writePath + "." + strconv.Itoa(fileExt)
+			_, err = os.Stat(samplePath)
+			if err != nil && os.IsNotExist(err) {
+				writePath = samplePath
+				break
+			}
+			// return fmt.Errorf("file %s already exists, check whether the obfuscators overwrite each other", writePath)
+		}
 	}
 
 	outputOsFile, err := os.OpenFile(writePath, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		return fmt.Errorf("failed to create and open '%s': %w", writePath, err)
 	}
+	mutexLock.Unlock()
 
 	err = c.ObfuscateReader(inputOsFile, outputOsFile)
 	if err != nil {
