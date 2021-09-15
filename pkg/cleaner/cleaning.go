@@ -3,6 +3,7 @@ package cleaner
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -137,16 +138,37 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 }
 
 func (c *ContentObfuscator) ObfuscateReader(inputReader io.Reader, outputWriter io.Writer) error {
-	scanner := bufio.NewScanner(inputReader)
+	// we don't use bufio.Scanner anymore, since that can not read larger than 4096 byte lines (found in prometheus rules.json)
+	reader := bufio.NewReader(inputReader)
 	writer := bufio.NewWriter(outputWriter)
-	for scanner.Scan() {
-		contents := c.Obfuscator.Contents(scanner.Text())
 
-		_, err := fmt.Fprintln(writer, contents)
+	for {
+		isEOF := false
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				if line == "" {
+					break
+				} else {
+					isEOF = true
+				}
+			} else {
+				return err
+			}
+		}
+
+		contents := c.Obfuscator.Contents(line)
+
+		_, err = fmt.Fprint(writer, contents)
 		if err != nil {
 			return err
 		}
+
+		if isEOF {
+			break
+		}
 	}
+
 	return writer.Flush()
 }
 

@@ -116,6 +116,26 @@ items: []
 		})
 	}
 }
+func TestNonYamlNonJsonReading(t *testing.T) {
+	_, err := ReadKubernetesResourceFromPath("some.path")
+	require.Equal(t, NoKubernetesResourceError, err)
+}
+
+func TestReadNonK8sJSON(t *testing.T) {
+	file, err := ioutil.TempFile("", "kube-schema-read-*.yaml")
+	require.NoError(t, err)
+	defer func(name string) {
+		_ = os.Remove(name)
+	}(file.Name())
+
+	randomJson := `{"status":"success"}`
+	_, err = file.WriteString(randomJson)
+	require.NoError(t, err)
+	require.NoError(t, file.Close())
+
+	_, err = ReadKubernetesResourceFromPath(file.Name())
+	assert.Equal(t, NoKubernetesResourceError, err)
+}
 
 func assertOutput(t *testing.T, fileName string, expectedError error, expectedOutput *ResourceList) {
 	resource, err := ReadKubernetesResourceFromPath(fileName)
@@ -146,9 +166,4 @@ func fromYamlToJson(t *testing.T, resource string) (*os.File, error) {
 	require.NoError(t, err)
 	require.NoError(t, file.Close())
 	return file, err
-}
-
-func TestNonYamlNonJsonReading(t *testing.T) {
-	_, err := ReadKubernetesResourceFromPath("some.path")
-	require.Equal(t, NoKubernetesResourceError, err)
 }

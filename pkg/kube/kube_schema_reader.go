@@ -34,7 +34,10 @@ func ReadKubernetesResourceFromPath(path string) (*ResourceListWithPath, error) 
 	var resource Resource
 	err = unmarshaller(input, &resource)
 	if err != nil {
-		// this means that the input is not a kubernetes resource
+		return nil, NoKubernetesResourceError
+	}
+
+	if resource.Kind == "" || resource.ApiVersion == "" {
 		return nil, NoKubernetesResourceError
 	}
 
