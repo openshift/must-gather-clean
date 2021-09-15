@@ -1,7 +1,6 @@
 COMMON_GOFLAGS := -mod=vendor
 COMMON_LDFLAGS := -X $(PROJECT)/pkg/version.GITCOMMIT=$(GITCOMMIT)
 BUILD_FLAGS := $(COMMON_GOFLAGS) -ldflags="$(COMMON_LDFLAGS)"
-CROSS_BUILD_FLAGS := $(COMMON_GOFLAGS) -ldflags="-s -w $(COMMON_LDFLAGS)"
 
 all: build
 .PHONY: all
@@ -34,8 +33,8 @@ verify: verify-scripts lint
 
 
 .PHONY: cross
-cross: ## compile for multiple platforms
-	./hack/compile.sh $(CROSS_BUILD_FLAGS)
+cross: build test ## depends on https://github.com/openshift/build-machinery-go/blob/2b271bb3a0ad466045cd6da5c9423084e9cf68f0/make/lib/golang.mk
+	./hack/compile.sh $(GO_LD_FLAGS)
 
 .PHONY: prepare-release
 prepare-release: cross ## create gzipped binaries in ./dist/release/ for uploading to GitHub release page
