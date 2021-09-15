@@ -23,9 +23,30 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			report: map[string]string{"192.168.1.10": obfuscatedStaticIPv4},
 		},
 		{
-			name:   "invalid ipv4 address",
+			name:   "max ipv4 address",
+			input:  "received request from 255.255.255.255",
+			output: "received request from xxx.xxx.xxx.xxx",
+			report: map[string]string{"255.255.255.255": obfuscatedStaticIPv4},
+		},
+		{
+			name:   "ipv4 in aws etcd pathing",
+			input:  "must-gather/etcd-ip-10-0-187-218.ec2.internal/some.yaml",
+			output: "must-gather/etcd-ip-xxx.xxx.xxx.xxx.ec2.internal/some.yaml",
+			report: map[string]string{"10-0-187-218": obfuscatedStaticIPv4, "10.0.187.218": obfuscatedStaticIPv4},
+		},
+		{
+			// this is a very difficult case in Golang, as the regexp package does not include lookaheads/lookbehinds.
+			// read more about that request here: https://github.com/golang/go/issues/18868
+			// we favour the detection on the url encoded string below (CFE-125 may help) over this false-positive match.
+			name:   "invalid ipv4 address matches submatch",
 			input:  "value 910.218.98.1 is not an ipv4",
-			output: "value 910.218.98.1 is not an ipv4",
+			output: "value 9xxx.xxx.xxx.xxx is not an ipv4",
+			report: map[string]string{"10.218.98.1": obfuscatedStaticIPv4},
+		},
+		{
+			name:   "invalid ipv4 address II",
+			input:  "value 333.125.22.640 is not an ipv4",
+			output: "value 333.125.22.640 is not an ipv4",
 			report: map[string]string{},
 		},
 		{
@@ -61,7 +82,7 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			},
 		},
 		{
-			// This testcase reports both the detected IP address as well as the Normalized/Cleaned IP address
+			// This testcase reports both the detected IP address and the Normalized/Cleaned IP address
 			name:   "non standard ipv4",
 			input:  "ip-10-0-129-220.ec2.aws.yaml",
 			output: "ip-xxx.xxx.xxx.xxx.ec2.aws.yaml",
@@ -81,8 +102,8 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			input:  "obfuscate 10.0.129.220 and 10-0-129-220",
 			output: "obfuscate xxx.xxx.xxx.xxx and xxx.xxx.xxx.xxx",
 			report: map[string]string{
-				"10.0.129.220": "xxx.xxx.xxx.xxx",
-				"10-0-129-220": "xxx.xxx.xxx.xxx",
+				"10.0.129.220": obfuscatedStaticIPv4,
+				"10-0-129-220": obfuscatedStaticIPv4,
 			},
 		},
 		{
@@ -108,6 +129,14 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			input:  "Listening on [::1]:8080",
 			output: "Listening on [::1]:8080",
 			report: map[string]string{},
+		},
+		{
+			name:   "inside url encoded yaml",
+			input:  "data:,kind%3A%20KubeletConfiguration%0AapiVersion%3A%20kubelet.config.k8s.io%2Fv1beta1%0Aauthentication%3A%0A%20%20x509%3A%0A%20%20%20%20clientCAFile%3A%20%2Fetc%2Fkubernetes%2Fkubelet-ca.crt%0A%20%20anonymous%3A%0A%20%20%20%20enabled%3A%20false%0AcgroupDriver%3A%20systemd%0AcgroupRoot%3A%20%2F%0AclusterDNS%3A%0A%20%20-%20172.30.0.10%0AclusterDomain%3A%20cluster.local%0AcontainerLogMaxSize%3A%2050Mi%0AmaxPods%3A%20250%0AkubeAPIQPS%3A%2050%0AkubeAPIBurst%3A%20100%0ArotateCertificates%3A%20true%0AserializeImagePulls%3A%20false%0AstaticPodPath%3A%20%2Fetc%2Fkubernetes%2Fmanifests%0AsystemCgroups%3A%20%2Fsystem.slice%0AsystemReserved%3A%0A%20%20ephemeral-storage%3A%201Gi%0AfeatureGates%3A%0A%20%20APIPriorityAndFairness%3A%20true%0A%20%20LegacyNodeRoleBehavior%3A%20false%0A%20%20NodeDisruptionExclusion%3A%20true%0A%20%20RotateKubeletServerCertificate%3A%20true%0A%20%20ServiceNodeExclusion%3A%20true%0A%20%20SupportPodPidsLimit%3A%20true%0A%20%20DownwardAPIHugePages%3A%20true%0AserverTLSBootstrap%3A%20true%0AtlsMinVersion%3A%20VersionTLS12%0AtlsCipherSuites%3A%0A%20%20-%20TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256%0A%20%20-%20TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256%0A%20%20-%20TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384%0A%20%20-%20TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384%0A%20%20-%20TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256%0A%20%20-%20TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256%0A",
+			output: "data:,kind%3A%20KubeletConfiguration%0AapiVersion%3A%20kubelet.config.k8s.io%2Fv1beta1%0Aauthentication%3A%0A%20%20x509%3A%0A%20%20%20%20clientCAFile%3A%20%2Fetc%2Fkubernetes%2Fkubelet-ca.crt%0A%20%20anonymous%3A%0A%20%20%20%20enabled%3A%20false%0AcgroupDriver%3A%20systemd%0AcgroupRoot%3A%20%2F%0AclusterDNS%3A%0A%20%20-%20xxx.xxx.xxx.xxx%0AclusterDomain%3A%20cluster.local%0AcontainerLogMaxSize%3A%2050Mi%0AmaxPods%3A%20250%0AkubeAPIQPS%3A%2050%0AkubeAPIBurst%3A%20100%0ArotateCertificates%3A%20true%0AserializeImagePulls%3A%20false%0AstaticPodPath%3A%20%2Fetc%2Fkubernetes%2Fmanifests%0AsystemCgroups%3A%20%2Fsystem.slice%0AsystemReserved%3A%0A%20%20ephemeral-storage%3A%201Gi%0AfeatureGates%3A%0A%20%20APIPriorityAndFairness%3A%20true%0A%20%20LegacyNodeRoleBehavior%3A%20false%0A%20%20NodeDisruptionExclusion%3A%20true%0A%20%20RotateKubeletServerCertificate%3A%20true%0A%20%20ServiceNodeExclusion%3A%20true%0A%20%20SupportPodPidsLimit%3A%20true%0A%20%20DownwardAPIHugePages%3A%20true%0AserverTLSBootstrap%3A%20true%0AtlsMinVersion%3A%20VersionTLS12%0AtlsCipherSuites%3A%0A%20%20-%20TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256%0A%20%20-%20TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256%0A%20%20-%20TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384%0A%20%20-%20TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384%0A%20%20-%20TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256%0A%20%20-%20TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256%0A",
+			report: map[string]string{
+				"172.30.0.10": obfuscatedStaticIPv4,
+			},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
