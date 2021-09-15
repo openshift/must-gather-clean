@@ -109,29 +109,8 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 	// we need to assess whether the file exists already to ensure we don't overwrite existing obfuscated data.
 	// that can happen while obfuscating file names and their paths.
 	// Additionally, the stat check is required because os.O_CREATE will implicitly os.O_TRUNC if a file already exist
-	c.pathCollisionMutex.Lock()
-	defer c.pathCollisionMutex.Unlock()
 
-	_, err = os.Stat(writePath)
-	if err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("failed to determine if %s already exists: %w", writePath, err)
-	}
-	if err == nil {
-		var fileExt int
-		for {
-			fileExt++
-			samplePath := writePath + "." + strconv.Itoa(fileExt)
-			_, err = os.Stat(samplePath)
-			if err != nil && os.IsNotExist(err) {
-				writePath = samplePath
-				break
-			} else if err != nil && !os.IsNotExist(err) {
-				return fmt.Errorf("failed to determine if %s already exists: %w", samplePath, err)
-			}
-		}
-	}
-
-	outputOsFile, err := os.OpenFile(writePath, os.O_CREATE|os.O_WRONLY, 0666)
+	outputOsFile, err := c.generateNewFile(writePath)
 	if err != nil {
 		return fmt.Errorf("failed to create and open '%s': %w", writePath, err)
 	}
@@ -152,6 +131,40 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 	}
 
 	return nil
+}
+
+// generateNewFile takes the inputFilePath as an argument, validates the existence of the inputFilePath
+// If the file exists, this method creates a new file path with the ascending number pattern getting appended to the inputFilePath
+// This method returns the newly created file
+// Ex: If the inputFilePath is "/tmp/aml" and if the file exists, this method generates "/tmp/xyz.yaml.1".
+func (c *FileContentObfuscator) generateNewFile(inputFilePath string) (*os.File, error) {
+	c.pathCollisionMutex.Lock()
+	defer c.pathCollisionMutex.Unlock()
+
+	_, err := os.Stat(inputFilePath)
+	if err != nil && !os.IsNotExist(err) {
+		return nil, fmt.Errorf("failed to determine if %s already exists: %w", inputFilePath, err)
+	}
+	if err == nil {
+		fileExt := 0
+		for {
+			fileExt++
+			samplePath := inputFilePath + "." + strconv.Itoa(fileExt)
+			_, err := os.Stat(samplePath)
+			if err != nil && os.IsNotExist(err) {
+				inputFilePath = samplePath
+				break
+			} else if err != nil && !os.IsNotExist(err) {
+				return nil, fmt.Errorf("failed to determine if %s already exists: %w", samplePath, err)
+			}
+		}
+	}
+
+	outputOsFile, err := os.OpenFile(inputFilePath, os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create and open '%s': %w", inputFilePath, err)
+	}
+	return outputOsFile, nil
 }
 
 func (c *ContentObfuscator) ObfuscateReader(inputReader io.Reader, outputWriter io.Writer) error {
