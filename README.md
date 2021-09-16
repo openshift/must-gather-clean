@@ -203,7 +203,7 @@ We thus kindly ask the user to supply their confidential domain names manually t
 
 The above definition will obfuscate `rhcloud.com` as `domain0000001` (consistent) or as `xxxxxxxxxxxxx` (static).
 Note that this does not include subdomains, they would need to be separately obfuscated.
-A domain name defined as `staging.rhcloud.com` would only be obfuscated as `staging.domain0000001`, thus, you should include all subdomains you want to have obfuscated (for example `dev.rhcloud.com`) in the list as well.
+A domain name defined as `staging.rhcloud.com` would only be obfuscated as `staging.domain0000001`, thus, you should include all subdomains you want to have obfuscated (for example `dev.rhcloud.com`) in the list as well. The tool will sort them based on their specificity, so the most specific domain name will always be obfuscated first, for example `dev.rhcloud.com` will always come before `rhcloud.com` - irrespective of the order of definition.
 
 ### Custom Obfuscations
 
