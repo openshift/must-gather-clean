@@ -36,9 +36,9 @@ func TestReportingHappyPath(t *testing.T) {
 	require.NoError(t, err)
 
 	assertReportMatches(t, reportFile, Report{
-		Replacements: []map[string]string{
-			{"this": "that"},
-			{"another": "something"},
+		Replacements: []obfuscator.Replacement{
+			{Original: "this", Replaced: "that", Total: 1},
+			{Original: "another", Replaced: "something", Total: 1},
 		},
 		Omissions: []string{"some path"},
 	})

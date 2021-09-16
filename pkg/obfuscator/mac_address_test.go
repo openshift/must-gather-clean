@@ -12,14 +12,14 @@ import (
 func TestMacStaticReplacement(t *testing.T) {
 	o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeStatic)
 	assert.Equal(t, staticMacReplacement, o.Contents("29-7E-8C-8C-60-C9"))
-	assert.Equal(t, map[string]string{"29:7E:8C:8C:60:C9": staticMacReplacement, "29-7E-8C-8C-60-C9": staticMacReplacement}, o.Report())
+	assert.Equal(t, map[string]string{"29:7E:8C:8C:60:C9": staticMacReplacement, "29-7E-8C-8C-60-C9": staticMacReplacement}, o.Report().AsMap())
 }
 
 func TestMacConsistentReplacement(t *testing.T) {
 	o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent)
 	assert.Equal(t, "x-mac-0000000001-x", o.Contents("29-7E-8C-8C-60-C9"))
 	// This testcase reports both the original detected MAC address as well as the normalized MAC address
-	assert.Equal(t, map[string]string{"29:7E:8C:8C:60:C9": "x-mac-0000000001-x", "29-7E-8C-8C-60-C9": "x-mac-0000000001-x"}, o.Report())
+	assert.Equal(t, map[string]string{"29:7E:8C:8C:60:C9": "x-mac-0000000001-x", "29-7E-8C-8C-60-C9": "x-mac-0000000001-x"}, o.Report().AsMap())
 }
 
 func TestMacReplacementManyMatchLine(t *testing.T) {
@@ -33,7 +33,7 @@ func TestMacReplacementManyMatchLine(t *testing.T) {
 		"EB:A1:2A:B2:09:BF": staticMacReplacement,
 		"29:7E:8C:8C:60:C9": staticMacReplacement,
 		"29-7E-8C-8C-60-C9": staticMacReplacement,
-	}, o.Report())
+	}, o.Report().AsMap())
 }
 
 func TestMacReplacementStatic(t *testing.T) {
@@ -122,7 +122,7 @@ func TestMACConsistentObfuscator(t *testing.T) {
 			for i := 0; i < len(tc.input); i++ {
 				assert.Equal(t, tc.output[i], o.Contents(tc.input[i]))
 			}
-			assert.Equal(t, tc.report, o.Report())
+			assert.Equal(t, tc.report, o.Report().AsMap())
 		})
 	}
 }

@@ -144,7 +144,7 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			require.NoError(t, err)
 			output := o.Contents(tc.input)
 			assert.Equal(t, tc.output, output)
-			assert.Equal(t, tc.report, o.Report())
+			assert.Equal(t, tc.report, o.Report().AsMap())
 		})
 	}
 }
@@ -254,7 +254,7 @@ func TestIPObfuscatorConsistent(t *testing.T) {
 			for i := 0; i < len(tc.input); i++ {
 				assert.Equal(t, tc.output[i], o.Contents(tc.input[i]))
 			}
-			assert.Equal(t, tc.report, o.Report())
+			assert.Equal(t, tc.report, o.Report().AsMap())
 		})
 	}
 }

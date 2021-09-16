@@ -6,6 +6,16 @@ import (
 	"k8s.io/klog/v2"
 )
 
+type ReplacementReport struct {
+	Replacements []Replacement
+}
+
+type Replacement struct {
+	Original string `yaml:"original,omitempty"`
+	Replaced string `yaml:"replaced,omitempty"`
+	Total    uint   `yaml:"total,omitempty"`
+}
+
 type GenerateReplacement func() string
 
 // ReplacementTracker is used to track and generate replacements used by obfuscators
@@ -15,7 +25,7 @@ type ReplacementTracker interface {
 	Initialize(replacements map[string]string)
 
 	// Report returns a mapping of strings which were replaced.
-	Report() map[string]string
+	Report() ReplacementReport
 
 	// AddReplacement will add a replacement along with its original string to the report.
 	// If there is an existing value that does not match the given replacement, it will exit with a non-zero status.
@@ -29,42 +39,46 @@ type ReplacementTracker interface {
 
 type SimpleTracker struct {
 	lock    sync.RWMutex
-	mapping map[string]string
+	mapping map[string]Replacement
 }
 
-func (s *SimpleTracker) Report() map[string]string {
+var _ ReplacementTracker = (*SimpleTracker)(nil)
+
+func (s *SimpleTracker) Report() ReplacementReport {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	defensiveCopy := make(map[string]string)
-	for k, v := range s.mapping {
-		defensiveCopy[k] = v
+	replacements := make([]Replacement, 0, len(s.mapping))
+	for _, v := range s.mapping {
+		replacements = append(replacements, v)
 	}
-	return defensiveCopy
+	return ReplacementReport{Replacements: replacements}
 }
 
 func (s *SimpleTracker) AddReplacement(original string, replacement string) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if val, ok := s.mapping[original]; ok {
-		if replacement != val {
-			klog.Exitf("'%s' already has a value reported as '%s', tried to report '%s'", original, val, replacement)
+		if replacement != val.Replaced {
+			klog.Exitf("'%s' already has a value reported as '%s', tried to report '%s'", original, val.Replaced, replacement)
 		}
+		val.Total++
+		s.mapping[original] = val
 		return
 	}
-	s.mapping[original] = replacement
+	s.mapping[original] = Replacement{Original: original, Replaced: replacement, Total: 1}
 }
 
 func (s *SimpleTracker) GenerateIfAbsent(key string, generator GenerateReplacement) string {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if val, ok := s.mapping[key]; ok {
-		return val
+		return val.Replaced
 	}
 	if generator == nil {
 		return ""
 	}
 	r := generator()
-	s.mapping[key] = r
+	s.mapping[key] = Replacement{Original: key, Replaced: r, Total: 1}
 	return r
 }
 
@@ -75,10 +89,18 @@ func (s *SimpleTracker) Initialize(replacements map[string]string) {
 		klog.Exitf("tracker was initialized more than once or after some replacements were already added.")
 	}
 	for k, v := range replacements {
-		s.mapping[k] = v
+		s.mapping[k] = Replacement{Original: k, Replaced: v, Total: 1}
 	}
 }
 
+func (s ReplacementReport) AsMap() (m map[string]string) {
+	m = map[string]string{}
+	for _, v := range s.Replacements {
+		m[v.Original] = v.Replaced
+	}
+	return
+}
+
 func NewSimpleTracker() ReplacementTracker {
-	return &SimpleTracker{mapping: map[string]string{}}
+	return &SimpleTracker{mapping: map[string]Replacement{}}
 }

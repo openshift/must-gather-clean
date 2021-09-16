@@ -9,10 +9,6 @@ type keywordsObfuscator struct {
 	replacements map[string]string
 }
 
-func (o *keywordsObfuscator) Report() map[string]string {
-	return o.ReplacementTracker.Report()
-}
-
 func (o *keywordsObfuscator) Path(name string) string {
 	return replace(name, o.replacements, o.ReplacementTracker)
 }
