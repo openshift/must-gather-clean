@@ -113,6 +113,30 @@ func TestDomainObfuscator_FileName(t *testing.T) {
 			output:  "report.test",
 			report:  map[string]string{},
 		},
+		{
+			name: "overlapping domains",
+			domains: []string{
+				"openshift.com",
+				"devcluster.openshift.com",
+			},
+			input:  "must-gather-output/namespaces/openshift-kube-apiserver/pods/installer-13-master-02.pamoedo-dualstack.qe.devcluster.openshift.com/installer/installer/logs",
+			output: "must-gather-output/namespaces/openshift-kube-apiserver/pods/installer-13-master-02.pamoedo-dualstack.qe.domain0000000001/installer/installer/logs",
+			report: map[string]string{
+				"devcluster.openshift.com": "domain0000000001",
+			},
+		},
+		{
+			name: "overlapping domains flipped",
+			domains: []string{
+				"devcluster.openshift.com",
+				"openshift.com",
+			},
+			input:  "must-gather-output/namespaces/openshift-kube-apiserver/pods/installer-13-master-02.pamoedo-dualstack.qe.devcluster.openshift.com/installer/installer/logs",
+			output: "must-gather-output/namespaces/openshift-kube-apiserver/pods/installer-13-master-02.pamoedo-dualstack.qe.domain0000000001/installer/installer/logs",
+			report: map[string]string{
+				"devcluster.openshift.com": "domain0000000001",
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			o, err := NewDomainObfuscator(tc.domains, schema.ObfuscateReplacementTypeConsistent)
