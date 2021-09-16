@@ -1,8 +1,8 @@
-// +build e2e
-
 package cli
 
 import (
+	"flag"
+	"fmt"
 	"io/fs"
 	"io/ioutil"
 	"path"
@@ -12,43 +12,72 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/openshift/must-gather-clean/pkg/obfuscator"
 	"github.com/openshift/must-gather-clean/pkg/reporting"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
 
-func TestEndToEndAWSWithExample(t *testing.T) {
+const (
+	configOpenshiftDefaultPath = "examples/openshift_default.yaml"
+)
+
+func TestEndToEnd(t *testing.T) {
+	var input, report string
+	fs := flag.NewFlagSet("e2e-fs", flag.ContinueOnError)
+	fs.StringVar(&input, "input", "", "")
+	fs.StringVar(&report, "report", "", "")
+	if err := fs.Parse(flag.Args()); err != nil {
+		t.Fatal(err)
+	}
+	if input == "" || report == "" {
+		t.Fatal("Expected arguments --input && --report")
+	}
+
 	// find the path to the project root of this file
 	_, filename, _, _ := runtime.Caller(0)
 	rootDir := path.Join(path.Dir(filename), "..", "..")
-	inputDir := filepath.Join(rootDir, "pkg/cli/testfiles/aws/")
-	outputDir := filepath.Join(rootDir, "pkg/cli/testfiles/aws.cleaned/")
+	// relative paths -> absolute paths
+	inputDir := path.Join(rootDir, input)
+	outputDir := path.Join(rootDir, fmt.Sprintf("%s.cleaned", input))
+	configPath := path.Join(rootDir, configOpenshiftDefaultPath)
+	generatedReportDir := path.Join(rootDir, fmt.Sprintf("%s-report", input))
+	reportPath := path.Join(rootDir, report)
 
-	err := Run(filepath.Join(rootDir, "examples/openshift_default.yaml"),
+	err := Run(configPath,
 		inputDir,
 		outputDir,
 		true,
-		rootDir,
+		generatedReportDir,
 		runtime.NumCPU())
 	require.NoError(t, err)
 
-	truthReport := readReport(t, filepath.Join(rootDir, "pkg/cli/testfiles/aws_expected_report.yaml"))
-	generatedReport := readReport(t, filepath.Join(rootDir, reportFileName))
+	// read reports
+	truthReport := readReport(t, reportPath)
+	generatedReport := readReport(t, filepath.Join(generatedReportDir, reportFileName))
+	removeRelativePath(generatedReport, inputDir)
+	// compare reports
 	verifyReport(t, inputDir, truthReport, generatedReport)
 	verifyObfuscation(t, outputDir, generatedReport)
 }
 
+func removeRelativePath(r *reporting.Report, path string) {
+	for i := range r.Omissions {
+		r.Omissions[i] = strings.TrimPrefix(r.Omissions[i], path)
+	}
+}
+
 func verifyObfuscation(t *testing.T, dir string, report *reporting.Report) {
 	// report should already be verified by verifyReport before to ensure it does contain correct information
-	var generatedMap map[string]string
-	for i := 0; i < len(report.Replacements); i++ {
-		if len(report.Replacements[i]) > 0 {
-			generatedMap = report.Replacements[i]
-			break
+	generatedMap := map[string]string{}
+	for _, obfuscator := range report.Replacements {
+		for _, replacement := range obfuscator {
+			for _, occurrence := range replacement.Occurrences {
+				generatedMap[occurrence.Original] = replacement.ReplacedWith
+			}
 		}
 	}
-
 	err := filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return nil
@@ -77,49 +106,54 @@ func verifyObfuscation(t *testing.T, dir string, report *reporting.Report) {
 }
 
 func verifyReport(t *testing.T, inputDir string, truthReport *reporting.Report, generatedReport *reporting.Report) {
-	// the first filled map is assumed to be the IP mapping
-	// TODO(thomas): this will be improved with CFE-106
-	var truthMap map[string]string
-	for i := 0; i < len(truthReport.Replacements); i++ {
-		if len(truthReport.Replacements[i]) > 0 {
-			truthMap = truthReport.Replacements[i]
-			break
-		}
-	}
+	verifyReplacements(t, inputDir, truthReport, generatedReport)
+	verifyOmissions(t, inputDir, truthReport, generatedReport)
+}
 
-	assert.NotNilf(t, truthMap, "there must be at least an ip mapping in the truth report")
+func verifyReplacements(t *testing.T, inputDir string, truthReport *reporting.Report, generatedReport *reporting.Report) {
+	tr := reportInternalRepresentation(truthReport)
+	gr := reportInternalRepresentation(generatedReport)
+	replacementReportsMatch(t, tr, gr)
+}
 
-	// TODO(thomas): this will be improved with CFE-106
-	var generatedMap map[string]string
-	for i := 0; i < len(generatedReport.Replacements); i++ {
-		if len(generatedReport.Replacements[i]) > 0 {
-			generatedMap = generatedReport.Replacements[i]
-			break
-		}
-	}
-	assert.NotNilf(t, generatedMap, "there must be at least an ip mapping in the generated report")
-
-	// important here is that we catch all the same IPs and that there is no content that equals the IP as the value
-	for k, v := range generatedMap {
-		assert.NotContains(t, v, k)
-		assert.Contains(t, truthMap, k)
-		// if we have dashes in IPs, we need to verify we map the dotted normalized version to the same obfuscated value
-		if strings.Contains(k, "-") {
-			dotted := strings.ReplaceAll(k, "-", ".")
-			assert.Equal(t, v, generatedMap[dotted])
-		}
-	}
-
-	for i := 0; i < len(generatedReport.Omissions); i++ {
-		absPath := generatedReport.Omissions[i]
-		relPath, err := filepath.Rel(inputDir, absPath)
-		require.NoError(t, err)
-		generatedReport.Omissions[i] = relPath
-	}
-
+func verifyOmissions(t *testing.T, inputDir string, truthReport *reporting.Report, generatedReport *reporting.Report) {
 	sort.Strings(truthReport.Omissions)
 	sort.Strings(generatedReport.Omissions)
 	assert.Equal(t, truthReport.Omissions, generatedReport.Omissions)
+}
+
+func reportInternalRepresentation(report *reporting.Report) obfuscator.ReplacementReport {
+	var repls []obfuscator.Replacement
+	for _, o := range report.Replacements {
+		for _, r := range o {
+			count := map[string]uint{}
+			for _, c := range r.Occurrences {
+				count[c.Original] = c.Count
+			}
+			repls = append(repls, obfuscator.Replacement{
+				Canonical:    r.Canonical,
+				ReplacedWith: r.ReplacedWith,
+				Counter:      count,
+			})
+		}
+	}
+	return obfuscator.ReplacementReport{Replacements: repls}
+}
+
+func replacementReportsMatch(t *testing.T, want, got obfuscator.ReplacementReport) {
+	assert.Equal(t, len(want.Replacements), len(got.Replacements))
+	sort.Slice(want.Replacements, func(i, j int) bool {
+		return want.Replacements[i].Canonical > want.Replacements[j].Canonical
+	})
+	sort.Slice(got.Replacements, func(i, j int) bool {
+		return got.Replacements[i].Canonical > got.Replacements[j].Canonical
+	})
+	for i := range got.Replacements {
+		w := want.Replacements[i]
+		g := got.Replacements[i]
+		assert.Equal(t, w.Canonical, g.Canonical)
+		assert.Equal(t, w.Counter, g.Counter)
+	}
 }
 
 func readReport(t *testing.T, path string) *reporting.Report {
