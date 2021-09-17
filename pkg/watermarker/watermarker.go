@@ -14,21 +14,7 @@ type WaterMarker interface {
 	WriteWaterMarkFile(path string) error
 }
 
-type EmptyWaterMarker struct{}
-
 type SimpleWaterMarker struct{}
-
-func NewEmptyWaterMarker() *EmptyWaterMarker {
-	return &EmptyWaterMarker{}
-}
-
-func (e *EmptyWaterMarker) WriteWaterMarkFile(path string) error {
-	_, err := os.Create(filepath.Join(path, "watermark.txt"))
-	if err != nil {
-		return fmt.Errorf("failed to create watermark file in output folder: %w", err)
-	}
-	return nil
-}
 
 func NewSimpleWaterMarker() *SimpleWaterMarker {
 	return &SimpleWaterMarker{}

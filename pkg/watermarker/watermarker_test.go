@@ -9,20 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEmptyWaterMarkingHappyPath(t *testing.T) {
-	w := NewEmptyWaterMarker()
-
-	tmpInputDir, err := os.MkdirTemp(os.TempDir(), "watermarker-*")
-	require.NoError(t, err)
-	defer func() {
-		_ = os.RemoveAll(tmpInputDir)
-	}()
-
-	err = w.WriteWaterMarkFile(tmpInputDir)
-	require.NoError(t, err)
-	require.FileExists(t, filepath.Join(tmpInputDir, "watermark.txt"))
-}
-
 func TestSimpleWaterMarkingHappyPath(t *testing.T) {
 	w := NewSimpleWaterMarker()
 
