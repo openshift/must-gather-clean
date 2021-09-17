@@ -31,6 +31,11 @@ type ReplacementTracker interface {
 	// If there is an existing value that does not match the given replacement, it will exit with a non-zero status.
 	AddReplacement(original string, replacement string)
 
+	// AddBulkReplacement will add a replacement along with its original string to the report.
+	// Allows to set how many times 'original' occurs in source.
+	// If there is an existing value that does not match the given replacement, it will exit with a non-zero status.
+	AddBulkReplacement(original string, replacement string, occurrences uint)
+
 	// GenerateIfAbsent returns the previously used replacement if the entry is already present.
 	// If the replacement is not present then it uses the GenerateReplacement function to generate a replacement.
 	// The "key" parameter must be used for lookup and the "generator" parameter to generate the replacement.
@@ -55,13 +60,17 @@ func (s *SimpleTracker) Report() ReplacementReport {
 }
 
 func (s *SimpleTracker) AddReplacement(original string, replacement string) {
+	s.AddBulkReplacement(original, replacement, 1)
+}
+
+func (s *SimpleTracker) AddBulkReplacement(original string, replacement string, occurrences uint) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if val, ok := s.mapping[original]; ok {
 		if replacement != val.Replaced {
 			klog.Exitf("'%s' already has a value reported as '%s', tried to report '%s'", original, val.Replaced, replacement)
 		}
-		val.Total++
+		val.Total += occurrences
 		s.mapping[original] = val
 		return
 	}
@@ -72,6 +81,8 @@ func (s *SimpleTracker) GenerateIfAbsent(key string, generator GenerateReplaceme
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if val, ok := s.mapping[key]; ok {
+		val.Total++
+		s.mapping[key] = val
 		return val.Replaced
 	}
 	if generator == nil {
