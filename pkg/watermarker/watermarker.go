@@ -23,7 +23,7 @@ func NewSimpleWaterMarker() *SimpleWaterMarker {
 func (s *SimpleWaterMarker) WriteWaterMarkFile(path string) error {
 	timestampUTC := time.Now().UTC().String()
 	version := version.GetVersion().Version
-	contents := timestampUTC + " - " + version
+	contents := fmt.Sprintf("%s\n%s\n", timestampUTC, version)
 	err := os.WriteFile(filepath.Join(path, "watermark.txt"), []byte(contents), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to create watermark file in output folder: %w", err)
