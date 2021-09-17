@@ -267,3 +267,15 @@ config:
 
 	assert.Equal(t, "some IP 192.167.122.2 that should not to be obfuscated\nand some mac x-mac-0000000001-x\n", string(bytes))
 }
+
+func TestWaterMarkerNotCreatedOnFail(t *testing.T) {
+	testDir, err := os.MkdirTemp(os.TempDir(), "test-dir-*")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(testDir)
+	}()
+
+	err = Run("some.yaml", "", testDir, false, "", 1)
+	assert.ErrorIs(t, err, os.ErrNotExist)
+	require.NoFileExists(t, filepath.Join(testDir, "watermark.txt"))
+}
