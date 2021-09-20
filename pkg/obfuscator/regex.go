@@ -25,7 +25,7 @@ func (r *regexObfuscator) replace(input string) string {
 	for _, m := range matches {
 		replacement := strings.Repeat("x", len(m))
 		output = strings.ReplaceAll(output, m, replacement)
-		r.AddReplacement(m, replacement)
+		r.AddReplacement(m, m, replacement)
 	}
 	return output
 }

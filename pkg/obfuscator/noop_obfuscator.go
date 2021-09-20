@@ -22,10 +22,10 @@ func (d NoopObfuscator) Report() ReplacementReport {
 	var r []Replacement
 	for k, v := range d.Replacements {
 		r = append(r, Replacement{
-			Original: k,
-			Replaced: v,
+			Canonical:    k,
+			ReplacedWith: v,
 			// hard-coded 1 because NoopObfuscator doesn't track occurences
-			Total: 1,
+			Occurrences: []Occurrence{{Original: k, Count: 1}},
 		})
 	}
 	return ReplacementReport{r}

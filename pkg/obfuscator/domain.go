@@ -48,6 +48,7 @@ func (d *domainObfuscator) replaceDomains(input string) string {
 				replacement = obfuscatedBaseDomain
 			}
 			output = strings.ReplaceAll(output, m[0], replacement)
+			d.ReplacementTracker.AddReplacement(baseDomain, baseDomain, obfuscatedBaseDomain)
 		}
 	}
 	return output

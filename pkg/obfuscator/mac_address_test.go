@@ -2,6 +2,7 @@ package obfuscator
 
 import (
 	"fmt"
+	"sort"
 	"testing"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
@@ -72,12 +73,16 @@ func TestMACObfuscatorWithCount(t *testing.T) {
 			expectedOutput: fmt.Sprintf("mac %s %s %s %s %s %s", staticMacReplacement, staticMacReplacement, staticMacReplacement, staticMacReplacement, staticMacReplacement, staticMacReplacement),
 			expectedReportOutput: ReplacementReport{
 				[]Replacement{
-					{Original: "16:7C:44:26:24:14", Replaced: staticMacReplacement, Total: 1},
-					{Original: "BF-51-A4-1B-7D-0B", Replaced: staticMacReplacement, Total: 1},
-					{Original: "bf:51:a4:1b:7d:0b", Replaced: staticMacReplacement, Total: 1},
-					{Original: "bf-51-a4-1b-7d-0b", Replaced: staticMacReplacement, Total: 1},
-					{Original: "16-7C-44-26-24-14", Replaced: staticMacReplacement, Total: 1},
-					{Original: "BF:51:A4:1B:7D:0B", Replaced: staticMacReplacement, Total: 1},
+					{Canonical: "16:7C:44:26:24:14", ReplacedWith: staticMacReplacement, Occurrences: []Occurrence{
+						{Original: "16:7C:44:26:24:14", Count: 2},
+						{Original: "16-7C-44-26-24-14", Count: 1},
+					}},
+					{Canonical: "BF:51:A4:1B:7D:0B", ReplacedWith: staticMacReplacement, Occurrences: []Occurrence{
+						{Original: "BF:51:A4:1B:7D:0B", Count: 4},
+						{Original: "BF-51-A4-1B-7D-0B", Count: 1},
+						{Original: "bf:51:a4:1b:7d:0b", Count: 1},
+						{Original: "bf-51-a4-1b-7d-0b", Count: 1},
+					}},
 				},
 			},
 		},
@@ -86,8 +91,21 @@ func TestMACObfuscatorWithCount(t *testing.T) {
 			o, err := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeStatic)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedOutput, o.Contents(tc.input))
-			fmt.Println(o.Report().Replacements)
-			assert.ElementsMatch(t, tc.expectedReportOutput.Replacements, o.Report().Replacements)
+			report := o.Report()
+			assert.Equal(t, len(tc.expectedReportOutput.Replacements), len(report.Replacements))
+			sort.Slice(tc.expectedReportOutput.Replacements, func(i, j int) bool {
+				return tc.expectedReportOutput.Replacements[i].Canonical > tc.expectedReportOutput.Replacements[j].Canonical
+			})
+			sort.Slice(report.Replacements, func(i, j int) bool {
+				return report.Replacements[i].Canonical > report.Replacements[j].Canonical
+			})
+			for i := range report.Replacements {
+				want := tc.expectedReportOutput.Replacements[i]
+				got := report.Replacements[i]
+				assert.Equal(t, want.Canonical, got.Canonical)
+				assert.Equal(t, want.ReplacedWith, got.ReplacedWith)
+				assert.ElementsMatch(t, want.Occurrences, got.Occurrences)
+			}
 		})
 	}
 }

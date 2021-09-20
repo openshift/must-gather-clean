@@ -37,8 +37,8 @@ func TestReportingHappyPath(t *testing.T) {
 
 	assertReportMatches(t, reportFile, Report{
 		Replacements: []obfuscator.Replacement{
-			{Original: "this", Replaced: "that", Total: 1},
-			{Original: "another", Replaced: "something", Total: 1},
+			{Canonical: "this", ReplacedWith: "that", Occurrences: []obfuscator.Occurrence{{Original: "this", Count: 1}}},
+			{Canonical: "another", ReplacedWith: "something", Occurrences: []obfuscator.Occurrence{{Original: "another", Count: 1}}},
 		},
 		Omissions: []string{"some path"},
 	})

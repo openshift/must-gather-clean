@@ -20,7 +20,7 @@ func (o *keywordsObfuscator) Contents(contents string) string {
 func replace(name string, replacements map[string]string, reporter ReplacementTracker) string {
 	for keyword, replacement := range replacements {
 		if strings.Contains(name, keyword) {
-			reporter.AddReplacementCount(keyword, replacement, uint(strings.Count(name, keyword)))
+			reporter.AddReplacementCount(keyword, keyword, replacement, uint(strings.Count(name, keyword)))
 			name = strings.Replace(name, keyword, replacement, -1)
 		}
 	}

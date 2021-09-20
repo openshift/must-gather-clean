@@ -22,7 +22,9 @@ func TestNewKeywordsObfuscator(t *testing.T) {
 			input:          "input with unique-word",
 			expectedOutput: "input with replacement",
 			expectLegend: ReplacementReport{[]Replacement{
-				{Original: "unique-word", Replaced: "replacement", Total: 1},
+				{Canonical: "unique-word", ReplacedWith: "replacement", Occurrences: []Occurrence{
+					{Original: "unique-word", Count: 1},
+				}},
 			}},
 		},
 		{
@@ -43,7 +45,9 @@ func TestNewKeywordsObfuscator(t *testing.T) {
 			input:          "input with first-unique word",
 			expectedOutput: "input with first-replacement word",
 			expectLegend: ReplacementReport{[]Replacement{
-				{Original: "first-unique", Replaced: "first-replacement", Total: 1},
+				{Canonical: "first-unique", ReplacedWith: "first-replacement", Occurrences: []Occurrence{
+					{Original: "first-unique", Count: 1},
+				}},
 			}},
 		},
 		{
@@ -55,7 +59,9 @@ func TestNewKeywordsObfuscator(t *testing.T) {
 			input:          "input with foo foo foo times foo",
 			expectedOutput: "input with four four four times four",
 			expectLegend: ReplacementReport{[]Replacement{
-				{Original: "foo", Replaced: "four", Total: 4},
+				{Canonical: "foo", ReplacedWith: "four", Occurrences: []Occurrence{
+					{Original: "foo", Count: 4},
+				}},
 			}},
 		},
 	} {
