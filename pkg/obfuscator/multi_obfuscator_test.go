@@ -90,12 +90,12 @@ func TestMultiObfuscationReportMulti(t *testing.T) {
 		"this must be split thrice": "must be split thrice"}, mo.Report().AsMap())
 
 	perObfuscator := mo.ReportPerObfuscator()
-	var reportsAsString []map[string]string
+	var reportsAsMap []map[string]string
 	for _, val := range perObfuscator {
-		reportsAsString = append(reportsAsString, val.AsMap())
+		reportsAsMap = append(reportsAsMap, val.AsMap())
 	}
 	assert.Equal(t, []map[string]string{
 		{"this must be split thrice": "must be split thrice"},
 		{"must be split thrice": "be split thrice"},
-		{"be split thrice": "split thrice"}}, reportsAsString)
+		{"be split thrice": "split thrice"}}, reportsAsMap)
 }

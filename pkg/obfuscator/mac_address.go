@@ -33,7 +33,7 @@ func (m *macAddressObfuscator) Contents(s string) string {
 		replacement := m.obfsGenerator.generateReplacement(match, m.ReplacementTracker)
 		s = strings.ReplaceAll(s, mac, replacement)
 		// also add the original (non-cleaned) string, this is only used for human review in the final report
-		m.ReplacementTracker.AddReplacement(match, replacement)
+		m.ReplacementTracker.AddReplacement(mac, replacement)
 	}
 	return s
 }
