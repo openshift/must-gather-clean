@@ -59,6 +59,38 @@ func TestMacReplacementStatic(t *testing.T) {
 		})
 	}
 }
+func TestMACObfuscatorWithCount(t *testing.T) {
+	for _, tc := range []struct {
+		name                 string
+		input                string
+		expectedOutput       string
+		expectedReportOutput ReplacementReport
+	}{
+		{
+			name:           "6 MACs each exactly once",
+			input:          "mac bf-51-a4-1b-7d-0b 16-7C-44-26-24-14 BF:51:A4:1B:7D:0B 16:7C:44:26:24:14 BF-51-A4-1B-7D-0B bf:51:a4:1b:7d:0b",
+			expectedOutput: fmt.Sprintf("mac %s %s %s %s %s %s", staticMacReplacement, staticMacReplacement, staticMacReplacement, staticMacReplacement, staticMacReplacement, staticMacReplacement),
+			expectedReportOutput: ReplacementReport{
+				[]Replacement{
+					{Original: "16:7C:44:26:24:14", Replaced: staticMacReplacement, Total: 3},
+					{Original: "BF-51-A4-1B-7D-0B", Replaced: staticMacReplacement, Total: 1},
+					{Original: "bf:51:a4:1b:7d:0b", Replaced: staticMacReplacement, Total: 1},
+					{Original: "bf-51-a4-1b-7d-0b", Replaced: staticMacReplacement, Total: 1},
+					{Original: "16-7C-44-26-24-14", Replaced: staticMacReplacement, Total: 1},
+					{Original: "BF:51:A4:1B:7D:0B", Replaced: staticMacReplacement, Total: 5},
+				},
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			o, err := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeStatic)
+			require.NoError(t, err)
+			assert.Equal(t, tc.expectedOutput, o.Contents(tc.input))
+			fmt.Println(o.Report().Replacements)
+			assert.ElementsMatch(t, tc.expectedReportOutput.Replacements, o.Report().Replacements)
+		})
+	}
+}
 
 func TestMACConsistentObfuscator(t *testing.T) {
 	for _, tc := range []struct {
