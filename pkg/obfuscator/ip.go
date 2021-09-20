@@ -58,7 +58,7 @@ func (o *ipObfuscator) replace(s string) string {
 				continue
 			}
 
-			cleaned := strings.ReplaceAll(m, "-", ".")
+			cleaned := strings.ToUpper(strings.ReplaceAll(m, "-", "."))
 			if ip := net.ParseIP(cleaned); ip != nil {
 				replacement := gen.generateReplacement(cleaned, o.ReplacementTracker)
 				output = strings.ReplaceAll(output, m, replacement)
