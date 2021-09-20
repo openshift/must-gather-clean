@@ -13,14 +13,14 @@ import (
 func TestMacStaticReplacement(t *testing.T) {
 	o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeStatic)
 	assert.Equal(t, staticMacReplacement, o.Contents("29-7E-8C-8C-60-C9"))
-	assert.Equal(t, map[string]string{"29:7E:8C:8C:60:C9": staticMacReplacement, "29-7E-8C-8C-60-C9": staticMacReplacement}, o.Report().AsMap())
+	assert.Equal(t, map[string]string{"29-7E-8C-8C-60-C9": staticMacReplacement}, o.Report().AsMap())
 }
 
 func TestMacConsistentReplacement(t *testing.T) {
 	o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent)
 	assert.Equal(t, "x-mac-0000000001-x", o.Contents("29-7E-8C-8C-60-C9"))
 	// This testcase reports both the original detected MAC address as well as the normalized MAC address
-	assert.Equal(t, map[string]string{"29:7E:8C:8C:60:C9": "x-mac-0000000001-x", "29-7E-8C-8C-60-C9": "x-mac-0000000001-x"}, o.Report().AsMap())
+	assert.Equal(t, map[string]string{"29-7E-8C-8C-60-C9": "x-mac-0000000001-x"}, o.Report().AsMap())
 }
 
 func TestMacReplacementManyMatchLine(t *testing.T) {
@@ -31,8 +31,6 @@ func TestMacReplacementManyMatchLine(t *testing.T) {
 	assert.Equal(t, map[string]string{
 		"eb:a1:2a:b2:09:bf": staticMacReplacement,
 		"eb-a1-2a-b2-09-bf": staticMacReplacement,
-		"EB:A1:2A:B2:09:BF": staticMacReplacement,
-		"29:7E:8C:8C:60:C9": staticMacReplacement,
 		"29-7E-8C-8C-60-C9": staticMacReplacement,
 	}, o.Report().AsMap())
 }
@@ -74,11 +72,11 @@ func TestMACObfuscatorWithCount(t *testing.T) {
 			expectedReportOutput: ReplacementReport{
 				[]Replacement{
 					{Canonical: "16:7C:44:26:24:14", ReplacedWith: staticMacReplacement, Occurrences: []Occurrence{
-						{Original: "16:7C:44:26:24:14", Count: 2},
+						{Original: "16:7C:44:26:24:14", Count: 1},
 						{Original: "16-7C-44-26-24-14", Count: 1},
 					}},
 					{Canonical: "BF:51:A4:1B:7D:0B", ReplacedWith: staticMacReplacement, Occurrences: []Occurrence{
-						{Original: "BF:51:A4:1B:7D:0B", Count: 4},
+						{Original: "BF:51:A4:1B:7D:0B", Count: 1},
 						{Original: "BF-51-A4-1B-7D-0B", Count: 1},
 						{Original: "bf:51:a4:1b:7d:0b", Count: 1},
 						{Original: "bf-51-a4-1b-7d-0b", Count: 1},
@@ -121,7 +119,7 @@ func TestMACConsistentObfuscator(t *testing.T) {
 			name:   "valid MAC address",
 			input:  []string{"received request from 29-7E-8C-8C-60-C9"},
 			output: []string{"received request from x-mac-0000000001-x"},
-			report: map[string]string{"29:7E:8C:8C:60:C9": "x-mac-0000000001-x", "29-7E-8C-8C-60-C9": "x-mac-0000000001-x"},
+			report: map[string]string{"29-7E-8C-8C-60-C9": "x-mac-0000000001-x"},
 		},
 		{
 			name:   "MAC address mentioned in a sentence",

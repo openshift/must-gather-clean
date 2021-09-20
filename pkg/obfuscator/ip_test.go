@@ -32,7 +32,7 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			name:   "ipv4 in aws etcd pathing",
 			input:  "must-gather/etcd-ip-10-0-187-218.ec2.internal/some.yaml",
 			output: "must-gather/etcd-ip-xxx.xxx.xxx.xxx.ec2.internal/some.yaml",
-			report: map[string]string{"10-0-187-218": obfuscatedStaticIPv4, "10.0.187.218": obfuscatedStaticIPv4},
+			report: map[string]string{"10-0-187-218": obfuscatedStaticIPv4},
 		},
 		{
 			// this is a very difficult case in Golang, as the regexp package does not include lookaheads/lookbehinds.
@@ -88,7 +88,6 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			output: "ip-xxx.xxx.xxx.xxx.ec2.aws.yaml",
 			report: map[string]string{
 				"10-0-129-220": obfuscatedStaticIPv4,
-				"10.0.129.220": obfuscatedStaticIPv4,
 			},
 		},
 		{
@@ -313,7 +312,7 @@ func TestIPObfuscatorWithCount(t *testing.T) {
 			output: "same IP xxx.xxx.xxx.xxx address xxx.xxx.xxx.xxx repeated xxx.xxx.xxx.xxx four times xxx.xxx.xxx.xxx",
 			report: ReplacementReport{[]Replacement{
 				{Canonical: "192.168.1.10", ReplacedWith: obfuscatedStaticIPv4, Occurrences: []Occurrence{
-					{Original: "192.168.1.10", Count: 4},
+					{Original: "192.168.1.10", Count: 2},
 					{Original: "192-168-1-10", Count: 2},
 				}},
 			}},
