@@ -34,7 +34,7 @@ type ReplacementTracker interface {
 	// AddReplacementCount will add a replacement along with its original string to the report.
 	// Allows to set how many times 'original' occurs in source.
 	// If there is an existing value that does not match the given replacement, it will exit with a non-zero status.
-	AddReplacementCount(original string, replacement string, occurrences uint)
+	AddReplacementCount(original string, replacement string, count uint)
 
 	// GenerateIfAbsent returns the previously used replacement if the entry is already present.
 	// If the replacement is not present then it uses the GenerateReplacement function to generate a replacement.
@@ -63,18 +63,18 @@ func (s *SimpleTracker) AddReplacement(original string, replacement string) {
 	s.AddReplacementCount(original, replacement, 1)
 }
 
-func (s *SimpleTracker) AddReplacementCount(original string, replacement string, occurrences uint) {
+func (s *SimpleTracker) AddReplacementCount(original string, replacement string, count uint) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if val, ok := s.mapping[original]; ok {
 		if replacement != val.Replaced {
 			klog.Exitf("'%s' already has a value reported as '%s', tried to report '%s'", original, val.Replaced, replacement)
 		}
-		val.Total += occurrences
+		val.Total += count
 		s.mapping[original] = val
 		return
 	}
-	s.mapping[original] = Replacement{Original: original, Replaced: replacement, Total: 1}
+	s.mapping[original] = Replacement{Original: original, Replaced: replacement, Total: count}
 }
 
 func (s *SimpleTracker) GenerateIfAbsent(key string, generator GenerateReplacement) string {
