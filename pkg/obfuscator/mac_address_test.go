@@ -72,12 +72,12 @@ func TestMACObfuscatorWithCount(t *testing.T) {
 			expectedOutput: fmt.Sprintf("mac %s %s %s %s %s %s", staticMacReplacement, staticMacReplacement, staticMacReplacement, staticMacReplacement, staticMacReplacement, staticMacReplacement),
 			expectedReportOutput: ReplacementReport{
 				[]Replacement{
-					{Original: "16:7C:44:26:24:14", Replaced: staticMacReplacement, Total: 3},
+					{Original: "16:7C:44:26:24:14", Replaced: staticMacReplacement, Total: 1},
 					{Original: "BF-51-A4-1B-7D-0B", Replaced: staticMacReplacement, Total: 1},
 					{Original: "bf:51:a4:1b:7d:0b", Replaced: staticMacReplacement, Total: 1},
 					{Original: "bf-51-a4-1b-7d-0b", Replaced: staticMacReplacement, Total: 1},
 					{Original: "16-7C-44-26-24-14", Replaced: staticMacReplacement, Total: 1},
-					{Original: "BF:51:A4:1B:7D:0B", Replaced: staticMacReplacement, Total: 5},
+					{Original: "BF:51:A4:1B:7D:0B", Replaced: staticMacReplacement, Total: 1},
 				},
 			},
 		},

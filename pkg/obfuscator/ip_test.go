@@ -302,7 +302,7 @@ func TestIPObfuscatorWithCount(t *testing.T) {
 			input:  "same IP 192.168.1.10 address 192.168.1.10 repeated 192.168.1.10 four times 192.168.1.10",
 			output: "same IP xxx.xxx.xxx.xxx address xxx.xxx.xxx.xxx repeated xxx.xxx.xxx.xxx four times xxx.xxx.xxx.xxx",
 			report: ReplacementReport{[]Replacement{
-				{Original: "192.168.1.10", Replaced: obfuscatedStaticIPv4, Total: 8},
+				{Original: "192.168.1.10", Replaced: obfuscatedStaticIPv4, Total: 4},
 			}},
 		},
 		{
@@ -310,7 +310,7 @@ func TestIPObfuscatorWithCount(t *testing.T) {
 			input:  "same IP 192.168.1.10 address 192-168-1-10 repeated 192.168.1.10 four times 192-168-1-10",
 			output: "same IP xxx.xxx.xxx.xxx address xxx.xxx.xxx.xxx repeated xxx.xxx.xxx.xxx four times xxx.xxx.xxx.xxx",
 			report: ReplacementReport{[]Replacement{
-				{Original: "192.168.1.10", Replaced: obfuscatedStaticIPv4, Total: 6},
+				{Original: "192.168.1.10", Replaced: obfuscatedStaticIPv4, Total: 2},
 				{Original: "192-168-1-10", Replaced: obfuscatedStaticIPv4, Total: 2},
 			}},
 		},

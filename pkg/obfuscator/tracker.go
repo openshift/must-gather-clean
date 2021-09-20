@@ -81,15 +81,13 @@ func (s *SimpleTracker) GenerateIfAbsent(key string, generator GenerateReplaceme
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if val, ok := s.mapping[key]; ok {
-		val.Total++
-		s.mapping[key] = val
 		return val.Replaced
 	}
 	if generator == nil {
 		return ""
 	}
 	r := generator()
-	s.mapping[key] = Replacement{Original: key, Replaced: r, Total: 1}
+	s.mapping[key] = Replacement{Original: key, Replaced: r, Total: 0}
 	return r
 }
 
