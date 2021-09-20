@@ -21,6 +21,10 @@ func (t *targetObfuscator) Contents(s string) string {
 	return s
 }
 
+func (t *targetObfuscator) Type() string {
+	return t.obfuscator.Type()
+}
+
 func (t *targetObfuscator) Report() map[string]string {
 	return t.obfuscator.Report()
 }

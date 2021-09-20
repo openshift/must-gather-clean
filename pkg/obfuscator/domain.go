@@ -30,6 +30,10 @@ func (d *domainObfuscator) Contents(s string) string {
 	return d.replaceDomains(s)
 }
 
+func (d *domainObfuscator) Type() string {
+	return string(schema.ObfuscateTypeDomain)
+}
+
 func (d *domainObfuscator) replaceDomains(input string) string {
 	output := input
 	for _, p := range d.domainPatterns {

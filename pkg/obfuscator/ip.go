@@ -46,6 +46,10 @@ func (o *ipObfuscator) Contents(s string) string {
 	return o.replace(s)
 }
 
+func (o *ipObfuscator) Type() string {
+	return string(schema.ObfuscateTypeIP)
+}
+
 func (o *ipObfuscator) replace(s string) string {
 	output := s
 	for pattern, gen := range o.replacements {

@@ -27,6 +27,10 @@ func (d *splitObfuscator) Contents(input string) string {
 	return s
 }
 
+func (d *splitObfuscator) Type() string {
+	return "split"
+}
+
 func (d *splitObfuscator) Report() map[string]string {
 	return d.tracker.Report()
 }

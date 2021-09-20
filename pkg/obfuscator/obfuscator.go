@@ -6,6 +6,8 @@ type Obfuscator interface {
 	Path(string) string
 	// Contents takes string as input and return the obfuscated string
 	Contents(string) string
+	// Type returns an obfuscator type which would come into help during the reporting.
+	Type() string
 }
 
 type ReportingObfuscator interface {

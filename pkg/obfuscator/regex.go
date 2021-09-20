@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/openshift/must-gather-clean/pkg/schema"
 )
 
 type regexObfuscator struct {
@@ -17,6 +19,10 @@ func (r *regexObfuscator) Path(s string) string {
 
 func (r *regexObfuscator) Contents(s string) string {
 	return r.replace(s)
+}
+
+func (r *regexObfuscator) Type() string {
+	return string(schema.ObfuscateTypeRegex)
 }
 
 func (r *regexObfuscator) replace(input string) string {

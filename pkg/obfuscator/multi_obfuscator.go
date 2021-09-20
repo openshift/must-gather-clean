@@ -1,5 +1,9 @@
 package obfuscator
 
+import (
+	"github.com/openshift/must-gather-clean/pkg/schema"
+)
+
 type MultiObfuscator struct {
 	obfuscators []ReportingObfuscator
 }
@@ -18,6 +22,10 @@ func (m *MultiObfuscator) Contents(s string) string {
 	}
 
 	return s
+}
+
+func (m *MultiObfuscator) Type() string {
+	return ""
 }
 
 func (m *MultiObfuscator) Report() map[string]string {
@@ -39,6 +47,19 @@ func (m *MultiObfuscator) ReportPerObfuscator() []map[string]string {
 	}
 
 	return multiReport
+}
+
+func (m *MultiObfuscator) UpdateReportPerObfuscator(config *schema.SchemaJson) {
+	for _, i := range m.obfuscators {
+		for k := range config.Config.Obfuscate {
+			if string(config.Config.Obfuscate[k].Type) == i.Type() {
+				config.Config.Obfuscate[k].Report = make(map[string]string)
+				for key, value := range i.Report() {
+					config.Config.Obfuscate[k].Report[key] = value
+				}
+			}
+		}
+	}
 }
 
 func NewMultiObfuscator(o []ReportingObfuscator) *MultiObfuscator {

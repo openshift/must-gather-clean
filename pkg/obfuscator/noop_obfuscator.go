@@ -18,6 +18,10 @@ func (d NoopObfuscator) Contents(input string) string {
 	return input
 }
 
+func (d NoopObfuscator) Type() string {
+	return ""
+}
+
 func (d NoopObfuscator) Report() map[string]string {
 	return d.Replacements
 }

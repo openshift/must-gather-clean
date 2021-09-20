@@ -2,6 +2,8 @@ package obfuscator
 
 import (
 	"strings"
+
+	"github.com/openshift/must-gather-clean/pkg/schema"
 )
 
 type keywordsObfuscator struct {
@@ -19,6 +21,10 @@ func (o *keywordsObfuscator) Path(name string) string {
 
 func (o *keywordsObfuscator) Contents(contents string) string {
 	return replace(contents, o.replacements, o.ReplacementTracker)
+}
+
+func (o *keywordsObfuscator) Type() string {
+	return string(schema.ObfuscateTypeKeywords)
 }
 
 func replace(name string, replacements map[string]string, reporter ReplacementTracker) string {

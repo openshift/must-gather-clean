@@ -3,11 +3,12 @@ package cli
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/openshift/must-gather-clean/pkg/cleaner"
-	"github.com/openshift/must-gather-clean/pkg/reporting"
+	"gopkg.in/yaml.v2"
 	"k8s.io/klog/v2"
 
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
@@ -90,14 +91,26 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 
 	traversal.NewParallelFileWalker(inputPath, workerCount, workerFactory).Traverse()
 
-	reporter := reporting.NewSimpleReporter()
-	reporter.CollectOmitterReport(mro.Report())
-	reporter.CollectObfuscatorReport(mo.ReportPerObfuscator())
-	reporterErr := reporter.WriteReport(filepath.Join(reportingFolder, reportFileName))
-	if reporterErr != nil {
-		return reporterErr
+	mo.UpdateReportPerObfuscator(config)
+	data, err := yaml.Marshal(config)
+	if err != nil {
+		return fmt.Errorf("failed to encode the report at %s: %w", reportFileName, err)
 	}
 
+	err = ioutil.WriteFile(filepath.Join(reportingFolder, reportFileName), data, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to generate the report at %s: %w", reportFileName, err)
+	}
+
+	/*
+		reporter := reporting.NewSimpleReporter()
+		reporter.CollectOmitterReport(mro.Report())
+		reporter.CollectObfuscatorReport(mo.ReportPerObfuscator())
+		reporterErr := reporter.WriteReport(filepath.Join(reportingFolder, reportFileName))
+		if reporterErr != nil {
+			return reporterErr
+		}
+	*/
 	watermarker := watermarking.NewSimpleWaterMarker()
 	return watermarker.WriteWaterMarkFile(outputPath)
 }
@@ -132,40 +145,36 @@ func createOmittersFromConfig(config *schema.SchemaJson) (omitter.ReportingOmitt
 func createObfuscatorsFromConfig(config *schema.SchemaJson) (*obfuscator.MultiObfuscator, error) {
 	var obfuscators []obfuscator.ReportingObfuscator
 	for _, o := range config.Config.Obfuscate {
+		var (
+			k   obfuscator.ReportingObfuscator
+			err error
+		)
 		switch o.Type {
 		case schema.ObfuscateTypeKeywords:
-			k := obfuscator.NewKeywordsObfuscator(o.Replacement)
-			k = obfuscator.NewTargetObfuscator(o.Target, k)
-			obfuscators = append(obfuscators, k)
+			k = obfuscator.NewKeywordsObfuscator(o.Replacement)
 		case schema.ObfuscateTypeMAC:
-			k, err := obfuscator.NewMacAddressObfuscator(o.ReplacementType)
+			k, err = obfuscator.NewMacAddressObfuscator(o.ReplacementType)
 			if err != nil {
 				return nil, err
 			}
-			k = obfuscator.NewTargetObfuscator(o.Target, k)
-			obfuscators = append(obfuscators, k)
 		case schema.ObfuscateTypeRegex:
-			k, err := obfuscator.NewRegexObfuscator(*o.Regex)
+			k, err = obfuscator.NewRegexObfuscator(*o.Regex)
 			if err != nil {
 				return nil, err
 			}
-			k = obfuscator.NewTargetObfuscator(o.Target, k)
-			obfuscators = append(obfuscators, k)
 		case schema.ObfuscateTypeDomain:
-			k, err := obfuscator.NewDomainObfuscator(o.DomainNames, o.ReplacementType)
+			k, err = obfuscator.NewDomainObfuscator(o.DomainNames, o.ReplacementType)
 			if err != nil {
 				return nil, err
 			}
-			k = obfuscator.NewTargetObfuscator(o.Target, k)
-			obfuscators = append(obfuscators, k)
 		case schema.ObfuscateTypeIP:
-			k, err := obfuscator.NewIPObfuscator(o.ReplacementType)
+			k, err = obfuscator.NewIPObfuscator(o.ReplacementType)
 			if err != nil {
 				return nil, err
 			}
-			k = obfuscator.NewTargetObfuscator(o.Target, k)
-			obfuscators = append(obfuscators, k)
 		}
+		k = obfuscator.NewTargetObfuscator(o.Target, k)
+		obfuscators = append(obfuscators, k)
 	}
 	return obfuscator.NewMultiObfuscator(obfuscators), nil
 }

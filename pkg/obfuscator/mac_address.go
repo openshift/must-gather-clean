@@ -38,6 +38,10 @@ func (m *macAddressObfuscator) Contents(s string) string {
 	return s
 }
 
+func (m *macAddressObfuscator) Type() string {
+	return string(schema.ObfuscateTypeMAC)
+}
+
 func (m *macAddressObfuscator) Report() map[string]string {
 	return m.ReplacementTracker.Report()
 }
