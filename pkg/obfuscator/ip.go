@@ -74,17 +74,20 @@ func (o *ipObfuscator) replace(s string) string {
 	return output
 }
 
-func NewIPObfuscator(replacementType schema.ObfuscateReplacementType) (ReportingObfuscator, error) {
-	genIPv4, err := newGenerator(consistentIPv4Template, obfuscatedStaticIPv4, maximumSupportedObfuscationsIP, replacementType)
+func NewIPObfuscator(replacementType schema.ObfuscateReplacementType, existingReport map[string]string) (ReportingObfuscator, error) {
+	// (TODO) The count of the IPv4, IPv6 generator is set to the sum(Ipv4, Ipv6), in case of the existing report, which may/may not be accurate
+	genIPv4, err := newGenerator(consistentIPv4Template, obfuscatedStaticIPv4, maximumSupportedObfuscationsIP, replacementType, len(existingReport))
 	if err != nil {
 		return nil, err
 	}
-	genIPv6, err := newGenerator(consistentIPv6Template, obfuscatedStaticIPv6, maximumSupportedObfuscationsIP, replacementType)
+	genIPv6, err := newGenerator(consistentIPv6Template, obfuscatedStaticIPv6, maximumSupportedObfuscationsIP, replacementType, len(existingReport))
 	if err != nil {
 		return nil, err
 	}
+	tracker := NewSimpleTracker()
+	tracker.Initialize(existingReport)
 	return &ipObfuscator{
-		ReplacementTracker: NewSimpleTracker(),
+		ReplacementTracker: tracker,
 		replacements: map[*regexp.Regexp]*generator{
 			ipv4Pattern: genIPv4,
 			ipv6Pattern: genIPv6,

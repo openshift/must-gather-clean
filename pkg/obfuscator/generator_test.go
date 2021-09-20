@@ -10,7 +10,7 @@ import (
 )
 
 func TestGeneratorHappyPath(t *testing.T) {
-	g, err := newGenerator("%d", "x", 10, schema.ObfuscateReplacementTypeStatic)
+	g, err := newGenerator("%d", "x", 10, schema.ObfuscateReplacementTypeStatic, 0)
 	require.NoError(t, err)
 	assert.Equal(t, "1", g.generateConsistentReplacement())
 	assert.Equal(t, "2", g.generateConsistentReplacement())
@@ -18,7 +18,7 @@ func TestGeneratorHappyPath(t *testing.T) {
 }
 
 func TestInvalidGenerator(t *testing.T) {
-	_, err := newGenerator("%d", "x", 10, schema.ObfuscateReplacementType("customType"))
+	_, err := newGenerator("%d", "x", 10, schema.ObfuscateReplacementType("customType"), 0)
 	assert.Equal(t, err, fmt.Errorf("unsupported replacement type: %s", schema.ObfuscateReplacementType("customType")))
 }
 

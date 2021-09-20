@@ -47,11 +47,11 @@ func (g *generator) generateReplacement(key string, tracker ReplacementTracker) 
 }
 
 // newGenerator creates a generator objects and populates with the provided arguments
-func newGenerator(template, static string, maxSupported int, replacementType schema.ObfuscateReplacementType) (*generator, error) {
+func newGenerator(template, static string, maxSupported int, replacementType schema.ObfuscateReplacementType, count int) (*generator, error) {
 	if replacementType != schema.ObfuscateReplacementTypeStatic && replacementType != schema.ObfuscateReplacementTypeConsistent {
 		return nil, fmt.Errorf("unsupported replacement type: %s", replacementType)
 	}
-	return &generator{template: template, static: static, max: maxSupported, replacementType: replacementType, exitFunc: func(t string, m int) {
+	return &generator{template: template, static: static, max: maxSupported, replacementType: replacementType, count: count, exitFunc: func(t string, m int) {
 		// we exit here since this is an error we can't possibly recover from automatically
 		klog.Exitf("Please review your configuration, maximum number of obfuscations was exceeded: %d for template: %s", m, t)
 	}}, nil

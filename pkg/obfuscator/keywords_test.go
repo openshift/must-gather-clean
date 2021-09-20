@@ -44,7 +44,7 @@ func TestNewKeywordsObfuscator(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o := NewKeywordsObfuscator(tc.replacements)
+			o := NewKeywordsObfuscator(tc.replacements, map[string]string{})
 			require.Equal(t, tc.expectedOutput, o.Contents(tc.input))
 			require.Equal(t, tc.expectLegend, o.Report())
 		})

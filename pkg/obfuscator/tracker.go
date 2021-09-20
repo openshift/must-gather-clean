@@ -74,8 +74,11 @@ func (s *SimpleTracker) Initialize(replacements map[string]string) {
 	if len(s.mapping) > 0 {
 		klog.Exitf("tracker was initialized more than once or after some replacements were already added.")
 	}
-	for k, v := range replacements {
-		s.mapping[k] = v
+
+	if len(replacements) > 0 {
+		for k, v := range replacements {
+			s.mapping[k] = v
+		}
 	}
 }
 

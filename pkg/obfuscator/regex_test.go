@@ -42,7 +42,7 @@ func TestRegexObfuscator(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewRegexObfuscator(tc.pattern)
+			o, err := NewRegexObfuscator(tc.pattern, map[string]string{})
 			require.NoError(t, err)
 			output := o.Contents(tc.input)
 			assert.Equal(t, tc.output, output)

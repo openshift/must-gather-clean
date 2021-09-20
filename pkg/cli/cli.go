@@ -34,12 +34,12 @@ func RunPipe(configPath string, stdin io.Reader, stdout io.Writer) error {
 			return fmt.Errorf("failed to create obfuscators via config at %s: %w", configPath, err)
 		}
 	} else {
-		ipObfuscator, err := obfuscator.NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent)
+		ipObfuscator, err := obfuscator.NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent, map[string]string{})
 		if err != nil {
 			return fmt.Errorf("failed to create IP obfuscator: %w", err)
 		}
 
-		macObfuscator, err := obfuscator.NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent)
+		macObfuscator, err := obfuscator.NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent, map[string]string{})
 		if err != nil {
 			return fmt.Errorf("failed to create MAC obfuscator: %w", err)
 		}
@@ -151,24 +151,24 @@ func createObfuscatorsFromConfig(config *schema.SchemaJson) (*obfuscator.MultiOb
 		)
 		switch o.Type {
 		case schema.ObfuscateTypeKeywords:
-			k = obfuscator.NewKeywordsObfuscator(o.Replacement)
+			k = obfuscator.NewKeywordsObfuscator(o.Replacement, o.Report)
 		case schema.ObfuscateTypeMAC:
-			k, err = obfuscator.NewMacAddressObfuscator(o.ReplacementType)
+			k, err = obfuscator.NewMacAddressObfuscator(o.ReplacementType, o.Report)
 			if err != nil {
 				return nil, err
 			}
 		case schema.ObfuscateTypeRegex:
-			k, err = obfuscator.NewRegexObfuscator(*o.Regex)
+			k, err = obfuscator.NewRegexObfuscator(*o.Regex, o.Report)
 			if err != nil {
 				return nil, err
 			}
 		case schema.ObfuscateTypeDomain:
-			k, err = obfuscator.NewDomainObfuscator(o.DomainNames, o.ReplacementType)
+			k, err = obfuscator.NewDomainObfuscator(o.DomainNames, o.ReplacementType, o.Report)
 			if err != nil {
 				return nil, err
 			}
 		case schema.ObfuscateTypeIP:
-			k, err = obfuscator.NewIPObfuscator(o.ReplacementType)
+			k, err = obfuscator.NewIPObfuscator(o.ReplacementType, o.Report)
 			if err != nil {
 				return nil, err
 			}

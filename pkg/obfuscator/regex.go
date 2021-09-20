@@ -36,13 +36,15 @@ func (r *regexObfuscator) replace(input string) string {
 	return output
 }
 
-func NewRegexObfuscator(pattern string) (ReportingObfuscator, error) {
+func NewRegexObfuscator(pattern string, existingReport map[string]string) (ReportingObfuscator, error) {
 	regex, err := regexp.Compile(pattern)
 	if err != nil {
 		return nil, fmt.Errorf("pattern %s is invalid: %w", pattern, err)
 	}
+	tracker := NewSimpleTracker()
+	tracker.Initialize(existingReport)
 	return &regexObfuscator{
 		pattern:            regex,
-		ReplacementTracker: NewSimpleTracker(),
+		ReplacementTracker: tracker,
 	}, nil
 }
