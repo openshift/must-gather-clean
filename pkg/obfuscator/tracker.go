@@ -17,11 +17,11 @@ type ReplacementTracker interface {
 	// Report returns a mapping of strings which were replaced.
 	Report() ReplacementReport
 
-	// AddReplacement will add a replacement along with its original string to the report.
+	// AddReplacement will add a replacement along with its original string and its canonical form to the report.
 	// If there is an existing value that does not match the given replacement, it will exit with a non-zero status.
 	AddReplacement(canonical, original string, replacement string)
 
-	// AddReplacementCount will add a replacement along with its original string to the report.
+	// AddReplacement will add a replacement along with its original string and its canonical form to the report.
 	// Allows to set how many times 'original' occurs in source.
 	// If there is an existing value that does not match the given replacement, it will exit with a non-zero status.
 	AddReplacementCount(canonical, original string, replacement string, count uint)
@@ -57,6 +57,9 @@ func (s *SimpleTracker) AddReplacementCount(canonical, original string, replacem
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if r, ok := s.mapping[canonical]; ok {
+		if replacement != r.ReplacedWith {
+			klog.Exitf("'%s' already has a value reported as '%s', tried to report '%s'", canonical, r.ReplacedWith, replacement)
+		}
 		r.Increment(original, count)
 	} else {
 		s.mapping[canonical] = NewReplacement(canonical, original, replacement, count)
