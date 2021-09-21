@@ -11,5 +11,5 @@ type Obfuscator interface {
 type ReportingObfuscator interface {
 	Obfuscator
 	// Report returns a map of words and their Replacements
-	Report() map[string]string
+	Report() ReplacementReport
 }

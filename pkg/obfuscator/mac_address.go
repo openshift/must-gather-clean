@@ -30,16 +30,10 @@ func (m *macAddressObfuscator) Contents(s string) string {
 	for _, mac := range matches {
 		// normalizing the MAC Address string to the Uppercase to avoid the duplicate reporting
 		match := strings.ToUpper(strings.ReplaceAll(mac, "-", ":"))
-		replacement := m.obfsGenerator.generateReplacement(match, m.ReplacementTracker)
+		replacement := m.obfsGenerator.generateReplacement(match, mac, 1, m.ReplacementTracker)
 		s = strings.ReplaceAll(s, mac, replacement)
-		// also add the original (non-cleaned) string, this is only used for human review in the final report
-		m.ReplacementTracker.AddReplacement(mac, replacement)
 	}
 	return s
-}
-
-func (m *macAddressObfuscator) Report() map[string]string {
-	return m.ReplacementTracker.Report()
 }
 
 func NewMacAddressObfuscator(replacementType schema.ObfuscateReplacementType) (ReportingObfuscator, error) {

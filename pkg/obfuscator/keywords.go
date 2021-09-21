@@ -9,10 +9,6 @@ type keywordsObfuscator struct {
 	replacements map[string]string
 }
 
-func (o *keywordsObfuscator) Report() map[string]string {
-	return o.ReplacementTracker.Report()
-}
-
 func (o *keywordsObfuscator) Path(name string) string {
 	return replace(name, o.replacements, o.ReplacementTracker)
 }
@@ -24,8 +20,11 @@ func (o *keywordsObfuscator) Contents(contents string) string {
 func replace(name string, replacements map[string]string, reporter ReplacementTracker) string {
 	for keyword, replacement := range replacements {
 		if strings.Contains(name, keyword) {
+			cnt := uint(strings.Count(name, keyword))
+			_ = reporter.GenerateIfAbsent(keyword, keyword, cnt, func() string {
+				return replacement
+			})
 			name = strings.Replace(name, keyword, replacement, -1)
-			reporter.AddReplacement(keyword, replacement)
 		}
 	}
 	return name

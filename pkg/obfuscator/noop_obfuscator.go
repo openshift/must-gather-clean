@@ -18,8 +18,19 @@ func (d NoopObfuscator) Contents(input string) string {
 	return input
 }
 
-func (d NoopObfuscator) Report() map[string]string {
-	return d.Replacements
+func (d NoopObfuscator) Report() ReplacementReport {
+	var r []Replacement
+	for k, v := range d.Replacements {
+		r = append(r, Replacement{
+			Canonical:    k,
+			ReplacedWith: v,
+			// hard-coded 1 because NoopObfuscator doesn't track occurrences
+			Counter: map[string]uint{
+				k: 1,
+			},
+		})
+	}
+	return ReplacementReport{r}
 }
 
 func (d NoopObfuscator) ReportReplacement(a string, b string) {

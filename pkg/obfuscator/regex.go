@@ -24,8 +24,10 @@ func (r *regexObfuscator) replace(input string) string {
 	matches := r.pattern.FindAllString(input, -1)
 	for _, m := range matches {
 		replacement := strings.Repeat("x", len(m))
+		r.GenerateIfAbsent(m, m, 1, func() string {
+			return replacement
+		})
 		output = strings.ReplaceAll(output, m, replacement)
-		r.AddReplacement(m, replacement)
 	}
 	return output
 }

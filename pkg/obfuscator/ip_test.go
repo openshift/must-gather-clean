@@ -32,7 +32,7 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			name:   "ipv4 in aws etcd pathing",
 			input:  "must-gather/etcd-ip-10-0-187-218.ec2.internal/some.yaml",
 			output: "must-gather/etcd-ip-xxx.xxx.xxx.xxx.ec2.internal/some.yaml",
-			report: map[string]string{"10-0-187-218": obfuscatedStaticIPv4, "10.0.187.218": obfuscatedStaticIPv4},
+			report: map[string]string{"10-0-187-218": obfuscatedStaticIPv4},
 		},
 		{
 			// this is a very difficult case in Golang, as the regexp package does not include lookaheads/lookbehinds.
@@ -88,7 +88,6 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			output: "ip-xxx.xxx.xxx.xxx.ec2.aws.yaml",
 			report: map[string]string{
 				"10-0-129-220": obfuscatedStaticIPv4,
-				"10.0.129.220": obfuscatedStaticIPv4,
 			},
 		},
 		{
@@ -144,7 +143,7 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			require.NoError(t, err)
 			output := o.Contents(tc.input)
 			assert.Equal(t, tc.output, output)
-			assert.Equal(t, tc.report, o.Report())
+			assert.Equal(t, tc.report, o.Report().AsMap())
 		})
 	}
 }
@@ -254,7 +253,7 @@ func TestIPObfuscatorConsistent(t *testing.T) {
 			for i := 0; i < len(tc.input); i++ {
 				assert.Equal(t, tc.output[i], o.Contents(tc.input[i]))
 			}
-			assert.Equal(t, tc.report, o.Report())
+			assert.Equal(t, tc.report, o.Report().AsMap())
 		})
 	}
 }
@@ -288,4 +287,134 @@ func TestIPObfuscationInPaths(t *testing.T) {
 		})
 	}
 
+}
+
+func TestIPv6CanonicalKeyConsistent(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		input  string
+		output string
+		report ReplacementReport
+	}{
+		{
+			name:   "valid ipv6 address",
+			input:  "received request from 2001:db8::ff00:42:8329",
+			output: "received request from x-ipv6-0000000001-x",
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "2001:DB8::FF00:42:8329", ReplacedWith: "x-ipv6-0000000001-x", Counter: map[string]uint{
+					"2001:db8::ff00:42:8329": 1,
+				}},
+			}},
+		},
+		{
+			name:   "mixed ipv4 and ipv6",
+			input:  "tunneling ::2fa:bf9 as 192.168.1.30",
+			output: "tunneling x-ipv6-0000000001-x as x-ipv4-0000000001-x",
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "192.168.1.30", ReplacedWith: "x-ipv4-0000000001-x",
+					Counter: map[string]uint{
+						"192.168.1.30": 1,
+					}},
+				{Canonical: "::2FA:BF9", ReplacedWith: "x-ipv6-0000000001-x",
+					Counter: map[string]uint{
+						"::2fa:bf9": 1,
+					}},
+			}},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent)
+			require.NoError(t, err)
+			output := o.Contents(tc.input)
+			assert.Equal(t, tc.output, output)
+			replacementReportsMatch(t, tc.report, o.Report())
+		})
+	}
+}
+
+func TestIPv6CanonicalKeyStatic(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		input  string
+		output string
+		report ReplacementReport
+	}{
+		{
+			name:   "valid ipv6 address",
+			input:  "received request from 2001:db8::ff00:42:8329",
+			output: "received request from xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx",
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "2001:DB8::FF00:42:8329", ReplacedWith: obfuscatedStaticIPv6,
+					Counter: map[string]uint{
+						"2001:db8::ff00:42:8329": 1,
+					},
+				},
+			}},
+		},
+		{
+			name:   "mixed ipv4 and ipv6",
+			input:  "tunneling ::2fa:bf9 as 192.168.1.30",
+			output: "tunneling xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx as xxx.xxx.xxx.xxx",
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "::2FA:BF9", ReplacedWith: obfuscatedStaticIPv6,
+					Counter: map[string]uint{
+						"::2fa:bf9": 1,
+					}},
+				{Canonical: "192.168.1.30", ReplacedWith: obfuscatedStaticIPv4,
+					Counter: map[string]uint{
+						"192.168.1.30": 1,
+					}},
+			}},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic)
+			require.NoError(t, err)
+			output := o.Contents(tc.input)
+			assert.Equal(t, tc.output, output)
+			replacementReportsMatch(t, tc.report, o.Report())
+		})
+	}
+}
+
+func TestIPObfuscatorWithCount(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		input  string
+		output string
+		report ReplacementReport
+	}{
+		{
+			name:   "valid ipv4 address four times",
+			input:  "same IP 192.168.1.10 address 192.168.1.10 repeated 192.168.1.10 four times 192.168.1.10",
+			output: "same IP xxx.xxx.xxx.xxx address xxx.xxx.xxx.xxx repeated xxx.xxx.xxx.xxx four times xxx.xxx.xxx.xxx",
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "192.168.1.10", ReplacedWith: obfuscatedStaticIPv4,
+					Counter: map[string]uint{
+						"192.168.1.10": 4,
+					}},
+			}},
+		},
+		{
+			name:   "valid ipv4 address dots and dashes",
+			input:  "same IP 192.168.1.10 address 192-168-1-10 repeated 192.168.1.10 four times 192-168-1-10",
+			output: "same IP xxx.xxx.xxx.xxx address xxx.xxx.xxx.xxx repeated xxx.xxx.xxx.xxx four times xxx.xxx.xxx.xxx",
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "192.168.1.10", ReplacedWith: obfuscatedStaticIPv4,
+					Counter: map[string]uint{
+						"192.168.1.10": 2,
+						"192-168-1-10": 2,
+					},
+				},
+			}},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic)
+			require.NoError(t, err)
+			output := o.Contents(tc.input)
+			assert.Equal(t, tc.output, output)
+			replacementReportsMatch(t, tc.report, o.Report())
+		})
+	}
 }

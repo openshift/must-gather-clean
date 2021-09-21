@@ -36,9 +36,9 @@ func TestReportingHappyPath(t *testing.T) {
 	require.NoError(t, err)
 
 	assertReportMatches(t, reportFile, Report{
-		Replacements: []map[string]string{
-			{"this": "that"},
-			{"another": "something"},
+		Replacements: [][]Replacement{
+			{Replacement{Canonical: "this", ReplacedWith: "that", Occurrences: []Occurrence{{Original: "this", Count: 1}}}},
+			{Replacement{Canonical: "another", ReplacedWith: "something", Occurrences: []Occurrence{{Original: "another", Count: 1}}}},
 		},
 		Omissions: []string{"some path"},
 	})

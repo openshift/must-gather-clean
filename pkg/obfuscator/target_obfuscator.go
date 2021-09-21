@@ -21,7 +21,7 @@ func (t *targetObfuscator) Contents(s string) string {
 	return s
 }
 
-func (t *targetObfuscator) Report() map[string]string {
+func (t *targetObfuscator) Report() ReplacementReport {
 	return t.obfuscator.Report()
 }
 

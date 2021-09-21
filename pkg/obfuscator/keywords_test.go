@@ -12,7 +12,7 @@ func TestNewKeywordsObfuscator(t *testing.T) {
 		replacements   map[string]string
 		input          string
 		expectedOutput string
-		expectLegend   map[string]string
+		expectLegend   ReplacementReport
 	}{
 		{
 			name: "basic",
@@ -21,7 +21,12 @@ func TestNewKeywordsObfuscator(t *testing.T) {
 			},
 			input:          "input with unique-word",
 			expectedOutput: "input with replacement",
-			expectLegend:   map[string]string{"unique-word": "replacement"},
+			expectLegend: ReplacementReport{[]Replacement{
+				{Canonical: "unique-word", ReplacedWith: "replacement",
+					Counter: map[string]uint{
+						"unique-word": 1,
+					}},
+			}},
 		},
 		{
 			name: "no replacement",
@@ -30,7 +35,7 @@ func TestNewKeywordsObfuscator(t *testing.T) {
 			},
 			input:          "input with common words",
 			expectedOutput: "input with common words",
-			expectLegend:   map[string]string{},
+			expectLegend:   ReplacementReport{[]Replacement{}},
 		},
 		{
 			name: "partial replacement",
@@ -40,13 +45,33 @@ func TestNewKeywordsObfuscator(t *testing.T) {
 			},
 			input:          "input with first-unique word",
 			expectedOutput: "input with first-replacement word",
-			expectLegend:   map[string]string{"first-unique": "first-replacement"},
+			expectLegend: ReplacementReport{[]Replacement{
+				{Canonical: "first-unique", ReplacedWith: "first-replacement",
+					Counter: map[string]uint{
+						"first-unique": 1,
+					}},
+			}},
+		},
+		{
+			name: "partial replacement with repetition",
+			replacements: map[string]string{
+				"foo": "four",
+				"bar": "zero",
+			},
+			input:          "input with foo foo foo times foo",
+			expectedOutput: "input with four four four times four",
+			expectLegend: ReplacementReport{[]Replacement{
+				{Canonical: "foo", ReplacedWith: "four",
+					Counter: map[string]uint{
+						"foo": 4,
+					}},
+			}},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			o := NewKeywordsObfuscator(tc.replacements)
 			require.Equal(t, tc.expectedOutput, o.Contents(tc.input))
-			require.Equal(t, tc.expectLegend, o.Report())
+			replacementReportsMatch(t, tc.expectLegend, o.Report())
 		})
 	}
 }
