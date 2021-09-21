@@ -4,6 +4,8 @@ import (
 	"sync"
 )
 
+var onlyOneInit = make(chan struct{})
+
 type GenerateReplacement func() string
 
 type ReplacementReport struct {
@@ -42,9 +44,9 @@ func NewReplacement(canonical string, original string, replacement string, count
 
 // ReplacementTracker is used to track and generate replacements used by obfuscators
 type ReplacementTracker interface {
-	// Initialize initializes the tracker with some existing replacements. It should be called only once and before
-	// the first use of GetReplacement or AddReplacement
-	Initialize(replacements map[string]string)
+	// Initialize initializes the tracker with some existing replacements. It should be called before
+	// the first use of GetReplacement or AddReplacement. Panics if called more than once.
+	Initialize(report ReplacementReport)
 
 	// Report returns a mapping of strings which were replaced.
 	Report() ReplacementReport
@@ -85,12 +87,22 @@ func (s *SimpleTracker) GenerateIfAbsent(canonical string, original string, coun
 	return g
 }
 
-func (s *SimpleTracker) Initialize(replacements map[string]string) {
+func (s *SimpleTracker) Initialize(report ReplacementReport) {
+	close(onlyOneInit) // panics when called twice
+
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	for k, v := range replacements {
-		s.mapping[k] = NewReplacement(k, k, v, 1)
+	for _, r := range report.Replacements {
+		c := make(map[string]uint)
+		for keyCopy, valueCopy := range r.Counter {
+			c[keyCopy] = valueCopy
+		}
+		s.mapping[r.Canonical] = &Replacement{
+			Canonical:    r.Canonical,
+			ReplacedWith: r.ReplacedWith,
+			Counter:      c,
+		}
 	}
 }
 

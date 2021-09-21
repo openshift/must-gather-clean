@@ -65,10 +65,16 @@ func TestMultiGeneratedReplacementDifferentOriginals(t *testing.T) {
 
 func TestHappyPathInit(t *testing.T) {
 	st := NewSimpleTracker()
-	st.Initialize(map[string]string{
-		"a": "b",
-	})
-
+	r := ReplacementReport{
+		[]Replacement{
+			{
+				Canonical:    "a",
+				ReplacedWith: "b",
+				Counter:      map[string]uint{"a": 1},
+			},
+		},
+	}
+	st.Initialize(r)
 	replacementReportsMatch(t, ReplacementReport{Replacements: []Replacement{
 		{
 			Canonical:    "a",
