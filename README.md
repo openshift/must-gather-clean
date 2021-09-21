@@ -148,7 +148,7 @@ config:
 
 This will detect all MAC addresses and replace them with a "consistent" identifier that looks like this `xxx-mac-000001-xxx`.
 For example, one of your network interfaces has the mac address `52:54:00:5e:ee:c6` and was logged, then `must-gather-clean`  will guarantee that it will always be assigned the same obfuscated consistent identifier across all files in a must-gather.
-That primarily helps our support and engineers to ensure we can still understand and reproduces challenges that you were facing without putting your classified information at risk.
+That primarily helps our support and engineers to ensure we can still understand and reproduce challenges that you were facing without putting your classified information at risk.
 
 ### IP address obfuscation
 
@@ -165,7 +165,7 @@ config:
     replacementType: Consistent
 ```
 
-On a line-by-line basis, this will always execute the MAC obfuscation first and then the IP obfuscator - we'll go through this behaviour in more detail in the following [`Chaining obfuscators and side effects`](#Chaining obfuscators and side effects) section.
+On a line-by-line basis, this will always execute the MAC obfuscation first and then the IP obfuscator - we'll go through this behaviour in more detail in the following [Chaining obfuscators and side effects](#chaining-obfuscators-and-side-effects) section.
 
 Another configuration flag that we support for each obfuscation type is the `target`. The target is useful when the confidential information can be found not only in the file content, but also in the folder or file names.
 This can very frequently happen with IP addresses, for example, through node names. You can control that independently for each type as following:
@@ -181,7 +181,7 @@ config:
     target: FilePath
 ```
 
-As you can see, the MAC obfuscator would work on file content whereas the IP obfuscator would work only on FilePaths. There is a mixed target called `All`, that will obfuscate on both paths and contents.
+The MAC obfuscator would work on file content whereas the IP obfuscator would work only on FilePaths. There is a mixed target called `All`, that will obfuscate on both paths and contents.
 The default if no target is specified is `FileContents`. It is, thus, always recommended to use the IP obfuscator with `target: All` to not accidentally leak IP information through folder names.
 
 ### Domain name obfuscation
@@ -201,14 +201,13 @@ As you can see, this type must be customized by supplying domain names.
 Kubernetes resources are defined along with their domain names (for example "apps.openshift.io/v1") and thus would be automatically recognized as such and obfuscated as a false-positive.
 We thus kindly ask the user to supply their confidential domain names manually through the configuration.
 
-The above definition will obfuscate `rhcloud.com` as `domain0000001` (consistent) or as `xxxxxxxxxxxxx` (static).
+The above definition will obfuscate `rhcloud.com` as `domain0000001` (consistent) or as `obfuscated.com` (static).
 Note that this does not include subdomains, they would need to be separately obfuscated.
 A domain name defined as `staging.rhcloud.com` would only be obfuscated as `staging.domain0000001`, thus, you should include all subdomains you want to have obfuscated (for example `dev.rhcloud.com`) in the list as well. The tool will sort them based on their specificity, so the most specific domain name will always be obfuscated first, for example `dev.rhcloud.com` will always come before `rhcloud.com` - irrespective of the order of definition.
 
 ### Custom Obfuscations
 
-Aside from the above three built-in types to obfuscate, we also offer custom obfuscators that allow users to fine-tune the replacement of certain strings (for example custom auth token formats, confidential domain knowledge or keywords).
-This can be customized through those two types:
+Aside from the above three built-in types to obfuscate, we also offer custom obfuscators that allow users to fine-tune the replacement of certain strings. This can be useful for custom auth token formats, confidential domain knowledge or keyword and can be customized through those two types:
 * [Keywords](#keywords)
 * [Regex](#regex)
 
