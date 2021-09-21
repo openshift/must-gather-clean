@@ -10,9 +10,20 @@ import (
 	"k8s.io/klog/v2"
 )
 
+type Replacement struct {
+	Canonical    string       `yaml:"canonical,omitempty"`
+	ReplacedWith string       `yaml:"replacedWith,omitempty"`
+	Occurrences  []Occurrence `yaml:"occurrences,omitempty"`
+}
+
+type Occurrence struct {
+	Original string `yaml:"original,omitempty"`
+	Count    uint   `yaml:"count,omitempty"`
+}
+
 type Report struct {
-	Replacements []obfuscator.Replacement `yaml:"replacements,omitempty"`
-	Omissions    []string                 `yaml:"omissions,omitempty"`
+	Replacements [][]Replacement `yaml:"replacements,omitempty"`
+	Omissions    []string        `yaml:"omissions,omitempty"`
 }
 
 type Reporter interface {
@@ -27,7 +38,7 @@ type Reporter interface {
 }
 
 type SimpleReporter struct {
-	replacements []obfuscator.Replacement
+	replacements [][]Replacement
 	omissions    []string
 }
 
@@ -65,13 +76,28 @@ func (s *SimpleReporter) CollectOmitterReport(report []string) {
 
 func (s *SimpleReporter) CollectObfuscatorReport(obfuscatorReport []obfuscator.ReplacementReport) {
 	for _, report := range obfuscatorReport {
-		s.replacements = append(s.replacements, report.Replacements...)
+		var replacements []Replacement
+		for _, r := range report.Replacements {
+			var occurrences []Occurrence
+			for original, cnt := range r.Counter {
+				occurrences = append(occurrences, Occurrence{
+					Original: original,
+					Count:    cnt,
+				})
+			}
+			replacements = append(replacements, Replacement{
+				Canonical:    r.Canonical,
+				ReplacedWith: r.ReplacedWith,
+				Occurrences:  occurrences,
+			})
+		}
+		s.replacements = append(s.replacements, replacements)
 	}
 }
 
 func NewSimpleReporter() Reporter {
 	return &SimpleReporter{
-		replacements: []obfuscator.Replacement{},
+		replacements: [][]Replacement{},
 		omissions:    []string{},
 	}
 }

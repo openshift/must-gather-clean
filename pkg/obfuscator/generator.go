@@ -35,13 +35,13 @@ func (g *generator) generateStaticReplacement() string {
 }
 
 // generateReplacement returns the replacement based on the replacementType argument
-func (g *generator) generateReplacement(key string, tracker ReplacementTracker) string {
+func (g *generator) generateReplacement(key string, original string, count uint, tracker ReplacementTracker) string {
 	var replacement string
 	switch g.replacementType {
 	case schema.ObfuscateReplacementTypeStatic:
-		replacement = tracker.GenerateIfAbsent(key, g.generateStaticReplacement)
+		replacement = tracker.GenerateIfAbsent(key, original, count, g.generateStaticReplacement)
 	case schema.ObfuscateReplacementTypeConsistent:
-		replacement = tracker.GenerateIfAbsent(key, g.generateConsistentReplacement)
+		replacement = tracker.GenerateIfAbsent(key, original, count, g.generateConsistentReplacement)
 	}
 	return replacement
 }

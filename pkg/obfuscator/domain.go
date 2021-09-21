@@ -40,15 +40,15 @@ func (d *domainObfuscator) replaceDomains(input string) string {
 			}
 			baseDomain := m[2]
 			subDomain := m[1]
-			obfuscatedBaseDomain := d.obfsGenerator.generateReplacement(baseDomain, d.ReplacementTracker)
+			obfuscatedBaseDomain := d.obfsGenerator.generateReplacement(baseDomain, m[0], 1, d.ReplacementTracker)
 			var replacement string
 			if subDomain != "" {
 				replacement = fmt.Sprintf("%s%s", subDomain, obfuscatedBaseDomain)
 			} else {
 				replacement = obfuscatedBaseDomain
 			}
+			// TODO(thomas): should just replace that one matching occurrence instead of all
 			output = strings.ReplaceAll(output, m[0], replacement)
-			d.ReplacementTracker.AddReplacement(baseDomain, m[0], obfuscatedBaseDomain)
 		}
 	}
 	return output

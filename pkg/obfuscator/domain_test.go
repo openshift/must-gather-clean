@@ -29,11 +29,11 @@ func TestDomainObfuscatorContents(t *testing.T) {
 				"received request on https://docs.domain0000000002",
 			},
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "openshift.com", ReplacedWith: "domain0000000001", Occurrences: []Occurrence{
-					{Original: "openshift.com", Count: 1},
+				{Canonical: "openshift.com", ReplacedWith: "domain0000000001", Counter: map[string]uint{
+					"openshift.com": uint(1),
 				}},
-				{Canonical: "okd.io", ReplacedWith: "domain0000000002", Occurrences: []Occurrence{
-					{Original: "docs.okd.io", Count: 1},
+				{Canonical: "okd.io", ReplacedWith: "domain0000000002", Counter: map[string]uint{
+					"docs.okd.io": uint(1),
 				}},
 			}},
 		},
@@ -56,14 +56,15 @@ func TestDomainObfuscatorContents(t *testing.T) {
 				"beta.domain0000000002",
 			},
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "docs.okd.io", ReplacedWith: "domain0000000001", Occurrences: []Occurrence{
-					{Original: "docs.okd.io", Count: 1},
+				{Canonical: "docs.okd.io", ReplacedWith: "domain0000000001", Counter: map[string]uint{
+					"docs.okd.io": uint(1),
 				}},
-				{Canonical: "cloud.redhat.com", ReplacedWith: "domain0000000002", Occurrences: []Occurrence{
-					{Original: "cloud.redhat.com", Count: 1},
-					{Original: "beta.cloud.redhat.com", Count: 1},
-				}},
-			}},
+				{Canonical: "cloud.redhat.com", ReplacedWith: "domain0000000002",
+					Counter: map[string]uint{
+						"cloud.redhat.com":      uint(1),
+						"beta.cloud.redhat.com": uint(1),
+					},
+				}}},
 		},
 		{
 			name:    "multi-level subdomains",
@@ -81,14 +82,17 @@ func TestDomainObfuscatorContents(t *testing.T) {
 				"received request on pqr.ghi.abc.domain0000000001",
 			},
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "test.com", ReplacedWith: "domain0000000001", Occurrences: []Occurrence{
-					{Original: "abc.test.com", Count: 1},
-					{Original: "ghi.abc.test.com", Count: 1},
-					{Original: "pqr.ghi.abc.test.com", Count: 1},
-				}},
-				{Canonical: "test.info", ReplacedWith: "domain0000000002", Occurrences: []Occurrence{
-					{Original: "def.test.info", Count: 1},
-				}},
+				{Canonical: "test.com", ReplacedWith: "domain0000000001",
+					Counter: map[string]uint{
+						"abc.test.com":         uint(1),
+						"ghi.abc.test.com":     uint(1),
+						"pqr.ghi.abc.test.com": uint(1),
+					},
+				},
+				{Canonical: "test.info", ReplacedWith: "domain0000000002",
+					Counter: map[string]uint{
+						"def.test.info": uint(1),
+					}},
 			}},
 		},
 	} {
@@ -118,8 +122,8 @@ func TestDomainObfuscator_FileName(t *testing.T) {
 			input:   "requests.test.com.log",
 			output:  "requests.domain0000000001.log",
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "test.com", ReplacedWith: "domain0000000001", Occurrences: []Occurrence{
-					{Original: "requests.test.com", Count: 1},
+				{Canonical: "test.com", ReplacedWith: "domain0000000001", Counter: map[string]uint{
+					"requests.test.com": uint(1),
 				}},
 			}},
 		},
@@ -139,8 +143,8 @@ func TestDomainObfuscator_FileName(t *testing.T) {
 			input:  "must-gather-output/namespaces/openshift-kube-apiserver/pods/installer-13-master-02.pamoedo-dualstack.qe.devcluster.openshift.com/installer/installer/logs",
 			output: "must-gather-output/namespaces/openshift-kube-apiserver/pods/installer-13-master-02.pamoedo-dualstack.qe.domain0000000001/installer/installer/logs",
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "devcluster.openshift.com", ReplacedWith: "domain0000000001", Occurrences: []Occurrence{
-					{Original: "dualstack.qe.devcluster.openshift.com", Count: 1},
+				{Canonical: "devcluster.openshift.com", ReplacedWith: "domain0000000001", Counter: map[string]uint{
+					"dualstack.qe.devcluster.openshift.com": uint(1),
 				}},
 			}},
 		},
@@ -153,8 +157,8 @@ func TestDomainObfuscator_FileName(t *testing.T) {
 			input:  "must-gather-output/namespaces/openshift-kube-apiserver/pods/installer-13-master-02.pamoedo-dualstack.qe.devcluster.openshift.com/installer/installer/logs",
 			output: "must-gather-output/namespaces/openshift-kube-apiserver/pods/installer-13-master-02.pamoedo-dualstack.qe.domain0000000001/installer/installer/logs",
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "devcluster.openshift.com", ReplacedWith: "domain0000000001", Occurrences: []Occurrence{
-					{Original: "dualstack.qe.devcluster.openshift.com", Count: 1},
+				{Canonical: "devcluster.openshift.com", ReplacedWith: "domain0000000001", Counter: map[string]uint{
+					"dualstack.qe.devcluster.openshift.com": uint(1),
 				}},
 			}},
 		},
@@ -168,8 +172,8 @@ func TestDomainObfuscator_FileName(t *testing.T) {
 			input:  "must-gather-output/namespaces/openshift-kube-apiserver/pods/installer-13-master-02.pamoedo-dualstack.qe.devcluster.openshift.com/installer/installer/logs",
 			output: "must-gather-output/namespaces/openshift-kube-apiserver/pods/installer-13-master-02.pamoedo-dualstack.domain0000000001/installer/installer/logs",
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "qe.devcluster.openshift.com", ReplacedWith: "domain0000000001", Occurrences: []Occurrence{
-					{Original: "dualstack.qe.devcluster.openshift.com", Count: 1},
+				{Canonical: "qe.devcluster.openshift.com", ReplacedWith: "domain0000000001", Counter: map[string]uint{
+					"dualstack.qe.devcluster.openshift.com": uint(1),
 				}},
 			}},
 		},
@@ -211,9 +215,10 @@ func TestDomainObfuscationStatic(t *testing.T) {
 			input:   []string{"requests.test.com.log"},
 			output:  []string{"requests." + staticDomainReplacement + ".log"},
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "test.com", ReplacedWith: staticDomainReplacement, Occurrences: []Occurrence{
-					{Original: "requests.test.com", Count: 1},
-				}},
+				{Canonical: "test.com", ReplacedWith: staticDomainReplacement,
+					Counter: map[string]uint{
+						"requests.test.com": uint(1),
+					}},
 			}},
 		},
 		{
@@ -233,10 +238,11 @@ func TestDomainObfuscationStatic(t *testing.T) {
 				"The first domain is report." + staticDomainReplacement + " and the second domain is example-" + staticDomainReplacement,
 			},
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "test.com", ReplacedWith: staticDomainReplacement, Occurrences: []Occurrence{
-					{Original: "report.test.com", Count: 1},
-					{Original: "test.com", Count: 1},
-				}},
+				{Canonical: "test.com", ReplacedWith: staticDomainReplacement,
+					Counter: map[string]uint{
+						"report.test.com": uint(1),
+						"test.com":        uint(1),
+					}},
 			}},
 		},
 	} {
