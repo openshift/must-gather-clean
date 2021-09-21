@@ -2,7 +2,6 @@ package obfuscator
 
 import (
 	"fmt"
-	"sort"
 	"testing"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
@@ -60,16 +59,16 @@ func TestMacReplacementStatic(t *testing.T) {
 }
 func TestMACObfuscatorWithCount(t *testing.T) {
 	for _, tc := range []struct {
-		name                 string
-		input                string
-		expectedOutput       string
-		expectedReportOutput ReplacementReport
+		name           string
+		input          string
+		expectedOutput string
+		report         ReplacementReport
 	}{
 		{
 			name:           "6 MACs each exactly once",
 			input:          "mac bf-51-a4-1b-7d-0b 16-7C-44-26-24-14 BF:51:A4:1B:7D:0B 16:7C:44:26:24:14 BF-51-A4-1B-7D-0B bf:51:a4:1b:7d:0b",
 			expectedOutput: fmt.Sprintf("mac %s %s %s %s %s %s", staticMacReplacement, staticMacReplacement, staticMacReplacement, staticMacReplacement, staticMacReplacement, staticMacReplacement),
-			expectedReportOutput: ReplacementReport{
+			report: ReplacementReport{
 				[]Replacement{
 					{Canonical: "16:7C:44:26:24:14", ReplacedWith: staticMacReplacement, Occurrences: []Occurrence{
 						{Original: "16:7C:44:26:24:14", Count: 1},
@@ -89,21 +88,7 @@ func TestMACObfuscatorWithCount(t *testing.T) {
 			o, err := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeStatic)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedOutput, o.Contents(tc.input))
-			report := o.Report()
-			assert.Equal(t, len(tc.expectedReportOutput.Replacements), len(report.Replacements))
-			sort.Slice(tc.expectedReportOutput.Replacements, func(i, j int) bool {
-				return tc.expectedReportOutput.Replacements[i].Canonical > tc.expectedReportOutput.Replacements[j].Canonical
-			})
-			sort.Slice(report.Replacements, func(i, j int) bool {
-				return report.Replacements[i].Canonical > report.Replacements[j].Canonical
-			})
-			for i := range report.Replacements {
-				want := tc.expectedReportOutput.Replacements[i]
-				got := report.Replacements[i]
-				assert.Equal(t, want.Canonical, got.Canonical)
-				assert.Equal(t, want.ReplacedWith, got.ReplacedWith)
-				assert.ElementsMatch(t, want.Occurrences, got.Occurrences)
-			}
+			replacementReportsMatch(t, tc.report, o.Report())
 		})
 	}
 }

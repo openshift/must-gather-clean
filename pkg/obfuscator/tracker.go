@@ -34,7 +34,7 @@ type ReplacementTracker interface {
 
 type SimpleTracker struct {
 	lock    sync.RWMutex
-	mapping map[string]Replacement
+	mapping map[string]*Replacement
 }
 
 var _ ReplacementTracker = (*SimpleTracker)(nil)
@@ -44,7 +44,7 @@ func (s *SimpleTracker) Report() ReplacementReport {
 	defer s.lock.RUnlock()
 	replacements := make([]Replacement, 0, len(s.mapping))
 	for _, v := range s.mapping {
-		replacements = append(replacements, v)
+		replacements = append(replacements, *v)
 	}
 	return ReplacementReport{Replacements: replacements}
 }
@@ -57,12 +57,10 @@ func (s *SimpleTracker) AddReplacementCount(canonical, original string, replacem
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if r, ok := s.mapping[canonical]; ok {
-		s.mapping[canonical] = r.Increment(original, count)
-		return
+		r.Increment(original, count)
+	} else {
+		s.mapping[canonical] = NewReplacement(canonical, original, replacement, count)
 	}
-	new := Replacement{Canonical: canonical, ReplacedWith: replacement}
-	new.Increment(original, count)
-	s.mapping[canonical] = new
 }
 
 func (s *SimpleTracker) GenerateIfAbsent(canonical string, generator GenerateReplacement) string {
@@ -84,7 +82,7 @@ func (s *SimpleTracker) Initialize(replacements map[string]string) {
 		klog.Exitf("tracker was initialized more than once or after some replacements were already added.")
 	}
 	for k, v := range replacements {
-		s.mapping[k] = Replacement{Canonical: k, ReplacedWith: v, Occurrences: []Occurrence{{Original: k, Count: 1}}}
+		s.mapping[k] = NewReplacement(k, k, v, 1)
 	}
 }
 
@@ -99,5 +97,5 @@ func (s ReplacementReport) AsMap() (m map[string]string) {
 }
 
 func NewSimpleTracker() ReplacementTracker {
-	return &SimpleTracker{mapping: map[string]Replacement{}}
+	return &SimpleTracker{mapping: map[string]*Replacement{}}
 }

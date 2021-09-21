@@ -29,3 +29,16 @@ func (r *Replacement) Increment(original string, count uint) Replacement {
 	r.Occurrences = append(r.Occurrences, o)
 	return *r
 }
+
+func NewReplacement(c, o, rw string, count uint) *Replacement {
+	return &Replacement{
+		Canonical:    c,
+		ReplacedWith: rw,
+		Occurrences: []Occurrence{
+			{
+				Original: o,
+				Count:    count,
+			},
+		},
+	}
+}

@@ -69,7 +69,7 @@ func (s *SimpleReporter) CollectObfuscatorReport(obfuscatorReport []obfuscator.R
 	}
 }
 
-func NewSimpleReporter() *SimpleReporter {
+func NewSimpleReporter() Reporter {
 	return &SimpleReporter{
 		replacements: []obfuscator.Replacement{},
 		omissions:    []string{},
