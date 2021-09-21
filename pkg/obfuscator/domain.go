@@ -3,6 +3,7 @@ package obfuscator
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
@@ -53,6 +54,9 @@ func (d *domainObfuscator) replaceDomains(input string) string {
 }
 
 func NewDomainObfuscator(domains []string, replacementType schema.ObfuscateReplacementType) (ReportingObfuscator, error) {
+	if len(domains) == 0 {
+		return nil, fmt.Errorf("no domainNames supplied for the obfuscation type: Domain")
+	}
 	patterns := make([]*regexp.Regexp, len(domains))
 	for i, d := range domains {
 		dd := strings.ReplaceAll(d, ".", "\\.")
@@ -62,6 +66,12 @@ func NewDomainObfuscator(domains []string, replacementType schema.ObfuscateRepla
 		}
 		patterns[i] = p
 	}
+
+	// we are sorting descending to always match the most specific pattern first
+	sort.Slice(patterns, func(i, j int) bool {
+		return len(patterns[i].String()) > len(patterns[j].String())
+	})
+
 	// creating a new generator object
 	generator, err := newGenerator(obfuscatedTemplate, staticDomainReplacement, maximumSupportedObfuscationDomains, replacementType)
 	if err != nil {

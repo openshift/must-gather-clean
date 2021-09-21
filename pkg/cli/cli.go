@@ -14,6 +14,7 @@ import (
 	"github.com/openshift/must-gather-clean/pkg/omitter"
 	"github.com/openshift/must-gather-clean/pkg/schema"
 	"github.com/openshift/must-gather-clean/pkg/traversal"
+	watermarking "github.com/openshift/must-gather-clean/pkg/watermarker"
 )
 
 const (
@@ -92,7 +93,13 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 	reporter := reporting.NewSimpleReporter()
 	reporter.CollectOmitterReport(mro.Report())
 	reporter.CollectObfuscatorReport(mo.ReportPerObfuscator())
-	return reporter.WriteReport(filepath.Join(reportingFolder, reportFileName))
+	reporterErr := reporter.WriteReport(filepath.Join(reportingFolder, reportFileName))
+	if reporterErr != nil {
+		return reporterErr
+	}
+
+	watermarker := watermarking.NewSimpleWaterMarker()
+	return watermarker.WriteWaterMarkFile(outputPath)
 }
 
 func createOmittersFromConfig(config *schema.SchemaJson) (omitter.ReportingOmitter, error) {
@@ -145,7 +152,7 @@ func createObfuscatorsFromConfig(config *schema.SchemaJson) (*obfuscator.MultiOb
 			k = obfuscator.NewTargetObfuscator(o.Target, k)
 			obfuscators = append(obfuscators, k)
 		case schema.ObfuscateTypeDomain:
-			k, err := obfuscator.NewDomainObfuscator(o.Domains, o.ReplacementType)
+			k, err := obfuscator.NewDomainObfuscator(o.DomainNames, o.ReplacementType)
 			if err != nil {
 				return nil, err
 			}

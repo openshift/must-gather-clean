@@ -9,7 +9,7 @@ import "encoding/json"
 type Obfuscate struct {
 	// The list of domains and their subdomains which should be obfuscated in the
 	// output, only used with the type Domain obfuscator.
-	Domains []string `json:"domains,omitempty"`
+	DomainNames []string `json:"domainNames,omitempty"`
 
 	// when replacementType 'Regex' is used, the supplied Golang regexp
 	// (https://pkg.go.dev/regexp) will be used to detect the string that should be
@@ -35,10 +35,10 @@ type Obfuscate struct {
 
 	// type defines the kind of detection you want to use. For example IP will find IP
 	// addresses, whereas Keywords will find keywords defined in the 'replacement'
-	// mapping. Domain must be used in conjunction with the 'domains' property, that
-	// defines what domains should be obfuscated. MAC currently only supports static
-	// replacement where a detected mac address will be replaced by 'x'. Regex should
-	// be used with the 'regex' property that will define the regex, here the
+	// mapping. Domain must be used in conjunction with the 'domainNames' property,
+	// that defines what domains should be obfuscated. MAC currently only supports
+	// static replacement where a detected mac address will be replaced by 'x'. Regex
+	// should be used with the 'regex' property that will define the regex, here the
 	// replacement also will be static by 'x'-ing out the matched string.
 	Type ObfuscateType `json:"type"`
 }
