@@ -24,8 +24,10 @@ func (d NoopObfuscator) Report() ReplacementReport {
 		r = append(r, Replacement{
 			Canonical:    k,
 			ReplacedWith: v,
-			// hard-coded 1 because NoopObfuscator doesn't track occurences
-			Occurrences: []Occurrence{{Original: k, Count: 1}},
+			// hard-coded 1 because NoopObfuscator doesn't track occurrences
+			Counter: map[string]uint{
+				k: 1,
+			},
 		})
 	}
 	return ReplacementReport{r}

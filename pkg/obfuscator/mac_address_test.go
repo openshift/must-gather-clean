@@ -70,16 +70,18 @@ func TestMACObfuscatorWithCount(t *testing.T) {
 			expectedOutput: fmt.Sprintf("mac %s %s %s %s %s %s", staticMacReplacement, staticMacReplacement, staticMacReplacement, staticMacReplacement, staticMacReplacement, staticMacReplacement),
 			report: ReplacementReport{
 				[]Replacement{
-					{Canonical: "16:7C:44:26:24:14", ReplacedWith: staticMacReplacement, Occurrences: []Occurrence{
-						{Original: "16:7C:44:26:24:14", Count: 1},
-						{Original: "16-7C-44-26-24-14", Count: 1},
-					}},
-					{Canonical: "BF:51:A4:1B:7D:0B", ReplacedWith: staticMacReplacement, Occurrences: []Occurrence{
-						{Original: "BF:51:A4:1B:7D:0B", Count: 1},
-						{Original: "BF-51-A4-1B-7D-0B", Count: 1},
-						{Original: "bf:51:a4:1b:7d:0b", Count: 1},
-						{Original: "bf-51-a4-1b-7d-0b", Count: 1},
-					}},
+					{Canonical: "16:7C:44:26:24:14", ReplacedWith: staticMacReplacement,
+						Counter: map[string]uint{
+							"16:7C:44:26:24:14": 1,
+							"16-7C-44-26-24-14": 1,
+						}},
+					{Canonical: "BF:51:A4:1B:7D:0B", ReplacedWith: staticMacReplacement,
+						Counter: map[string]uint{
+							"BF:51:A4:1B:7D:0B": 1,
+							"BF-51-A4-1B-7D-0B": 1,
+							"bf:51:a4:1b:7d:0b": 1,
+							"bf-51-a4-1b-7d-0b": 1,
+						}},
 				},
 			},
 		},

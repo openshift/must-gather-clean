@@ -1,45 +1,96 @@
 package obfuscator
 
 import (
-	"strings"
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSimpleTrackerHappyPath(t *testing.T) {
-	tracker := NewSimpleTracker()
-	assert.Equal(t, map[string]string{}, tracker.Report().AsMap())
-	tracker.AddReplacement("A", "a", "b")
-	assert.Equal(t, map[string]string{"a": "b"}, tracker.Report().AsMap())
+func TestHappyPathTracking(t *testing.T) {
+	st := NewSimpleTracker()
+	r := st.GenerateIfAbsent("a-canonical", "a-original", 1, func() string {
+		return "a-replaced"
+	})
+
+	assert.Equal(t, "a-replaced", r)
+	replacementReportsMatch(t, ReplacementReport{Replacements: []Replacement{
+		{
+			Canonical:    "a-canonical",
+			ReplacedWith: "a-replaced",
+			Counter:      map[string]uint{"a-original": 1},
+		},
+	}}, st.Report())
 }
 
-func TestSimpleTrackerGetReplacement(t *testing.T) {
-	tracker := NewSimpleTracker()
-	tracker.AddReplacement("a", "a", "b")
-	assert.Equal(t, tracker.GenerateIfAbsent("a", nil), "b")
-	assert.Equal(t, tracker.GenerateIfAbsent("c", nil), "")
-	assert.Equal(t, tracker.GenerateIfAbsent("D", func() string { return strings.ToLower("D") }), "d")
-	tracker.AddReplacement("d", "D", "d")
-	assert.Equal(t, tracker.GenerateIfAbsent("F", func() string { return strings.ToLower("F") }), "f")
-	tracker.AddReplacement("f", "F", "f")
-	assert.Equal(t, map[string]string{"D": "d", "a": "b", "F": "f"}, tracker.Report().AsMap())
+func TestMultiGeneratedReplacementIncrements(t *testing.T) {
+	st := NewSimpleTracker()
+	r := st.GenerateIfAbsent("a-canonical", "a-original", 1, func() string {
+		return "a-replaced"
+	})
+
+	assert.Equal(t, "a-replaced", r)
+	r = st.GenerateIfAbsent("a-canonical", "a-original", 1, func() string {
+		return "a-replaced"
+	})
+	assert.Equal(t, "a-replaced", r)
+	replacementReportsMatch(t, ReplacementReport{Replacements: []Replacement{
+		{
+			Canonical:    "a-canonical",
+			ReplacedWith: "a-replaced",
+			Counter:      map[string]uint{"a-original": 2},
+		},
+	}}, st.Report())
 }
 
-func TestReportLeakingBack(t *testing.T) {
-	tracker := NewSimpleTracker()
-	tracker.AddReplacement("foo", "foo", "bar")
-	mapping := tracker.Report()
-	mapping.Replacements = append(mapping.Replacements, Replacement{Canonical: "foo", ReplacedWith: "baz", Occurrences: []Occurrence{{Original: "foo", Count: 1}}})
+func TestMultiGeneratedReplacementDifferentOriginals(t *testing.T) {
+	st := NewSimpleTracker()
+	r := st.GenerateIfAbsent("a-canonical", "a-original", 1, func() string {
+		return "a-replaced"
+	})
 
-	assert.Equal(t, "bar", tracker.GenerateIfAbsent("foo", nil))
+	assert.Equal(t, "a-replaced", r)
+	r = st.GenerateIfAbsent("a-canonical", "a-original-2", 1, func() string {
+		return "a-replaced"
+	})
+	assert.Equal(t, "a-replaced", r)
+	replacementReportsMatch(t, ReplacementReport{Replacements: []Replacement{
+		{
+			Canonical:    "a-canonical",
+			ReplacedWith: "a-replaced",
+			Counter:      map[string]uint{"a-original": 1, "a-original-2": 1},
+		},
+	}}, st.Report())
 }
 
-func TestSimpleReporterInitialize(t *testing.T) {
-	tracker := NewSimpleTracker()
-	tracker.Initialize(map[string]string{"a": "b"})
-	assert.Equal(t, "b", tracker.GenerateIfAbsent("a", nil))
-	assert.Equal(t, "b", tracker.GenerateIfAbsent("a", func() string { return strings.ToUpper("a") }))
-	assert.Equal(t, "", tracker.GenerateIfAbsent("c", nil))
-	assert.Equal(t, "C", tracker.GenerateIfAbsent("c", func() string { return strings.ToUpper("c") }))
+func TestHappyPathInit(t *testing.T) {
+	st := NewSimpleTracker()
+	st.Initialize(map[string]string{
+		"a": "b",
+	})
+
+	replacementReportsMatch(t, ReplacementReport{Replacements: []Replacement{
+		{
+			Canonical:    "a",
+			ReplacedWith: "b",
+			Counter:      map[string]uint{"a": 1},
+		},
+	}}, st.Report())
+}
+
+func replacementReportsMatch(t *testing.T, want, got ReplacementReport) {
+	assert.Equal(t, len(want.Replacements), len(got.Replacements))
+	sort.Slice(want.Replacements, func(i, j int) bool {
+		return want.Replacements[i].Canonical > want.Replacements[j].Canonical
+	})
+	sort.Slice(got.Replacements, func(i, j int) bool {
+		return got.Replacements[i].Canonical > got.Replacements[j].Canonical
+	})
+	for i := range got.Replacements {
+		w := want.Replacements[i]
+		g := got.Replacements[i]
+		assert.Equal(t, w.Canonical, g.Canonical)
+		assert.Equal(t, w.ReplacedWith, g.ReplacedWith)
+		assert.Equal(t, w.Counter, g.Counter)
+	}
 }

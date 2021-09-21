@@ -14,7 +14,9 @@ type splitObfuscator struct {
 func (d *splitObfuscator) Path(input string) string {
 	s := strings.SplitN(input, " ", 3)[2]
 	if d.tracker != nil {
-		d.tracker.AddReplacement(input, input, s)
+		d.tracker.GenerateIfAbsent(input, input, 1, func() string {
+			return s
+		})
 	}
 	return s
 }
@@ -22,7 +24,9 @@ func (d *splitObfuscator) Path(input string) string {
 func (d *splitObfuscator) Contents(input string) string {
 	s := strings.SplitN(input, " ", 2)[1]
 	if d.tracker != nil {
-		d.tracker.AddReplacement(input, input, s)
+		d.tracker.GenerateIfAbsent(input, input, 1, func() string {
+			return s
+		})
 	}
 	return s
 }
