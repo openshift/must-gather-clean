@@ -12,4 +12,4 @@ require (
 	sigs.k8s.io/yaml v1.2.0
 )
 
-replace github.com/atombender/go-jsonschema => github.com/tjungblu/go-jsonschema v0.9.1-0.20210811141250-01318803193d
+replace github.com/atombender/go-jsonschema => github.com/tjungblu/go-jsonschema v0.9.1-0.20210922142453-a1b781d84980

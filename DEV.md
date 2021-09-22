@@ -51,6 +51,26 @@ There might be cases where the generation fails or creates suboptimal checks or 
 
 In case we need to adapt or fix anything, we have the [`go-jsonschema` repository forked](https://github.com/tjungblu/go-jsonschema) with a couple of patches already.
 
+## Updating the forked go-jsonschema library
+
+To incorporate changes from the forked go-jsonschema lib, you can run:
+
+```sh
+$ go get github.com/tjungblu/go-jsonschema@master
+```
+
+That should pin the respective go mod to the latest commit hash of the master branch along with the current datetime.
+
+You then need to just vendor the lib and regenerate the schemas:
+
+```sh
+$ go mod tidy
+$ go mod vendor
+$ make update-scripts
+```
+
+Ideally that should update both go.mod and go.sum files, as well as the schema.go and the respectively changed vendor files.
+
 ## Linting and schema verification
 
 We're using a [`golangci-lint`](https://github.com/golangci/golangci-lint) as our linter in addition to `go vet`. You can run: 
