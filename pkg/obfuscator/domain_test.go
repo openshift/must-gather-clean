@@ -97,7 +97,7 @@ func TestDomainObfuscatorContents(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewDomainObfuscator(tc.domains, schema.ObfuscateReplacementTypeConsistent)
+			o, err := NewDomainObfuscator(tc.domains, schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(map[string]string{}))
 			require.NoError(t, err)
 			for idx, i := range tc.input {
 				output := o.Contents(i)
@@ -179,7 +179,7 @@ func TestDomainObfuscator_FileName(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewDomainObfuscator(tc.domains, schema.ObfuscateReplacementTypeConsistent)
+			o, err := NewDomainObfuscator(tc.domains, schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(map[string]string{}))
 			require.NoError(t, err)
 			output := o.Path(tc.input)
 			assert.Equal(t, tc.output, output)
@@ -189,13 +189,13 @@ func TestDomainObfuscator_FileName(t *testing.T) {
 }
 
 func TestBadDomainInput(t *testing.T) {
-	_, err := NewDomainObfuscator([]string{"[mustgather.com"}, schema.ObfuscateReplacementTypeConsistent)
+	_, err := NewDomainObfuscator([]string{"[mustgather.com"}, schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(map[string]string{}))
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to generate regex")
 }
 
 func TestNoDomainInput(t *testing.T) {
-	_, err := NewDomainObfuscator([]string{}, schema.ObfuscateReplacementTypeConsistent)
+	_, err := NewDomainObfuscator([]string{}, schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(map[string]string{}))
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "no domainNames supplied for the obfuscation type: Domain")
 }
@@ -247,7 +247,7 @@ func TestDomainObfuscationStatic(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewDomainObfuscator(tc.domains, schema.ObfuscateReplacementTypeStatic)
+			o, err := NewDomainObfuscator(tc.domains, schema.ObfuscateReplacementTypeStatic, NewSimpleTracker(map[string]string{}))
 			require.NoError(t, err)
 			for idx, i := range tc.input {
 				output := o.Contents(i)

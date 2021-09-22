@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
+	"github.com/openshift/must-gather-clean/pkg/schema"
 	"gopkg.in/yaml.v3"
 	"k8s.io/klog/v2"
 )
@@ -22,8 +23,9 @@ type Occurrence struct {
 }
 
 type Report struct {
-	Replacements [][]Replacement `yaml:"replacements,omitempty"`
-	Omissions    []string        `yaml:"omissions,omitempty"`
+	Replacements [][]Replacement         `yaml:"replacements,omitempty"`
+	Omissions    []string                `yaml:"omissions,omitempty"`
+	Config       schema.SchemaJsonConfig `yaml:"config,omitempty"`
 }
 
 type Reporter interface {
@@ -40,6 +42,7 @@ type Reporter interface {
 type SimpleReporter struct {
 	replacements [][]Replacement
 	omissions    []string
+	config       *schema.SchemaJson
 }
 
 var _ Reporter = (*SimpleReporter)(nil)
@@ -56,10 +59,24 @@ func (s *SimpleReporter) WriteReport(path string) error {
 	if err != nil {
 		return fmt.Errorf("failed to open report file %s: %w", path, err)
 	}
+
+	for i, obfs := range s.config.Config.Obfuscate {
+		if obfs.Replacement == nil {
+			s.config.Config.Obfuscate[i].Replacement = map[string]string{}
+		}
+		doneReplacements := s.replacements[i]
+		for _, replacement := range doneReplacements {
+			for _, oc := range replacement.Occurrences {
+				s.config.Config.Obfuscate[i].Replacement[oc.Original] = replacement.ReplacedWith
+			}
+		}
+	}
+
 	rEncoder := yaml.NewEncoder(reportFile)
 	err = rEncoder.Encode(Report{
 		Replacements: s.replacements,
 		Omissions:    s.omissions,
+		Config:       s.config.Config,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to write report at %s: %w", path, err)
@@ -95,9 +112,10 @@ func (s *SimpleReporter) CollectObfuscatorReport(obfuscatorReport []obfuscator.R
 	}
 }
 
-func NewSimpleReporter() Reporter {
+func NewSimpleReporter(config *schema.SchemaJson) Reporter {
 	return &SimpleReporter{
 		replacements: [][]Replacement{},
 		omissions:    []string{},
+		config:       config,
 	}
 }

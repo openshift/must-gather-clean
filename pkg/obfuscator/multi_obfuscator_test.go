@@ -60,7 +60,7 @@ func TestMultiObfuscationPaths(t *testing.T) {
 func TestMultiObfuscationReport(t *testing.T) {
 	mo := NewMultiObfuscator(
 		[]ReportingObfuscator{
-			&splitObfuscator{tracker: NewSimpleTracker()},
+			&splitObfuscator{tracker: NewSimpleTracker(map[string]string{})},
 		})
 
 	contents := mo.Contents("this must be split once")
@@ -81,9 +81,9 @@ func TestMultiObfuscationReportShouldOverride(t *testing.T) {
 func TestMultiObfuscationReportMulti(t *testing.T) {
 	mo := NewMultiObfuscator(
 		[]ReportingObfuscator{
-			&splitObfuscator{tracker: NewSimpleTracker()},
-			&splitObfuscator{tracker: NewSimpleTracker()},
-			&splitObfuscator{tracker: NewSimpleTracker()},
+			&splitObfuscator{tracker: NewSimpleTracker(map[string]string{})},
+			&splitObfuscator{tracker: NewSimpleTracker(map[string]string{})},
+			&splitObfuscator{tracker: NewSimpleTracker(map[string]string{})},
 		})
 
 	contents := mo.Contents("this must be split thrice")

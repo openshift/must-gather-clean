@@ -69,7 +69,7 @@ func (o *ipObfuscator) replace(s string) string {
 	return output
 }
 
-func NewIPObfuscator(replacementType schema.ObfuscateReplacementType) (ReportingObfuscator, error) {
+func NewIPObfuscator(replacementType schema.ObfuscateReplacementType, tracker ReplacementTracker) (ReportingObfuscator, error) {
 	genIPv4, err := newGenerator(consistentIPv4Template, obfuscatedStaticIPv4, maximumSupportedObfuscationsIP, replacementType)
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func NewIPObfuscator(replacementType schema.ObfuscateReplacementType) (Reporting
 		return nil, err
 	}
 	return &ipObfuscator{
-		ReplacementTracker: NewSimpleTracker(),
+		ReplacementTracker: tracker,
 		replacements: map[*regexp.Regexp]*generator{
 			ipv4Pattern: genIPv4,
 			ipv6Pattern: genIPv6,

@@ -7,13 +7,15 @@ import (
 	"testing"
 
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
+	"github.com/openshift/must-gather-clean/pkg/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
 
 func TestReportingHappyPath(t *testing.T) {
-	r := NewSimpleReporter()
+	config := new(schema.SchemaJson)
+	r := NewSimpleReporter(config)
 	r.CollectOmitterReport([]string{"some path"})
 	multiObfuscator := obfuscator.NewMultiObfuscator([]obfuscator.ReportingObfuscator{
 		obfuscator.NoopObfuscator{Replacements: map[string]string{

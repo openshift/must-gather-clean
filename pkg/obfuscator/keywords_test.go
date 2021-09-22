@@ -35,7 +35,12 @@ func TestNewKeywordsObfuscator(t *testing.T) {
 			},
 			input:          "input with common words",
 			expectedOutput: "input with common words",
-			expectLegend:   ReplacementReport{[]Replacement{}},
+			expectLegend: ReplacementReport{[]Replacement{
+				{Canonical: "unique-word", ReplacedWith: "replacement",
+					Counter: map[string]uint{
+						"unique-word": 0,
+					}},
+			}},
 		},
 		{
 			name: "partial replacement",
@@ -49,6 +54,10 @@ func TestNewKeywordsObfuscator(t *testing.T) {
 				{Canonical: "first-unique", ReplacedWith: "first-replacement",
 					Counter: map[string]uint{
 						"first-unique": 1,
+					}},
+				{Canonical: "second-unique", ReplacedWith: "second-replacement",
+					Counter: map[string]uint{
+						"second-unique": 0,
 					}},
 			}},
 		},
@@ -64,6 +73,10 @@ func TestNewKeywordsObfuscator(t *testing.T) {
 				{Canonical: "foo", ReplacedWith: "four",
 					Counter: map[string]uint{
 						"foo": 4,
+					}},
+				{Canonical: "bar", ReplacedWith: "zero",
+					Counter: map[string]uint{
+						"bar": 0,
 					}},
 			}},
 		},

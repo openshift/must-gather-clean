@@ -139,7 +139,7 @@ func TestIPObfuscatorStatic(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic)
+			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic, NewSimpleTracker(map[string]string{}))
 			require.NoError(t, err)
 			output := o.Contents(tc.input)
 			assert.Equal(t, tc.output, output)
@@ -248,7 +248,7 @@ func TestIPObfuscatorConsistent(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent)
+			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(map[string]string{}))
 			require.NoError(t, err)
 			for i := 0; i < len(tc.input); i++ {
 				assert.Equal(t, tc.output[i], o.Contents(tc.input[i]))
@@ -280,7 +280,7 @@ func TestIPObfuscationInPaths(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent)
+			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(map[string]string{}))
 			require.NoError(t, err)
 			obfuscated := o.Path(tc.input)
 			assert.Equal(t, tc.output, obfuscated)
@@ -323,7 +323,7 @@ func TestIPv6CanonicalKeyConsistent(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent)
+			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(map[string]string{}))
 			require.NoError(t, err)
 			output := o.Contents(tc.input)
 			assert.Equal(t, tc.output, output)
@@ -368,7 +368,7 @@ func TestIPv6CanonicalKeyStatic(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic)
+			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic, NewSimpleTracker(map[string]string{}))
 			require.NoError(t, err)
 			output := o.Contents(tc.input)
 			assert.Equal(t, tc.output, output)
@@ -410,7 +410,7 @@ func TestIPObfuscatorWithCount(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic)
+			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic, NewSimpleTracker(map[string]string{}))
 			require.NoError(t, err)
 			output := o.Contents(tc.input)
 			assert.Equal(t, tc.output, output)

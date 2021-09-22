@@ -106,6 +106,15 @@ func (s *SimpleTracker) Initialize(report ReplacementReport) {
 	}
 }
 
-func NewSimpleTracker() ReplacementTracker {
-	return &SimpleTracker{mapping: map[string]*Replacement{}}
+func NewSimpleTracker(existingReplacements map[string]string) ReplacementTracker {
+	var tracker = &SimpleTracker{mapping: map[string]*Replacement{}}
+	tracker.lock.Lock()
+	defer tracker.lock.Unlock()
+
+	// injecting the already-existing replacement report
+	for key, value := range existingReplacements {
+		tracker.mapping[key] = NewReplacement(key, key, value, 0)
+
+	}
+	return tracker
 }

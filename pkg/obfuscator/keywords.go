@@ -33,8 +33,9 @@ func replace(name string, replacements map[string]string, reporter ReplacementTr
 // NewKeywordsObfuscator returns an Obfuscator which replace all occurrences of keys in the map
 // passed to it with the value of the key.
 func NewKeywordsObfuscator(replacements map[string]string) ReportingObfuscator {
+	tracker := NewSimpleTracker(replacements)
 	return &keywordsObfuscator{
-		ReplacementTracker: NewSimpleTracker(),
+		ReplacementTracker: tracker,
 		replacements:       replacements,
 	}
 }
