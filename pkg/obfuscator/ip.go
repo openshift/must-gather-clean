@@ -35,7 +35,12 @@ var (
 
 type ipObfuscator struct {
 	ReplacementTracker
-	replacements map[*regexp.Regexp]*generator
+	replacements []replacementGenerator
+}
+
+type replacementGenerator struct {
+	pattern   *regexp.Regexp
+	generator *generator
 }
 
 func (o *ipObfuscator) Path(s string) string {
@@ -48,10 +53,9 @@ func (o *ipObfuscator) Contents(s string) string {
 
 func (o *ipObfuscator) replace(s string) string {
 	output := s
-	for pattern, gen := range o.replacements {
 
-		ipMatches := pattern.FindAllString(output, -1)
-
+	for _, r := range o.replacements {
+		ipMatches := r.pattern.FindAllString(output, -1)
 		for _, m := range ipMatches {
 			// if the match is in the exclude-list then do not replace.
 			if _, ok := excludedIPs[m]; ok {
@@ -60,7 +64,7 @@ func (o *ipObfuscator) replace(s string) string {
 
 			cleaned := strings.ToUpper(strings.ReplaceAll(m, "-", "."))
 			if ip := net.ParseIP(cleaned); ip != nil {
-				replacement := gen.generateReplacement(cleaned, m, 1, o.ReplacementTracker)
+				replacement := r.generator.generateReplacement(cleaned, m, 1, o.ReplacementTracker)
 				// TODO(thomas): should just replace that one matching occurrence instead of all
 				output = strings.ReplaceAll(output, m, replacement)
 			}
@@ -80,9 +84,9 @@ func NewIPObfuscator(replacementType schema.ObfuscateReplacementType) (Reporting
 	}
 	return &ipObfuscator{
 		ReplacementTracker: NewSimpleTracker(),
-		replacements: map[*regexp.Regexp]*generator{
-			ipv4Pattern: genIPv4,
-			ipv6Pattern: genIPv6,
+		replacements: []replacementGenerator{
+			{pattern: ipv4Pattern, generator: genIPv4},
+			{pattern: ipv6Pattern, generator: genIPv6},
 		},
 	}, nil
 }
