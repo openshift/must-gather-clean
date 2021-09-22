@@ -9,29 +9,29 @@ import "encoding/json"
 type Obfuscate struct {
 	// The list of domains and their subdomains which should be obfuscated in the
 	// output, only used with the type Domain obfuscator.
-	DomainNames []string `json:"domainNames,omitempty"`
+	DomainNames []string `json:"domainNames,omitempty" yaml:"domainNames,omitempty"`
 
 	// when replacementType 'Regex' is used, the supplied Golang regexp
 	// (https://pkg.go.dev/regexp) will be used to detect the string that should be
 	// replaced. The regex is line based, spanning multi-line regex statements is not
 	// supported.
-	Regex *string `json:"regex,omitempty"`
+	Regex *string `json:"regex,omitempty" yaml:"regex,omitempty"`
 
 	// on replacement 'Keywords', this will override a given input string with another
 	// output string. On duplicate keys it will use the last defined value as
 	// replacement. The input values are matched in a case-sensitive fashion and only
 	// as a full words, substrings must be matched using a regex.
-	Replacement ObfuscateReplacement `json:"replacement,omitempty"`
+	Replacement ObfuscateReplacement `json:"replacement,omitempty" yaml:"replacement,omitempty"`
 
 	// This defines how the detected string will be replaced. Type 'Consistent' will
 	// guarantee the same input will always create the same output string. 'Static' is
 	// used by default and will just try to mask the matching input.
-	ReplacementType ObfuscateReplacementType `json:"replacementType,omitempty"`
+	ReplacementType ObfuscateReplacementType `json:"replacementType,omitempty" yaml:"replacementType,omitempty"`
 
 	// This determines if the obfuscation should be performed on the file path
 	// (relative path from the must-gather root folder) or on the file contents. The
 	// file contents are obfuscated by default.
-	Target ObfuscateTarget `json:"target,omitempty"`
+	Target ObfuscateTarget `json:"target,omitempty" yaml:"target,omitempty"`
 
 	// type defines the kind of detection you want to use. For example IP will find IP
 	// addresses, whereas Keywords will find keywords defined in the 'replacement'
@@ -40,7 +40,7 @@ type Obfuscate struct {
 	// static replacement where a detected mac address will be replaced by 'x'. Regex
 	// should be used with the 'regex' property that will define the regex, here the
 	// replacement also will be static by 'x'-ing out the matched string.
-	Type ObfuscateType `json:"type"`
+	Type ObfuscateType `json:"type" yaml:"type"`
 }
 
 // on replacement 'Keywords', this will override a given input string with another
@@ -211,29 +211,29 @@ const ObfuscateTypeRegex ObfuscateType = "Regex"
 
 type Omit struct {
 	// KubernetesResource corresponds to the JSON schema field "kubernetesResource".
-	KubernetesResource *OmitKubernetesResource `json:"kubernetesResource,omitempty"`
+	KubernetesResource *OmitKubernetesResource `json:"kubernetesResource,omitempty" yaml:"kubernetesResource,omitempty"`
 
 	// A file glob pattern on file paths relative to the must-gather root. The pattern
 	// should be as described in https://pkg.go.dev/path/filepath#Match
-	Pattern *string `json:"pattern,omitempty"`
+	Pattern *string `json:"pattern,omitempty" yaml:"pattern,omitempty"`
 
 	// Type corresponds to the JSON schema field "type".
-	Type OmitType `json:"type"`
+	Type OmitType `json:"type" yaml:"type"`
 }
 
 type OmitKubernetesResource struct {
 	// This defines the apiVersion of the kubernetes resource. That can be used to
 	// further refine specific versions of a resource that should be omitted.
-	ApiVersion *string `json:"apiVersion,omitempty"`
+	ApiVersion *string `json:"apiVersion,omitempty" yaml:"apiVersion,omitempty"`
 
 	// This defines the kind of kubernetes resource that should be omitted. This can
 	// be further specified with the apiVersion and namespaces.
-	Kind *string `json:"kind,omitempty"`
+	Kind *string `json:"kind,omitempty" yaml:"kind,omitempty"`
 
 	// This defines the namespaces which are supposed to be omitted. When used
 	// together with kind and apiVersions, it becomes a filter. Standalone it will be
 	// used as a filter for all resources in a given namespace.
-	Namespaces []string `json:"namespaces,omitempty"`
+	Namespaces []string `json:"namespaces,omitempty" yaml:"namespaces,omitempty"`
 }
 
 type OmitType string
@@ -248,7 +248,7 @@ const OmitTypeKubernetes OmitType = "Kubernetes"
 type SchemaJson struct {
 	// There are two main sections, "omit" which defines the omission behaviour and
 	// "obfuscate" which defines the obfuscation behaviour.
-	Config SchemaJsonConfig `json:"config"`
+	Config SchemaJsonConfig `json:"config" yaml:"config"`
 }
 
 // There are two main sections, "omit" which defines the omission behaviour and
@@ -262,14 +262,14 @@ type SchemaJsonConfig struct {
 	// regex. The input to the given replacements are always a line of text (string).
 	// Since file names and directories can also have private content in them, they
 	// are also processed as a line - exactly as they would with file content.
-	Obfuscate []Obfuscate `json:"obfuscate,omitempty"`
+	Obfuscate []Obfuscate `json:"obfuscate,omitempty" yaml:"obfuscate,omitempty"`
 
 	// The omission schema defines what kind of files shall not be included in the
 	// final must-gather. This can be seen as a filter and can operate on file paths
 	// or Kubernetes and OpenShift and other custom resources. Omissions are settled
 	// first in the process of obfuscating a must-gather, so its content won't be
 	// scanned and replaced.
-	Omit []Omit `json:"omit,omitempty"`
+	Omit []Omit `json:"omit,omitempty" yaml:"omit,omitempty"`
 }
 
 var enumValues_ObfuscateReplacementType = []interface{}{
