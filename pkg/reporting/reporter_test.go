@@ -14,7 +14,24 @@ import (
 )
 
 func TestReportingHappyPath(t *testing.T) {
-	config := new(schema.SchemaJson)
+	pattern := "random-pattern"
+	config := &schema.SchemaJson{
+		Config: schema.SchemaJsonConfig{
+			Obfuscate: []schema.Obfuscate{
+				{
+					DomainNames: []string{"sample-domain.com", "example-domain.com"},
+					Target:      schema.ObfuscateTargetAll,
+					Type:        schema.ObfuscateTypeDomain,
+				},
+			},
+			Omit: []schema.Omit{
+				{
+					Type:    schema.OmitTypeFile,
+					Pattern: &pattern,
+				},
+			},
+		},
+	}
 	r := NewSimpleReporter(config)
 	r.CollectOmitterReport([]string{"some path"})
 	multiObfuscator := obfuscator.NewMultiObfuscator([]obfuscator.ReportingObfuscator{
@@ -43,6 +60,7 @@ func TestReportingHappyPath(t *testing.T) {
 			{Replacement{Canonical: "another", ReplacedWith: "something", Occurrences: []Occurrence{{Original: "another", Count: 1}}}},
 		},
 		Omissions: []string{"some path"},
+		Config:    config.Config,
 	})
 }
 
@@ -56,4 +74,5 @@ func assertReportMatches(t *testing.T, file string, expectedReport Report) {
 
 	assert.Equal(t, expectedReport.Omissions, actualReport.Omissions)
 	assert.Equal(t, expectedReport.Replacements, actualReport.Replacements)
+	assert.Equal(t, expectedReport.Config, actualReport.Config)
 }

@@ -8,7 +8,7 @@ import (
 )
 
 func TestHappyPathTracking(t *testing.T) {
-	st := NewSimpleTracker(map[string]string{})
+	st := NewSimpleTracker()
 	r := st.GenerateIfAbsent("a-canonical", "a-original", 1, func() string {
 		return "a-replaced"
 	})
@@ -24,7 +24,7 @@ func TestHappyPathTracking(t *testing.T) {
 }
 
 func TestMultiGeneratedReplacementIncrements(t *testing.T) {
-	st := NewSimpleTracker(map[string]string{})
+	st := NewSimpleTracker()
 	r := st.GenerateIfAbsent("a-canonical", "a-original", 1, func() string {
 		return "a-replaced"
 	})
@@ -44,7 +44,7 @@ func TestMultiGeneratedReplacementIncrements(t *testing.T) {
 }
 
 func TestMultiGeneratedReplacementDifferentOriginals(t *testing.T) {
-	st := NewSimpleTracker(map[string]string{})
+	st := NewSimpleTracker()
 	r := st.GenerateIfAbsent("a-canonical", "a-original", 1, func() string {
 		return "a-replaced"
 	})
@@ -64,7 +64,7 @@ func TestMultiGeneratedReplacementDifferentOriginals(t *testing.T) {
 }
 
 func TestHappyPathInit(t *testing.T) {
-	st := NewSimpleTracker(map[string]string{})
+	st := NewSimpleTracker()
 	r := ReplacementReport{
 		[]Replacement{
 			{

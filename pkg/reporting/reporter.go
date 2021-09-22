@@ -60,18 +60,6 @@ func (s *SimpleReporter) WriteReport(path string) error {
 		return fmt.Errorf("failed to open report file %s: %w", path, err)
 	}
 
-	for i, obfs := range s.config.Config.Obfuscate {
-		if obfs.Replacement == nil {
-			s.config.Config.Obfuscate[i].Replacement = map[string]string{}
-		}
-		doneReplacements := s.replacements[i]
-		for _, replacement := range doneReplacements {
-			for _, oc := range replacement.Occurrences {
-				s.config.Config.Obfuscate[i].Replacement[oc.Original] = replacement.ReplacedWith
-			}
-		}
-	}
-
 	rEncoder := yaml.NewEncoder(reportFile)
 	err = rEncoder.Encode(Report{
 		Replacements: s.replacements,
@@ -109,6 +97,18 @@ func (s *SimpleReporter) CollectObfuscatorReport(obfuscatorReport []obfuscator.R
 			})
 		}
 		s.replacements = append(s.replacements, replacements)
+	}
+
+	for i := range s.config.Config.Obfuscate {
+		if s.config.Config.Obfuscate[i].Replacement == nil {
+			s.config.Config.Obfuscate[i].Replacement = map[string]string{}
+		}
+		doneReplacements := s.replacements[i]
+		for _, replacement := range doneReplacements {
+			for _, oc := range replacement.Occurrences {
+				s.config.Config.Obfuscate[i].Replacement[oc.Original] = replacement.ReplacedWith
+			}
+		}
 	}
 }
 

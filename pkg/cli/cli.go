@@ -33,12 +33,12 @@ func RunPipe(configPath string, stdin io.Reader, stdout io.Writer) error {
 			return fmt.Errorf("failed to create obfuscators via config at %s: %w", configPath, err)
 		}
 	} else {
-		ipObfuscator, err := obfuscator.NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent, obfuscator.NewSimpleTracker(map[string]string{}))
+		ipObfuscator, err := obfuscator.NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent, obfuscator.NewSimpleTracker())
 		if err != nil {
 			return fmt.Errorf("failed to create IP obfuscator: %w", err)
 		}
 
-		macObfuscator, err := obfuscator.NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent, obfuscator.NewSimpleTracker(map[string]string{}))
+		macObfuscator, err := obfuscator.NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent, obfuscator.NewSimpleTracker())
 		if err != nil {
 			return fmt.Errorf("failed to create MAC obfuscator: %w", err)
 		}
@@ -136,7 +136,7 @@ func createObfuscatorsFromConfig(config *schema.SchemaJson) (*obfuscator.MultiOb
 			k   obfuscator.ReportingObfuscator
 			err error
 		)
-		tracker := obfuscator.NewSimpleTracker(o.Replacement)
+		tracker := obfuscator.NewSimpleTrackerMap(o.Replacement)
 		switch o.Type {
 		case schema.ObfuscateTypeKeywords:
 			k = obfuscator.NewKeywordsObfuscator(o.Replacement)

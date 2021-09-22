@@ -139,7 +139,7 @@ func TestIPObfuscatorStatic(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic, NewSimpleTracker(map[string]string{}))
+			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic, NewSimpleTracker())
 			require.NoError(t, err)
 			output := o.Contents(tc.input)
 			assert.Equal(t, tc.output, output)
@@ -248,7 +248,7 @@ func TestIPObfuscatorConsistent(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(map[string]string{}))
+			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
 			require.NoError(t, err)
 			for i := 0; i < len(tc.input); i++ {
 				assert.Equal(t, tc.output[i], o.Contents(tc.input[i]))
@@ -280,7 +280,7 @@ func TestIPObfuscationInPaths(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(map[string]string{}))
+			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
 			require.NoError(t, err)
 			obfuscated := o.Path(tc.input)
 			assert.Equal(t, tc.output, obfuscated)
@@ -321,9 +321,24 @@ func TestIPv6CanonicalKeyConsistent(t *testing.T) {
 					}},
 			}},
 		},
+		{
+			name:   "mixed ipv4 and ipv6 logline",
+			input:  "2021-08-03T09:35:59.743794348Z ::ffff:10.130.0.1 - - [03/Aug/2021 09:25:59] \"GET / HTTP/1.1\" 200 - 2021-08-03T09:35:59.743794348Z ::ffff:10.130.0.1 - - [03/Aug/2021 09:25:59] \"GET / HTTP/1.1\" 200 - 2021-08-03T09:35:59.743794348Z ::ffff:10.130.0.1 - - [03/Aug/2021 09:25:59] \"GET / HTTP/1.1\" 200 - 2021-08-03T09:35:59.743794348Z ::ffff:10.130.0.1 - - [03/Aug/2021 09:25:59] \"GET / HTTP/1.1\" 200 - 2021-08-03T09:35:59.743794348Z ::ffff:10.130.0.1 - - [03/Aug/2021 09:25:59] \"GET / HTTP/1.1\" 200 - 2021-08-03T09:35:59.743794348Z ::ffff:10.130.0.1 - - [03/Aug/2021 09:25:59] \"GET / HTTP/1.1\" 200 -",
+			output: "2021-08-03T09:35:59.743794348Z x-ipv6-0000000001-x:x-ipv4-0000000001-x - - [03/Aug/2021 09:25:59] \"GET / HTTP/1.1\" 200 - 2021-08-03T09:35:59.743794348Z x-ipv6-0000000001-x:x-ipv4-0000000001-x - - [03/Aug/2021 09:25:59] \"GET / HTTP/1.1\" 200 - 2021-08-03T09:35:59.743794348Z x-ipv6-0000000001-x:x-ipv4-0000000001-x - - [03/Aug/2021 09:25:59] \"GET / HTTP/1.1\" 200 - 2021-08-03T09:35:59.743794348Z x-ipv6-0000000001-x:x-ipv4-0000000001-x - - [03/Aug/2021 09:25:59] \"GET / HTTP/1.1\" 200 - 2021-08-03T09:35:59.743794348Z x-ipv6-0000000001-x:x-ipv4-0000000001-x - - [03/Aug/2021 09:25:59] \"GET / HTTP/1.1\" 200 - 2021-08-03T09:35:59.743794348Z x-ipv6-0000000001-x:x-ipv4-0000000001-x - - [03/Aug/2021 09:25:59] \"GET / HTTP/1.1\" 200 -",
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "10.130.0.1", ReplacedWith: "x-ipv4-0000000001-x",
+					Counter: map[string]uint{
+						"10.130.0.1": 6,
+					}},
+				{Canonical: "::FFFF", ReplacedWith: "x-ipv6-0000000001-x",
+					Counter: map[string]uint{
+						"::ffff": 6,
+					}},
+			}},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(map[string]string{}))
+			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
 			require.NoError(t, err)
 			output := o.Contents(tc.input)
 			assert.Equal(t, tc.output, output)
@@ -368,7 +383,7 @@ func TestIPv6CanonicalKeyStatic(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic, NewSimpleTracker(map[string]string{}))
+			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic, NewSimpleTracker())
 			require.NoError(t, err)
 			output := o.Contents(tc.input)
 			assert.Equal(t, tc.output, output)
@@ -410,7 +425,7 @@ func TestIPObfuscatorWithCount(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic, NewSimpleTracker(map[string]string{}))
+			o, err := NewIPObfuscator(schema.ObfuscateReplacementTypeStatic, NewSimpleTracker())
 			require.NoError(t, err)
 			output := o.Contents(tc.input)
 			assert.Equal(t, tc.output, output)
