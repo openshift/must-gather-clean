@@ -4,7 +4,11 @@ config:
       replacementType: Consistent
       target: All
     - type: MAC
+      replacementType: Consistent
+      target: All
     - type: Domain
+      replacementType: Consistent
+      target: All
       domainNames:
         - "rhcloud.com"
         - "dev.rhcloud.com"
@@ -17,7 +21,6 @@ config:
     - type: Kubernetes
       kubernetesResource:
         kind: "ConfigMap"
-        namespaces: [ "kube-system" ]
     - type: Kubernetes
       kubernetesResource:
         kind: CertificateSigningRequest

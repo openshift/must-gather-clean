@@ -13,13 +13,14 @@ config:
         - "rhcloud.com"
         - "dev.rhcloud.com"
   omit:
+    - type: File
+      pattern: "*/namespaces/openshift-sdn/pods/*/*/*/logs/*.log"
     - type: Kubernetes
       kubernetesResource:
         kind: "Secret"
     - type: Kubernetes
       kubernetesResource:
         kind: "ConfigMap"
-        namespaces: [ "kube-system" ]
     - type: Kubernetes
       kubernetesResource:
         kind: CertificateSigningRequest
