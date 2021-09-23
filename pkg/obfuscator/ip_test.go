@@ -91,6 +91,14 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			},
 		},
 		{
+			name:   "non standard ipv4 underscore",
+			input:  "NODE_ip_10_0_195_177_ec2_internal_IP",
+			output: "NODE_ip_xxx.xxx.xxx.xxx_ec2_internal_IP",
+			report: map[string]string{
+				"10_0_195_177": obfuscatedStaticIPv4,
+			},
+		},
+		{
 			name:   "non-standard ipv4 with bad separator",
 			input:  "ip+10+0+129+220.ec2.aws.yaml",
 			output: "ip+10+0+129+220.ec2.aws.yaml",
