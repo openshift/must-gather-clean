@@ -10,6 +10,7 @@
 * Replace confidential information consistently to preserve debuggability
 * Ability to parse and understand Kubernetes and OpenShift resources
 * Concise and feature rich tool configuration
+* Comprehensive reporting and reproducible obfuscation
 * Community supported, contributions are welcome
 
 # Installation
@@ -366,6 +367,71 @@ config:
 
 Similar to obfuscators, you can also chain the omitters. The guarantee is that each omission type will be called for each file path in order of their definition. The first omitter to match a file path is used as the final decision, subsequently defined omitters will be skipped.
 To have optimal performance, it is important that the most selective omitters should be defined first, the most specific at the bottom.
+
+## Reporting
+
+At the end of every cleaning a `report.yaml` will be written to the current working directory. A different folder for the report can be configured by supplying the `-r` argument.
+
+The report contains a section about the replacements:
+```
+replacements:
+  - - canonical: 10.0.187.218
+      replacedWith: x-ipv4-0000000001-x
+      occurrences:
+        - original: 10-0-187-218
+          count: 12429
+        - original: 10.0.187.218
+          count: 7855
+     ...
+  - - canonical: 0E:A0:E7:92:3A:A3
+      replacedWith: x-mac-0000000001-x
+      occurrences:
+        - original: 0e:a0:e7:92:3a:a3
+          count: 1
+     ...
+```
+
+Each replacement comes with a canonicalized version of a detected text. In the above example report you see that the IP address `10.0.187.218` was replaced with `x-ipv4-0000000001-x` much more often formatted as `10-0-187-218` - 12429 over 7855 times. Omissions are also included in the report, those will report a listing of all files that have been omitted from the output.
+
+Please ensure to not share the report as this allows to relate the original confidential data with their obfuscated replacements.
+
+### Reproducing runs
+
+To reproduce runs of an already done cleaning process, you can reuse the report as a configuration. At the bottom of each report, you'll also find the initial configuration used to clean along with the reported replacements:
+
+```
+config:
+    obfuscate:
+      - replacement:
+            10-0-187-218: x-ipv4-0000000001-x
+            10.0.187.218: x-ipv4-0000000001-x
+            ...
+        replacementType: Consistent
+        target: All
+        type: IP
+      - replacement:
+            0a:60:54:e4:52:a5: x-mac-0000000003-x
+            0a:fd:78:19:88:d7: x-mac-0000000002-x
+            0e:a0:e7:92:3a:a3: x-mac-0000000001-x
+        replacementType: Consistent
+        target: All
+        type: MAC
+      - domainNames:
+          - rhcloud.com
+          - dev.rhcloud.com
+        replacement:
+            aws.dev.rhcloud.com: domain0000000001
+        replacementType: Consistent
+        target: All
+        type: Domain
+```
+
+This allows to reproduce a run completely by passing the `report.yaml` back as a configuration:
+```sh
+$ must-gather-clean -c report.yaml -i must-gather-output -o must-gather-output-cleaned
+```
+
+The resulting cleaned must-gather is replaced exactly as in the previous run that created the report.
 
 # Contributing to must-gather-clean
 
