@@ -21,7 +21,7 @@ const (
 )
 
 var (
-	ipv4re = `(([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]|([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[-]([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[-]([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[-])([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]){1,3}`
+	ipv4re = `(([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]|([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[_-]([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[_-]([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[_-])([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]){1,3}`
 	// ipv6re is not perfect. it can still catch words like :face:bad as a valid ipv6 address
 	ipv6re      = `([a-f0-9]{0,4}[:]){1,8}[a-f0-9]{1,4}`
 	ipv6Pattern = regexp.MustCompile(ipv6re)
@@ -62,7 +62,7 @@ func (o *ipObfuscator) replace(s string) string {
 				continue
 			}
 
-			cleaned := strings.ToUpper(strings.ReplaceAll(m, "-", "."))
+			cleaned := strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(m, "_", "."), "-", "."))
 			if ip := net.ParseIP(cleaned); ip != nil {
 				replacement := r.generator.generateReplacement(cleaned, m, 1, o.ReplacementTracker)
 				// TODO(thomas): should just replace that one matching occurrence instead of all
