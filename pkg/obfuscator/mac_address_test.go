@@ -10,13 +10,13 @@ import (
 )
 
 func TestMacStaticReplacement(t *testing.T) {
-	o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeStatic)
+	o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeStatic, NewSimpleTracker())
 	assert.Equal(t, staticMacReplacement, o.Contents("29-7E-8C-8C-60-C9"))
 	assert.Equal(t, map[string]string{"29-7E-8C-8C-60-C9": staticMacReplacement}, o.Report().AsMap())
 }
 
 func TestMacConsistentReplacement(t *testing.T) {
-	o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent)
+	o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
 	assert.Equal(t, "x-mac-0000000001-x", o.Contents("29-7E-8C-8C-60-C9"))
 	// This testcase reports both the original detected MAC address as well as the normalized MAC address
 	assert.Equal(t, map[string]string{"29-7E-8C-8C-60-C9": "x-mac-0000000001-x"}, o.Report().AsMap())
@@ -25,7 +25,7 @@ func TestMacConsistentReplacement(t *testing.T) {
 func TestMacReplacementManyMatchLine(t *testing.T) {
 	input := "ss eb:a1:2a:b2:09:bf as 29-7E-8C-8C-60-C9 with some stuff around it and lowercased eb-a1-2a-b2-09-bf"
 	expected := "ss xx:xx:xx:xx:xx:xx as xx:xx:xx:xx:xx:xx with some stuff around it and lowercased xx:xx:xx:xx:xx:xx"
-	o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeStatic)
+	o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeStatic, NewSimpleTracker())
 	assert.Equal(t, expected, o.Contents(input))
 	assert.Equal(t, map[string]string{
 		"eb:a1:2a:b2:09:bf": staticMacReplacement,
@@ -52,7 +52,7 @@ func TestMacReplacementStatic(t *testing.T) {
 		{name: "mac as guid", input: "4a5299ac-6104-479d-aed4-b79faedffcb4", expectedOutput: "4a5299ac-6104-479d-aed4-b79faedffcb4"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeStatic)
+			o, _ := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeStatic, NewSimpleTracker())
 			assert.Equal(t, tc.expectedOutput, o.Contents(tc.input))
 		})
 	}
@@ -87,7 +87,7 @@ func TestMACObfuscatorWithCount(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeStatic)
+			o, err := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeStatic, NewSimpleTracker())
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedOutput, o.Contents(tc.input))
 			replacementReportsMatch(t, tc.report, o.Report())
@@ -152,7 +152,7 @@ func TestMACConsistentObfuscator(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent)
+			o, err := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
 			require.NoError(t, err)
 			for i := 0; i < len(tc.input); i++ {
 				assert.Equal(t, tc.output[i], o.Contents(tc.input[i]))

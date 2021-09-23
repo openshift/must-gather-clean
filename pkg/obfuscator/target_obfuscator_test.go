@@ -33,7 +33,7 @@ func TestRegexObfuscationTarget(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			obfuscator, err := NewRegexObfuscator("secret-word")
+			obfuscator, err := NewRegexObfuscator("secret-word", NewSimpleTracker())
 			require.NoError(t, err)
 			o := NewTargetObfuscator(tc.target, obfuscator)
 

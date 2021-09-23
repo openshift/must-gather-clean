@@ -54,7 +54,7 @@ func (d *domainObfuscator) replaceDomains(input string) string {
 	return output
 }
 
-func NewDomainObfuscator(domains []string, replacementType schema.ObfuscateReplacementType) (ReportingObfuscator, error) {
+func NewDomainObfuscator(domains []string, replacementType schema.ObfuscateReplacementType, tracker ReplacementTracker) (ReportingObfuscator, error) {
 	if len(domains) == 0 {
 		return nil, fmt.Errorf("no domainNames supplied for the obfuscation type: Domain")
 	}
@@ -79,7 +79,7 @@ func NewDomainObfuscator(domains []string, replacementType schema.ObfuscateRepla
 		return nil, err
 	}
 	return &domainObfuscator{
-		ReplacementTracker: NewSimpleTracker(),
+		ReplacementTracker: tracker,
 		domainPatterns:     patterns,
 		obfsGenerator:      *generator,
 	}, nil

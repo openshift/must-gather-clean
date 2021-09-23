@@ -46,7 +46,7 @@ func pString(s string) *string {
 }
 
 func noErrorIpObfuscator(t *testing.T) obfuscator.ReportingObfuscator {
-	ipObfuscator, err := obfuscator.NewIPObfuscator(schema.ObfuscateReplacementTypeStatic)
+	ipObfuscator, err := obfuscator.NewIPObfuscator(schema.ObfuscateReplacementTypeStatic, obfuscator.NewSimpleTracker())
 	require.NoError(t, err)
 	return ipObfuscator
 }

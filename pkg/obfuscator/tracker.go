@@ -109,3 +109,14 @@ func (s *SimpleTracker) Initialize(report ReplacementReport) {
 func NewSimpleTracker() ReplacementTracker {
 	return &SimpleTracker{mapping: map[string]*Replacement{}}
 }
+
+// NewSimpleTrackerMap takes the existing map of replacements as an argument and builds, returns the required ReplacementTracker
+func NewSimpleTrackerMap(existingReplacements map[string]string) ReplacementTracker {
+
+	var m = map[string]*Replacement{}
+	// injecting the already-existing replacement report
+	for key, value := range existingReplacements {
+		m[key] = NewReplacement(key, key, value, 0)
+	}
+	return &SimpleTracker{mapping: m}
+}
