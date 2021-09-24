@@ -1,3 +1,5 @@
+// +build e2e
+
 package cli
 
 import (
@@ -23,6 +25,9 @@ const (
 	configOpenshiftDefaultPath = "examples/openshift_default.yaml"
 )
 
+// End-to-end test suite that runs must-gather-clean on --input and compares
+// the generated report with a known source-of-truth report --report
+// See openshift/must-gather-clean/test/files/README.md for more info
 func TestEndToEnd(t *testing.T) {
 	var input, report string
 	fs := flag.NewFlagSet("e2e-fs", flag.ContinueOnError)
@@ -84,7 +89,7 @@ func verifyObfuscation(t *testing.T, dir string, report *reporting.Report) {
 		}
 
 		for k, v := range generatedMap {
-			assert.NotContainsf(t, path, k, "path should not contain secret IP %s, but rather its replacement %s", k, v)
+			assert.NotContainsf(t, path, k, "path should not contain secret info %s, but rather its replacement %s", k, v)
 		}
 
 		if !info.IsDir() {
@@ -95,7 +100,7 @@ func verifyObfuscation(t *testing.T, dir string, report *reporting.Report) {
 
 			content := string(file)
 			for k, v := range generatedMap {
-				assert.NotContainsf(t, content, k, "file '%s' should not contain secret IP %s, but rather its replacement %s", path, k, v)
+				assert.NotContainsf(t, content, k, "file '%s' should not contain secret info %s, but rather its replacement %s", path, k, v)
 			}
 		}
 
@@ -107,6 +112,7 @@ func verifyObfuscation(t *testing.T, dir string, report *reporting.Report) {
 
 func verifyReport(t *testing.T, inputDir string, truthReport *reporting.Report, generatedReport *reporting.Report) {
 	verifyReplacements(t, inputDir, truthReport, generatedReport)
+	verifyConfig(t, generatedReport)
 	verifyOmissions(t, inputDir, truthReport, generatedReport)
 }
 
@@ -114,6 +120,7 @@ func verifyReplacements(t *testing.T, inputDir string, truthReport *reporting.Re
 	tr := reportInternalRepresentation(truthReport)
 	gr := reportInternalRepresentation(generatedReport)
 	replacementReportsMatch(t, tr, gr)
+
 }
 
 func verifyOmissions(t *testing.T, inputDir string, truthReport *reporting.Report, generatedReport *reporting.Report) {
@@ -154,6 +161,24 @@ func replacementReportsMatch(t *testing.T, want, got obfuscator.ReplacementRepor
 		assert.Equal(t, w.Canonical, g.Canonical)
 		assert.Equal(t, w.Counter, g.Counter)
 	}
+}
+
+func verifyConfig(t *testing.T, report *reporting.Report) {
+	replacementsMap := make(map[string]string)
+	for _, obfuscator := range report.Replacements {
+		for _, replacement := range obfuscator {
+			for _, o := range replacement.Occurrences {
+				replacementsMap[o.Original] = replacement.ReplacedWith
+			}
+		}
+	}
+	configMap := make(map[string]string)
+	for _, obfuscator := range report.Config.Obfuscate {
+		for k, v := range obfuscator.Replacement {
+			configMap[k] = v
+		}
+	}
+	assert.Equal(t, replacementsMap, configMap)
 }
 
 func readReport(t *testing.T, path string) *reporting.Report {

@@ -32,7 +32,7 @@ lint: ensure-golangci-lint
 verify: verify-scripts lint
 
 test-e2e: build
-	./test/e2e.sh
+	time ./test/e2e.sh
 .PHONY: test-e2e
 
 .PHONY: cross
