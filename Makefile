@@ -35,6 +35,10 @@ test-e2e: build
 	time ./test/e2e.sh
 .PHONY: test-e2e
 
+gen-e2e: build
+	time ./test/files/report-generator.sh
+.PHONY: gen-e2e
+
 .PHONY: cross
 cross: build test ## depends on https://github.com/openshift/build-machinery-go/blob/2b271bb3a0ad466045cd6da5c9423084e9cf68f0/make/lib/golang.mk
 	./hack/compile.sh $(GO_LD_FLAGS)
