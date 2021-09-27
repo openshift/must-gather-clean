@@ -21,7 +21,7 @@ Unpack the binary that you downloaded, for Linux the tar file can be extracted w
 ```sh 
 $ tar xzf must-gather-clean-linux-amd64.tar.gz
 ```
-
+ 
 Optionally, you can validate against the checksum file found on the release page, here using the linux binary:
 ```sh 
 $ echo "$(<SHA256_SUM) must-gather-clean" | sha256sum --check
