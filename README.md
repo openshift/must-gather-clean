@@ -15,7 +15,7 @@
 
 # Installation
 
-You can download the latest version of `must-gather-clean` from the [GitHub Release](https://github.com/openshift/must-gather-clean/releases) page. We currently support Linux, Mac and Windows (all ADM64+ARM64).
+You can download the latest version of `must-gather-clean` from the [GitHub Release](https://github.com/openshift/must-gather-clean/releases) page. We currently support Linux and Mac (ADM64+ARM64) and Windows.
 
 Unpack the binary that you downloaded, for Linux the tar file can be extracted with:
 ```sh 
