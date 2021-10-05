@@ -208,6 +208,7 @@ func (j *Obfuscate) UnmarshalJSON(b []byte) error {
 const ObfuscateTypeKeywords ObfuscateType = "Keywords"
 const ObfuscateTypeMAC ObfuscateType = "MAC"
 const ObfuscateTypeRegex ObfuscateType = "Regex"
+const ObfuscateTypeSSH ObfuscateType = "SSH"
 
 type Omit struct {
 	// KubernetesResource corresponds to the JSON schema field "kubernetesResource".
@@ -287,6 +288,7 @@ var enumValues_ObfuscateType = []interface{}{
 	"Keywords",
 	"MAC",
 	"Regex",
+	"SSH",
 }
 var enumValues_OmitType = []interface{}{
 	"Kubernetes",

@@ -160,6 +160,11 @@ func createObfuscatorsFromConfig(config *schema.SchemaJson) (*obfuscator.MultiOb
 			if err != nil {
 				return nil, err
 			}
+		case schema.ObfuscateTypeSSH:
+			k, err = obfuscator.NewSSHObfuscator(o.ReplacementType, tracker)
+			if err != nil {
+				return nil, err
+			}
 		}
 		k = obfuscator.NewTargetObfuscator(o.Target, k)
 		obfuscators = append(obfuscators, k)
