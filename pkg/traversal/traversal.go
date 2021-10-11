@@ -2,6 +2,7 @@ package traversal
 
 import (
 	"io/fs"
+	"os"
 	"path/filepath"
 	"sync"
 
@@ -54,6 +55,12 @@ func (w *FileWalker) Traverse() {
 		}
 
 		if !dirEntry.IsDir() {
+			// we don't try to obfuscate symbolic links and omit them, as we don't really know where they can point to.
+			if dirEntry.Type()&os.ModeSymlink == os.ModeSymlink {
+				klog.V(3).Infof("Ignoring symbolic link at '%s'\n", path)
+				return nil
+			}
+
 			// the rest of the logic expects the path to be relative to the input dir root, if it fails we assume it is already relative
 			relPath, err := filepath.Rel(w.inputPath, path)
 			if err != nil {

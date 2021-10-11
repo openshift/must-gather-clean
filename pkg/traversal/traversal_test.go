@@ -2,6 +2,7 @@ package traversal
 
 import (
 	"path/filepath"
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,7 +29,6 @@ func TestFileWalker(t *testing.T) {
 			name:     "basic",
 			inputDir: "testfiles/test1/mg",
 			expectedResult: []string{
-				"nodes/another.yaml",
 				"nodes/test.yaml",
 				"pods/pod1/application.log",
 				"pods/pod1/manifests.yaml",
@@ -44,6 +44,9 @@ func TestFileWalker(t *testing.T) {
 			})
 
 			walker.Traverse()
+
+			sort.Strings(tc.expectedResult)
+			sort.Strings(queueProc.paths)
 
 			assert.Equal(t, tc.expectedResult, queueProc.paths)
 		})
@@ -61,12 +64,31 @@ func TestFileWalkerAbsolutePathing(t *testing.T) {
 
 	walker.Traverse()
 
-	assert.Equal(t, []string{
-		"nodes/another.yaml",
+	expectedResult := []string{
 		"nodes/test.yaml",
 		"pods/pod1/application.log",
 		"pods/pod1/manifests.yaml",
 		"pods/pod2/application.log",
 		"pods/pod2/manifests.yaml",
+	}
+	sort.Strings(expectedResult)
+	sort.Strings(queueProc.paths)
+
+	assert.Equal(t, expectedResult, queueProc.paths)
+}
+
+func TestFileWalkerSymbolicLinksAreIgnored(t *testing.T) {
+	abs, err := filepath.Abs("testfiles/symbolic")
+	require.NoError(t, err)
+
+	queueProc := &collectingQueueProcessor{[]string{}}
+	walker := NewParallelFileWalker(abs, 1, func(id int) QueueProcessor {
+		return queueProc
+	})
+
+	walker.Traverse()
+
+	assert.Equal(t, []string{
+		"some_text.txt",
 	}, queueProc.paths)
 }
