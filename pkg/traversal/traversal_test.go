@@ -2,7 +2,6 @@ package traversal
 
 import (
 	"path/filepath"
-	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -44,11 +43,7 @@ func TestFileWalker(t *testing.T) {
 			})
 
 			walker.Traverse()
-
-			sort.Strings(tc.expectedResult)
-			sort.Strings(queueProc.paths)
-
-			assert.Equal(t, tc.expectedResult, queueProc.paths)
+			assert.ElementsMatch(t, tc.expectedResult, queueProc.paths)
 		})
 	}
 }
@@ -71,10 +66,7 @@ func TestFileWalkerAbsolutePathing(t *testing.T) {
 		"pods/pod2/application.log",
 		"pods/pod2/manifests.yaml",
 	}
-	sort.Strings(expectedResult)
-	sort.Strings(queueProc.paths)
-
-	assert.Equal(t, expectedResult, queueProc.paths)
+	assert.ElementsMatch(t, expectedResult, queueProc.paths)
 }
 
 func TestFileWalkerSymbolicLinksAreIgnored(t *testing.T) {
@@ -88,7 +80,7 @@ func TestFileWalkerSymbolicLinksAreIgnored(t *testing.T) {
 
 	walker.Traverse()
 
-	assert.Equal(t, []string{
+	assert.ElementsMatch(t, []string{
 		"some_text.txt",
 	}, queueProc.paths)
 }
