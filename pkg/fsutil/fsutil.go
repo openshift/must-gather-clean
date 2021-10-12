@@ -52,22 +52,8 @@ func Relink(readPath string, writePath string, readPathStat os.FileInfo) error {
 	return nil
 }
 
-func CreateDirLikeInput(inputDir string, outputDir string) error {
-	inputStat, err := os.Lstat(inputDir)
-	if err != nil {
-		return fmt.Errorf("failed to lstat input dir %s: %w", inputDir, err)
-	}
-
-	err = mkdirAllWithChown(outputDir, inputStat)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func EnsureInputOutputPath(inputPath string, outputPath string, deleteOutputFolder bool) error {
-	inputStat, err := os.Stat(inputPath)
+	_, err := os.Stat(inputPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return fmt.Errorf("input folder does not exist: %w", err)
@@ -75,7 +61,7 @@ func EnsureInputOutputPath(inputPath string, outputPath string, deleteOutputFold
 		return fmt.Errorf("failed to stat input folder: %w", err)
 	}
 
-	err = ensureOutputPath(outputPath, deleteOutputFolder, inputStat)
+	err = ensureOutputPath(outputPath, deleteOutputFolder, inputPath)
 	if err != nil {
 		return fmt.Errorf("failed to ensure output folder: %w", err)
 	}
@@ -121,11 +107,55 @@ func CreateNonConflictingFile(outputFilePath string, inputFileInfo os.FileInfo) 
 	return outputOsFile, nil
 }
 
-func ensureOutputPath(path string, deleteIfExists bool, inputFolderStat os.FileInfo) error {
+// MkdirAllWithChown is a modified os.MkdirAll that creates perms according to the input folder hierarchy, from bottom to top
+func MkdirAllWithChown(pathToCreate string, existingInputPath string) error {
+	// short-cut in case the pathToCreate already exists
+	_, err := os.Lstat(pathToCreate)
+	if err == nil {
+		return nil
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+
+	// ensure the parent exists recursively
+	parentPath := filepath.Dir(pathToCreate)
+	_, err = os.Lstat(parentPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			inputParentPath := filepath.Dir(existingInputPath)
+			err = MkdirAllWithChown(parentPath, inputParentPath)
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+
+	perm, err := os.Lstat(existingInputPath)
+	if err != nil {
+		return err
+	}
+	err = os.Mkdir(pathToCreate, perm.Mode())
+	if err != nil {
+		// might've been created by another goroutine in the meantime -- okay to proceed
+		if !os.IsExist(err) {
+			return err
+		}
+	}
+
+	err = chown(pathToCreate, perm)
+	if err != nil {
+		return fmt.Errorf("failed to create directory %s: %w", pathToCreate, err)
+	}
+	return nil
+}
+
+func ensureOutputPath(path string, deleteIfExists bool, inputFolderPath string) error {
 	info, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return mkdirAllWithChown(path, inputFolderStat)
+			return MkdirAllWithChown(path, inputFolderPath)
 		}
 		return err
 	}
@@ -150,52 +180,7 @@ func ensureOutputPath(path string, deleteIfExists bool, inputFolderStat os.FileI
 		}
 	}
 
-	return mkdirAllWithChown(path, inputFolderStat)
-}
-
-// this is a modified os.MkdirAll that creates perms according to the input folder hierarchy, from bottom to top
-func mkdirAllWithChown(path string, inputStat os.FileInfo) error {
-	// short-cut in case the path already exists
-	_, err := os.Lstat(path)
-	if err == nil {
-		return nil
-	} else if !os.IsNotExist(err) {
-		return err
-	}
-
-	// ensure the parent exists recursively
-	parentPath := filepath.Dir(path)
-	_, err = os.Lstat(parentPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			inputParentPath := filepath.Dir(inputStat.Name())
-			perm, err := os.Lstat(inputParentPath)
-			if err != nil {
-				return err
-			}
-
-			err = mkdirAllWithChown(parentPath, perm)
-			if err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
-	}
-
-	err = os.Mkdir(path, inputStat.Mode())
-	if err != nil {
-		// might've been created by another goroutine in the meantime -- okay to proceed
-		if !os.IsExist(err) {
-			return err
-		}
-	}
-
-	err = chown(path, inputStat)
-	if err != nil {
-		return fmt.Errorf("failed to create directory %s: %w", path, err)
-	}
-	return nil
+	return MkdirAllWithChown(path, inputFolderPath)
 }
 
 func chown(path string, stat fs.FileInfo) error {

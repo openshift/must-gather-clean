@@ -17,10 +17,8 @@ func TestExistingEmptyDir(t *testing.T) {
 	defer func() {
 		_ = os.RemoveAll(testDir)
 	}()
-	stat, err := os.Stat(testDir)
-	require.NoError(t, err)
 
-	err = ensureOutputPath(testDir, false, stat)
+	err = ensureOutputPath(testDir, false, testDir)
 	require.NoError(t, err)
 }
 
@@ -30,13 +28,11 @@ func TestEnsureOutputPathNonEmptyDir(t *testing.T) {
 	defer func() {
 		_ = os.RemoveAll(testDir)
 	}()
-	stat, err := os.Stat(testDir)
-	require.NoError(t, err)
 
 	err = ioutil.WriteFile(filepath.Join(testDir, "nonempty"), []byte("nonempty"), 0644)
 	require.NoError(t, err)
 
-	err = ensureOutputPath(testDir, false, stat)
+	err = ensureOutputPath(testDir, false, testDir)
 	require.Error(t, err)
 	require.Equal(t, fmt.Errorf("output directory %s is not empty", testDir), err)
 }
@@ -48,10 +44,8 @@ func TestEnsureOutputPathInvalidLocation(t *testing.T) {
 	require.NoError(t, err)
 	err = file.Close()
 	require.NoError(t, err)
-	stat, err := os.Stat(file.Name())
-	require.NoError(t, err)
 
-	err = ensureOutputPath(file.Name(), false, stat)
+	err = ensureOutputPath(file.Name(), false, file.Name())
 	require.Error(t, err)
 	require.Equal(t, fmt.Errorf("output destination must be a directory: '%s'", file.Name()), err)
 }
@@ -63,11 +57,8 @@ func TestEnsureOutputPathCreateIfRequired(t *testing.T) {
 		_ = os.RemoveAll(path)
 	}(testDir)
 
-	stat, err := os.Stat(testDir)
-	require.NoError(t, err)
-
 	outputDir := filepath.Join(testDir, "nonexistent")
-	err = ensureOutputPath(outputDir, false, stat)
+	err = ensureOutputPath(outputDir, false, testDir)
 	require.NoError(t, err)
 	info, err := os.Stat(outputDir)
 	require.NoError(t, err)
@@ -80,14 +71,18 @@ func TestEnsureOutputPathDeletesIfRequired(t *testing.T) {
 	defer func() {
 		_ = os.RemoveAll(testDir)
 	}()
-	stat, err := os.Stat(testDir)
+
+	secondTestDir, err := os.MkdirTemp(os.TempDir(), "test-dir-*")
 	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(secondTestDir)
+	}()
 
 	toBeDeletedFile := filepath.Join(testDir, "nonempty")
 	err = ioutil.WriteFile(toBeDeletedFile, []byte("nonempty"), 0664)
 	require.NoError(t, err)
 
-	err = ensureOutputPath(testDir, true, stat)
+	err = ensureOutputPath(testDir, true, secondTestDir)
 	require.NoError(t, err)
 
 	info, err := os.Stat(testDir)
@@ -105,21 +100,21 @@ func TestMkdirRecursively(t *testing.T) {
 	defer func() {
 		_ = os.RemoveAll(testDir)
 	}()
-	info, err := os.Stat(testDir)
+	initialInfo, err := os.Stat(testDir)
 	require.NoError(t, err)
 
 	// this creates a parallel folder structure with testDir permissions
-	inputFolder := filepath.Join("b", "a", "a")
-	require.NoError(t, os.MkdirAll(inputFolder, info.Mode()))
+	inputFolder := filepath.Join(testDir, "b", "a", "a")
+	require.NoError(t, os.MkdirAll(inputFolder, initialInfo.Mode()))
 
-	info, err = os.Stat(inputFolder)
-	require.NoError(t, err)
 	outputFolder := filepath.Join(testDir, "a", "a", "a")
-	require.NoError(t, mkdirAllWithChown(outputFolder, info))
+	require.NoError(t, MkdirAllWithChown(outputFolder, inputFolder))
 
+	expectedInfo, err := os.Stat(inputFolder)
+	require.NoError(t, err)
 	actualInfo, err := os.Stat(outputFolder)
 	require.NoError(t, err)
-	assert.Equal(t, info.Mode(), actualInfo.Mode())
+	assert.Equal(t, expectedInfo.Mode(), actualInfo.Mode())
 }
 
 func TestSymlinkDetection(t *testing.T) {
