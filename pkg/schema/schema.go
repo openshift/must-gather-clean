@@ -240,6 +240,7 @@ type OmitType string
 
 const OmitTypeFile OmitType = "File"
 const OmitTypeKubernetes OmitType = "Kubernetes"
+const OmitTypeSymbolicLink OmitType = "SymbolicLink"
 
 // This configuration defines the behaviour of the must-gather-clean CLI. The CLI
 // helps to obfuscate and omit output from OpenShift debug information
@@ -291,6 +292,7 @@ var enumValues_ObfuscateType = []interface{}{
 var enumValues_OmitType = []interface{}{
 	"Kubernetes",
 	"File",
+	"SymbolicLink",
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

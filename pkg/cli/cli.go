@@ -3,10 +3,10 @@ package cli
 import (
 	"fmt"
 	"io"
-	"os"
 	"path/filepath"
 
 	"github.com/openshift/must-gather-clean/pkg/cleaner"
+	"github.com/openshift/must-gather-clean/pkg/fsutil"
 	"github.com/openshift/must-gather-clean/pkg/reporting"
 	"k8s.io/klog/v2"
 
@@ -63,9 +63,9 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 		return fmt.Errorf("invalid number of workers specified %d", workerCount)
 	}
 
-	err := ensureOutputPath(outputPath, deleteOutputFolder)
+	err := fsutil.EnsureInputOutputPath(inputPath, outputPath, deleteOutputFolder)
 	if err != nil {
-		return fmt.Errorf("failed to ensure output folder: %w", err)
+		return err
 	}
 
 	config, err := schema.ReadConfigFromPath(configPath)
@@ -78,7 +78,7 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 		return fmt.Errorf("failed to create obfuscators via config at %s: %w", configPath, err)
 	}
 
-	mro, err := createOmittersFromConfig(config)
+	mro, err := createOmittersFromConfig(config, inputPath)
 	if err != nil {
 		return fmt.Errorf("failed to create omitters via config at %s: %w", configPath, err)
 	}
@@ -102,11 +102,13 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 	return watermarker.WriteWaterMarkFile(outputPath)
 }
 
-func createOmittersFromConfig(config *schema.SchemaJson) (omitter.ReportingOmitter, error) {
+func createOmittersFromConfig(config *schema.SchemaJson, inputPath string) (omitter.ReportingOmitter, error) {
 	var fileOmitters []omitter.FileOmitter
 	var k8sOmitters []omitter.KubernetesResourceOmitter
 	for _, o := range config.Config.Omit {
 		switch o.Type {
+		case schema.OmitTypeSymbolicLink:
+			fileOmitters = append(fileOmitters, omitter.NewSymlinkOmitter(inputPath))
 		case schema.OmitTypeFile:
 			om, err := omitter.NewFilenamePatternOmitter(*o.Pattern)
 			if err != nil {
@@ -165,41 +167,4 @@ func createObfuscatorsFromConfig(config *schema.SchemaJson) (*obfuscator.MultiOb
 		obfuscators = append(obfuscators, k)
 	}
 	return obfuscator.NewMultiObfuscator(obfuscators), nil
-}
-
-func ensureOutputPath(path string, deleteIfExists bool) error {
-	info, err := os.Stat(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return os.Mkdir(path, 0700)
-		}
-		return err
-	}
-
-	if !info.IsDir() {
-		return fmt.Errorf("output destination must be a directory: '%s'", path)
-	}
-
-	entries, err := os.ReadDir(path)
-	if err != nil {
-		return fmt.Errorf("failed to get contents of output directory '%s': %w", path, err)
-	}
-
-	if len(entries) != 0 {
-		if deleteIfExists {
-			err = os.RemoveAll(path)
-			if err != nil {
-				return fmt.Errorf("error while deleting the output path '%s': %w", path, err)
-			}
-		} else {
-			return fmt.Errorf("output directory %s is not empty", path)
-		}
-	}
-
-	err = os.MkdirAll(path, 0700)
-	if err != nil {
-		return fmt.Errorf("failed to create output directory '%s': %w", path, err)
-	}
-
-	return nil
 }

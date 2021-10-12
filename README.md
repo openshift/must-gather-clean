@@ -302,9 +302,10 @@ You can ensure that this does not happen, by providing custom obfuscators at the
 ## Omission
 
 To ensure certain files will never be shared, must-gather-clean helps you to omit files.
-There is support for the most common types of files in the must-gather:
+There is support for these types of files:
 * [File Pattern](#file-pattern)
 * [Kubernetes Resource](#kubernetes-resource)
+* [Symbolic Link](#symbolic-link)
 
 ### File Pattern
 
@@ -361,6 +362,22 @@ config:
        kind: CertificateSigningRequest
        apiVersion: certificates.k8s.io/v1
        namespaces: ["kube-system"]
+```
+
+### Symbolic Link
+
+Sometimes a custom must-gather image can create a symbolic link that might not be referencing an available file anymore. This tool would give you an error message similar to: 
+
+```
+F1006 HH:MM:SS.MS 1062736 traversal.go:43] failed to process etc/grub.d/15_ostree due to open etc/grub.d/15_ostree: no such file or directory
+```
+
+In such scenarios, it makes sense to completely omit all symbolic links. The configuration for this behaviour looks as follows and takes no additional configuration options:
+
+```
+config:
+  omit:
+  - type: SymbolicLink
 ```
 
 ### Chaining omitters

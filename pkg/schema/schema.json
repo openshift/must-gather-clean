@@ -180,7 +180,8 @@
                     "type": "string",
                     "enum": [
                         "Kubernetes",
-                        "File"
+                        "File",
+                        "SymbolicLink"
                     ]
                 },
                 "kubernetesResource": {
