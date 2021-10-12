@@ -112,11 +112,11 @@ func TestMkdirRecursively(t *testing.T) {
 	inputFolder := filepath.Join("b", "a", "a")
 	require.NoError(t, os.MkdirAll(inputFolder, info.Mode()))
 
+	info, err = os.Stat(inputFolder)
+	require.NoError(t, err)
 	outputFolder := filepath.Join(testDir, "a", "a", "a")
 	require.NoError(t, mkdirAllWithChown(outputFolder, info))
 
-	info, err = os.Stat(inputFolder)
-	require.NoError(t, err)
 	actualInfo, err := os.Stat(outputFolder)
 	require.NoError(t, err)
 	assert.Equal(t, info.Mode(), actualInfo.Mode())
