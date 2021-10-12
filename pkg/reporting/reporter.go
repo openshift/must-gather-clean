@@ -70,7 +70,7 @@ func (s *SimpleReporter) WriteReport(path string) error {
 		return fmt.Errorf("failed to write report at %s: %w", path, err)
 	}
 
-	klog.V(2).Infof("successfully saved obfuscation report in %s", path)
+	klog.V(3).Infof("successfully saved obfuscation report in %s", path)
 
 	return nil
 }

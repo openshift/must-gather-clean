@@ -8,9 +8,9 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strconv"
 	"sync"
 
+	"github.com/openshift/must-gather-clean/pkg/fsutil"
 	"github.com/openshift/must-gather-clean/pkg/kube"
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
 	"github.com/openshift/must-gather-clean/pkg/omitter"
@@ -94,20 +94,31 @@ func (c *FileProcessor) Process(path string) error {
 
 func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile string) error {
 	readPath := filepath.Join(c.inputFolder, inputFile)
+	readPathParentDir := filepath.Dir(readPath)
 	writePath := filepath.Join(c.outputFolder, outputFile)
 	writePathParentDir := filepath.Dir(writePath)
+
+	err := fsutil.CreateDirLikeInput(readPathParentDir, writePathParentDir)
+	if err != nil {
+		return err
+	}
+
+	readPathStat, err := os.Lstat(readPath)
+	if err != nil {
+		return fmt.Errorf("failed to lstat input file %s: %w", readPath, err)
+	}
+
+	// symbolic links need some special handling to relink instead of obfuscation
+	if fsutil.IsSymbolicLink(readPathStat) {
+		return fsutil.Relink(readPath, writePath, readPathStat)
+	}
 
 	inputOsFile, err := os.Open(readPath)
 	if err != nil {
 		return err
 	}
 
-	err = os.MkdirAll(writePathParentDir, 0755)
-	if err != nil {
-		return fmt.Errorf("failed to create directory %s: %c", writePathParentDir, err)
-	}
-
-	outputOsFile, err := c.generateNewFile(writePath)
+	outputOsFile, err := c.createNonConflictingFileUnderLock(writePath, readPathStat)
 	if err != nil {
 		return fmt.Errorf("failed to create and open '%s': %w", writePath, err)
 	}
@@ -130,44 +141,15 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 	return nil
 }
 
-// generateNewFile takes the inputFilePath as an argument, validates the existence of the inputFilePath
+// createNonConflictingFileUnderLock takes the inputFilePath as an argument, validates the existence of the inputFilePath
 // If the file exists, this method creates a new file path with the ascending number pattern getting appended to the inputFilePath
 // This method returns the newly created file
 // Ex: If the inputFilePath is "/tmp/aml" and if the file exists, this method generates "/tmp/xyz.yaml.1".
-func (c *FileContentObfuscator) generateNewFile(inputFilePath string) (*os.File, error) {
+func (c *FileContentObfuscator) createNonConflictingFileUnderLock(outputFilePath string, inputFileInfo os.FileInfo) (*os.File, error) {
 	c.pathCollisionMutex.Lock()
 	defer c.pathCollisionMutex.Unlock()
 
-	// we need to assess whether the file exists already to ensure we don't overwrite existing obfuscated data.
-	// that can happen while obfuscating file names and their paths.
-	// Additionally, the stat check is required because os.O_CREATE will implicitly os.O_TRUNC if a file already exist
-
-	_, err := os.Stat(inputFilePath)
-	if err != nil && !os.IsNotExist(err) {
-		return nil, fmt.Errorf("failed to determine if %s already exists: %w", inputFilePath, err)
-	}
-	if err == nil {
-		fileExt := 0
-		for {
-			fileExt++
-			samplePath := inputFilePath + "." + strconv.Itoa(fileExt)
-			_, err := os.Stat(samplePath)
-			if err != nil {
-				if os.IsNotExist(err) {
-					inputFilePath = samplePath
-					break
-				} else {
-					return nil, fmt.Errorf("failed to determine if %s already exists: %w", samplePath, err)
-				}
-			}
-		}
-	}
-
-	outputOsFile, err := os.OpenFile(inputFilePath, os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create and open '%s': %w", inputFilePath, err)
-	}
-	return outputOsFile, nil
+	return fsutil.CreateNonConflictingFile(outputFilePath, inputFileInfo)
 }
 
 func (c *ContentObfuscator) ObfuscateReader(inputReader io.Reader, outputWriter io.Writer) error {
