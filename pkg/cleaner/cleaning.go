@@ -98,7 +98,7 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 	writePath := filepath.Join(c.outputFolder, outputFile)
 	writePathParentDir := filepath.Dir(writePath)
 
-	err := fsutil.MkdirAllWithChown(readPathParentDir, writePathParentDir)
+	err := fsutil.MkdirAllWithChown(writePathParentDir, readPathParentDir)
 	if err != nil {
 		return err
 	}
