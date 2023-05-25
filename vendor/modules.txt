@@ -7,6 +7,9 @@ github.com/atombender/go-jsonschema/pkg/schemas
 github.com/atombender/go-jsonschema/pkg/yamlutils
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
+# github.com/gijsbers/go-pcre v0.0.0-20161214203829-a84f3096ab3c
+## explicit
+github.com/gijsbers/go-pcre
 # github.com/go-logr/logr v0.4.0
 github.com/go-logr/logr
 # github.com/inconshreveable/mousetrap v1.0.0

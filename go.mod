@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/atombender/go-jsonschema v0.0.0-00010101000000-000000000000
+	github.com/gijsbers/go-pcre v0.0.0-20161214203829-a84f3096ab3c // indirect
 	github.com/openshift/build-machinery-go v0.0.0-20210712174854-1bb7fd1518d3
 	github.com/spf13/cobra v1.1.3
 	github.com/stretchr/testify v1.7.0
