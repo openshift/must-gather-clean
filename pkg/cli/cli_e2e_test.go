@@ -1,3 +1,4 @@
+//go:build e2e
 // +build e2e
 
 package cli
@@ -6,7 +7,6 @@ import (
 	"flag"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -93,7 +93,7 @@ func verifyObfuscation(t *testing.T, dir string, report *reporting.Report) {
 		}
 
 		if !info.IsDir() {
-			file, err := ioutil.ReadFile(path)
+			file, err := os.ReadFile(path)
 			if err != nil {
 				return err
 			}
@@ -182,7 +182,7 @@ func verifyConfig(t *testing.T, report *reporting.Report) {
 }
 
 func readReport(t *testing.T, path string) *reporting.Report {
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	require.NoError(t, err)
 	report := &reporting.Report{}
 	require.NoError(t, yaml.Unmarshal(bytes, report))

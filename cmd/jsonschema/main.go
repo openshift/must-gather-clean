@@ -1,5 +1,7 @@
 package main
 
+// this is an alternative to the vendor via tools.go, which does not work anymore with main packages
+
 import (
 	"fmt"
 	"os"

@@ -2,7 +2,6 @@ package cleaner
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -123,8 +122,8 @@ func TestObfuscateFileOutputExists(t *testing.T) {
 	}()
 
 	existingFile := "existing.file"
-	require.NoError(t, ioutil.WriteFile(filepath.Join(tmpInputDir, existingFile), []byte("hello world"), 0666))
-	require.NoError(t, ioutil.WriteFile(filepath.Join(tmpOutputDir, existingFile), []byte("hello world"), 0666))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpInputDir, existingFile), []byte("hello world"), 0666))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpOutputDir, existingFile), []byte("hello world"), 0666))
 	fco := &FileContentObfuscator{
 		ContentObfuscator: ContentObfuscator{Obfuscator: obfuscator.NoopObfuscator{}},
 		inputFolder:       tmpInputDir,
@@ -290,7 +289,7 @@ metadata:
 			}
 
 			if tc.output != "" {
-				bytes, err := ioutil.ReadFile(filepath.Join(tmpOutputDir, testFileName))
+				bytes, err := os.ReadFile(filepath.Join(tmpOutputDir, testFileName))
 				require.NoError(t, err)
 				require.Equal(t, tc.output, string(bytes))
 			}

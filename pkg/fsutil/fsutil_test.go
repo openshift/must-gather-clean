@@ -2,7 +2,6 @@ package fsutil
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -29,7 +28,7 @@ func TestEnsureOutputPathNonEmptyDir(t *testing.T) {
 		_ = os.RemoveAll(testDir)
 	}()
 
-	err = ioutil.WriteFile(filepath.Join(testDir, "nonempty"), []byte("nonempty"), 0644)
+	err = os.WriteFile(filepath.Join(testDir, "nonempty"), []byte("nonempty"), 0644)
 	require.NoError(t, err)
 
 	err = ensureOutputPath(testDir, false, testDir)
@@ -79,7 +78,7 @@ func TestEnsureOutputPathDeletesIfRequired(t *testing.T) {
 	}()
 
 	toBeDeletedFile := filepath.Join(testDir, "nonempty")
-	err = ioutil.WriteFile(toBeDeletedFile, []byte("nonempty"), 0664)
+	err = os.WriteFile(toBeDeletedFile, []byte("nonempty"), 0664)
 	require.NoError(t, err)
 
 	err = ensureOutputPath(testDir, true, secondTestDir)

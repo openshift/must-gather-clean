@@ -1,7 +1,6 @@
 package kube
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -122,7 +121,7 @@ func TestNonYamlNonJsonReading(t *testing.T) {
 }
 
 func TestReadNonK8sJSON(t *testing.T) {
-	file, err := ioutil.TempFile("", "kube-schema-read-*.yaml")
+	file, err := os.CreateTemp("", "kube-schema-read-*.yaml")
 	require.NoError(t, err)
 	defer func(name string) {
 		_ = os.Remove(name)
@@ -149,7 +148,7 @@ func assertOutput(t *testing.T, fileName string, expectedError error, expectedOu
 }
 
 func asYaml(t *testing.T, resource string) (*os.File, error) {
-	file, err := ioutil.TempFile("", "kube-schema-read-*.yaml")
+	file, err := os.CreateTemp("", "kube-schema-read-*.yaml")
 	require.NoError(t, err)
 	_, err = file.Write([]byte(resource))
 	require.NoError(t, err)
@@ -158,7 +157,7 @@ func asYaml(t *testing.T, resource string) (*os.File, error) {
 }
 
 func fromYamlToJson(t *testing.T, resource string) (*os.File, error) {
-	file, err := ioutil.TempFile("", "kube-schema-read-*.json")
+	file, err := os.CreateTemp("", "kube-schema-read-*.json")
 	require.NoError(t, err)
 	bytes, err := yaml.YAMLToJSON([]byte(resource))
 	require.NoError(t, err)

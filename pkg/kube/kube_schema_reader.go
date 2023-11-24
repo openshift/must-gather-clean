@@ -3,7 +3,7 @@ package kube
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -26,7 +26,7 @@ func ReadKubernetesResourceFromPath(path string) (*ResourceListWithPath, error) 
 		return nil, NoKubernetesResourceError
 	}
 
-	input, err := ioutil.ReadFile(path)
+	input, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

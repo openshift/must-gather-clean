@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-VERSION=1.41.1
+VERSION=1.55.2
 GOOS=$(go env GOOS)
 TARNAME=golangci-lint-$VERSION-$GOOS-amd64.tar.gz
 URL=https://github.com/golangci/golangci-lint/releases/download/v$VERSION/$TARNAME
@@ -9,10 +9,10 @@ GOLANGCI_LINT=bin/golangci-lint
 
 case $GOOS in
     linux)
-        CHECKSUM=2ad1b2313f89d8ecb35f2e4d2463cf5bc1e057518e4c523565f09416046c21f7
+        CHECKSUM=bbc027140417125a1833a83291fa7f9516c9c6fd6244d2dded000730608fa525
         ;;
     darwin)
-        CHECKSUM=458f15c43f72b0bd905ff165c42cf474e5510f91f4a10ae025e42e22fe8b578f
+        CHECKSUM=632e96e6d5294fbbe7b2c410a49c8fa01c60712a0af85a567de85bcc1623ea21
         ;;
     *)
         echo "Unknown GOOS $GOOS"
