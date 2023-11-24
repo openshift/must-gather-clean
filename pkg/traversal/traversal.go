@@ -1,6 +1,7 @@
 package traversal
 
 import (
+	"errors"
 	"io/fs"
 	"path/filepath"
 	"sync"
@@ -38,8 +39,9 @@ func (w *FileWalker) Traverse() {
 	errorWg.Add(1)
 	go func(errorCh <-chan error) {
 		for err := range errorCh {
-			switch e := err.(type) {
-			case *fileProcessingError:
+			var e *fileProcessingError
+			switch {
+			case errors.As(err, &e):
 				klog.Exitf("failed to process %s due to %v", e.path, e.cause)
 			default:
 				klog.Exitf("unexpected error: %v", err)
