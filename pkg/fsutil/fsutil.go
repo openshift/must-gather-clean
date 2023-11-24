@@ -28,7 +28,7 @@ func Relink(readPath string, writePath string, readPathStat os.FileInfo) error {
 	if err == nil {
 		return nil
 	} else {
-		klog.V(1).Infof("could not link '%s' to '%s', trying shell instead. Error was: %w", src, writePath, err)
+		klog.V(1).Infof("could not link '%s' to '%s', trying shell instead. Error was: %v", src, writePath, err)
 	}
 
 	cmd := exec.Command("cp", "--preserve=links", "--no-dereference", src, writePath)
@@ -36,7 +36,7 @@ func Relink(readPath string, writePath string, readPathStat os.FileInfo) error {
 	if err == nil {
 		return nil
 	} else if ee, ok := err.(*exec.ExitError); ok {
-		klog.V(1).Infof("could not link '%s' to '%s' via shell, writing file instead. Error was: %w", src, writePath, ee)
+		klog.V(1).Infof("could not link '%s' to '%s' via shell, writing file instead. Error was: %v", src, writePath, ee)
 	}
 
 	err = os.WriteFile(writePath, []byte(src), readPathStat.Mode())

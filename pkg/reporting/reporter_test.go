@@ -1,7 +1,6 @@
 package reporting
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -65,7 +64,7 @@ func TestReportingHappyPath(t *testing.T) {
 }
 
 func assertReportMatches(t *testing.T, file string, expectedReport Report) {
-	bytes, err := ioutil.ReadFile(file)
+	bytes, err := os.ReadFile(file)
 	require.NoError(t, err)
 
 	actualReport := &Report{}

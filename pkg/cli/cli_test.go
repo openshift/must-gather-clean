@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -147,7 +146,7 @@ func TestRunPipeNoConfig(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, outputFile.Close())
 
-	bytes, err := ioutil.ReadFile(outputFile.Name())
+	bytes, err := os.ReadFile(outputFile.Name())
 	require.NoError(t, err)
 
 	assert.Equal(t, "some IP x-ipv4-0000000001-x that needs to be obfuscated\nand some mac x-mac-0000000001-x\n", string(bytes))
@@ -196,7 +195,7 @@ config:
 	require.NoError(t, err)
 	require.NoError(t, outputFile.Close())
 
-	bytes, err := ioutil.ReadFile(outputFile.Name())
+	bytes, err := os.ReadFile(outputFile.Name())
 	require.NoError(t, err)
 
 	assert.Equal(t, "some IP 192.167.122.2 that should not to be obfuscated\nand some mac x-mac-0000000001-x\n", string(bytes))

@@ -1,5 +1,6 @@
 # Binary
 /must-gather-clean
+/jsonschema
 
 # Goland IDE
 .idea

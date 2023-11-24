@@ -2,7 +2,7 @@ package schema
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -35,7 +35,7 @@ func ReadConfigFromPath(path string) (*SchemaJson, error) {
 	}
 
 	var bytes []byte
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil, wrapError(err)
 	}

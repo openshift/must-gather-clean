@@ -2,12 +2,9 @@ package main
 
 import (
 	goflag "flag"
-	"math/rand"
+	"k8s.io/klog/v2"
 	"os"
 	"runtime"
-	"time"
-
-	"k8s.io/klog/v2"
 
 	"github.com/openshift/must-gather-clean/pkg/cli"
 	"github.com/spf13/cobra"
@@ -73,6 +70,5 @@ func main() {
 
 	initFlags()
 
-	rand.Seed(time.Now().UTC().UnixNano())
 	cobra.CheckErr(rootCmd.Execute())
 }

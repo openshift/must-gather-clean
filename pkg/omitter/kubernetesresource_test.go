@@ -1,7 +1,6 @@
 package omitter
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -211,7 +210,7 @@ items:
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			file, err := ioutil.TempFile("", "resource-omit-*.yaml")
+			file, err := os.CreateTemp("", "resource-omit-*.yaml")
 			require.NoError(t, err)
 			defer func(name string) {
 				_ = os.Remove(name)
