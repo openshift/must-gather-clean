@@ -3,12 +3,15 @@ package cleaner
 
 import (
 	"bufio"
+	"compress/gzip"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
+	"unicode/utf8"
 
 	"github.com/openshift/must-gather-clean/pkg/fsutil"
 	"github.com/openshift/must-gather-clean/pkg/kube"
@@ -70,7 +73,7 @@ func (c *FileProcessor) Process(path string) error {
 	isKubernetesResource := true
 	kubeResource, err := kube.ReadKubernetesResourceFromPath(filepath.Join(c.inputFolder, path))
 	if err != nil {
-		if err == kube.NoKubernetesResourceError {
+		if errors.Is(err, kube.NoKubernetesResourceError) {
 			isKubernetesResource = false
 		} else {
 			return err
@@ -113,14 +116,27 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 		return fsutil.Relink(readPath, writePath, readPathStat)
 	}
 
-	inputOsFile, err := os.Open(readPath)
+	var inputOsFile io.ReadCloser
+	var outputOsFile io.WriteCloser
+
+	inputOsFile, err = os.Open(readPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open '%s': %w", readPath, err)
 	}
 
-	outputOsFile, err := c.createNonConflictingFileUnderLock(writePath, readPathStat)
+	outputOsFile, err = c.createNonConflictingFileUnderLock(writePath, readPathStat)
 	if err != nil {
 		return fmt.Errorf("failed to create and open '%s': %w", writePath, err)
+	}
+
+	// must-gathers can include gunzipped log files nowadays, handling this special case here once
+	if strings.HasSuffix(readPath, ".gz") {
+		inputOsFile, err = gzip.NewReader(inputOsFile)
+		if err != nil {
+			return fmt.Errorf("failed to create a gzip reader when opening '%s': %w", readPath, err)
+		}
+
+		outputOsFile = gzip.NewWriter(outputOsFile)
 	}
 
 	err = c.ObfuscateReader(inputOsFile, outputOsFile)
@@ -170,6 +186,10 @@ func (c *ContentObfuscator) ObfuscateReader(inputReader io.Reader, outputWriter 
 			} else {
 				return err
 			}
+		}
+
+		if !utf8.ValidString(line) {
+			return fmt.Errorf("could not read valid utf-8 line: '%s'", line)
 		}
 
 		contents := c.Obfuscator.Contents(line)
