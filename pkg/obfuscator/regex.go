@@ -2,15 +2,13 @@ package obfuscator
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
-
-	"github.com/gijsbers/go-pcre"
 )
 
 type regexObfuscator struct {
 	ReplacementTracker
-	pattern    pcre.Regexp
-	patternStr string
+	pattern *regexp.Regexp
 }
 
 func (r *regexObfuscator) Path(s string) string {
@@ -23,36 +21,24 @@ func (r *regexObfuscator) Contents(s string) string {
 
 func (r *regexObfuscator) replace(input string) string {
 	output := input
-	matcher := r.pattern.MatcherString(input, 0)
-	if r.patternStr == ".*" {
-		m := matcher.GroupString(0)
+	matches := r.pattern.FindAllString(input, -1)
+	for _, m := range matches {
 		replacement := strings.Repeat("x", len(m))
 		r.GenerateIfAbsent(m, m, 1, func() string {
 			return replacement
 		})
 		output = strings.ReplaceAll(output, m, replacement)
-	} else {
-		for matcher.Matches() {
-			m := matcher.GroupString(0)
-			replacement := strings.Repeat("x", len(m))
-			r.GenerateIfAbsent(m, m, 1, func() string {
-				return replacement
-			})
-			output = strings.ReplaceAll(output, m, replacement)
-			matcher = r.pattern.MatcherString(output, 0)
-		}
 	}
 	return output
 }
 
 func NewRegexObfuscator(pattern string, tracker ReplacementTracker) (ReportingObfuscator, error) {
-	regex, err := pcre.Compile(pattern, 0)
+	regex, err := regexp.Compile(pattern)
 	if err != nil {
 		return nil, fmt.Errorf("pattern %s is invalid: %w", pattern, err)
 	}
 	return &regexObfuscator{
 		pattern:            regex,
-		patternStr:         pattern,
 		ReplacementTracker: tracker,
 	}, nil
 }
