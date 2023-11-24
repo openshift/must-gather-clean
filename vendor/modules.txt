@@ -1,23 +1,28 @@
 # github.com/atombender/go-jsonschema v0.0.0-00010101000000-000000000000 => github.com/tjungblu/go-jsonschema v0.9.1-0.20210922142453-a1b781d84980
-## explicit
+## explicit; go 1.13
 github.com/atombender/go-jsonschema/cmd/gojsonschema
 github.com/atombender/go-jsonschema/pkg/codegen
 github.com/atombender/go-jsonschema/pkg/generator
 github.com/atombender/go-jsonschema/pkg/schemas
 github.com/atombender/go-jsonschema/pkg/yamlutils
 # github.com/davecgh/go-spew v1.1.1
+## explicit
 github.com/davecgh/go-spew/spew
 # github.com/gijsbers/go-pcre v0.0.0-20161214203829-a84f3096ab3c
 ## explicit
 github.com/gijsbers/go-pcre
-# github.com/go-logr/logr v0.4.0
+# github.com/go-logr/logr v1.3.0
+## explicit; go 1.18
 github.com/go-logr/logr
-# github.com/inconshreveable/mousetrap v1.0.0
+github.com/go-logr/logr/slogr
+# github.com/inconshreveable/mousetrap v1.1.0
+## explicit; go 1.18
 github.com/inconshreveable/mousetrap
 # github.com/mitchellh/go-wordwrap v1.0.0
-github.com/mitchellh/go-wordwrap
-# github.com/openshift/build-machinery-go v0.0.0-20210712174854-1bb7fd1518d3
 ## explicit
+github.com/mitchellh/go-wordwrap
+# github.com/openshift/build-machinery-go v0.0.0-20230824093055-6a18da01283c
+## explicit; go 1.13
 github.com/openshift/build-machinery-go
 github.com/openshift/build-machinery-go/make
 github.com/openshift/build-machinery-go/make/lib
@@ -27,29 +32,41 @@ github.com/openshift/build-machinery-go/make/targets/openshift
 github.com/openshift/build-machinery-go/make/targets/openshift/operator
 github.com/openshift/build-machinery-go/scripts
 # github.com/pkg/errors v0.8.1
+## explicit
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
+## explicit
 github.com/pmezard/go-difflib/difflib
 # github.com/sanity-io/litter v1.1.0
-github.com/sanity-io/litter
-# github.com/spf13/cobra v1.1.3
 ## explicit
+github.com/sanity-io/litter
+# github.com/spf13/cobra v1.8.0
+## explicit; go 1.15
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
+## explicit; go 1.12
 github.com/spf13/pflag
-# github.com/stretchr/testify v1.7.0
-## explicit
+# github.com/stretchr/testify v1.8.4
+## explicit; go 1.20
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
-# gopkg.in/yaml.v2 v2.4.0
+# gopkg.in/yaml.v2 v2.2.2
+## explicit
 gopkg.in/yaml.v2
-# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+# gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# k8s.io/klog/v2 v2.10.0
-## explicit
+# k8s.io/klog/v2 v2.110.1
+## explicit; go 1.13
 k8s.io/klog/v2
-# sigs.k8s.io/yaml v1.2.0
-## explicit
+k8s.io/klog/v2/internal/buffer
+k8s.io/klog/v2/internal/clock
+k8s.io/klog/v2/internal/dbg
+k8s.io/klog/v2/internal/serialize
+k8s.io/klog/v2/internal/severity
+k8s.io/klog/v2/internal/sloghandler
+# sigs.k8s.io/yaml v1.4.0
+## explicit; go 1.12
 sigs.k8s.io/yaml
+sigs.k8s.io/yaml/goyaml.v2
 # github.com/atombender/go-jsonschema => github.com/tjungblu/go-jsonschema v0.9.1-0.20210922142453-a1b781d84980
