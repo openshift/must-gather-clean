@@ -1,0 +1,2807 @@
+replacements:
+    - - canonical: 10.0.0.0
+        replacedWith: x-ipv4-0000000001-x
+        occurrences:
+            - original: 10.0.0.0
+              count: 12
+      - canonical: 10.128.0.0
+        replacedWith: x-ipv4-0000000002-x
+        occurrences:
+            - original: 10.128.0.0
+              count: 4
+      - canonical: 1.0.0.0
+        replacedWith: x-ipv4-0000000003-x
+        occurrences:
+            - original: 1.0.0.0
+              count: 4
+      - canonical: 172.30.0.0
+        replacedWith: x-ipv4-0000000004-x
+        occurrences:
+            - original: 172.30.0.0
+              count: 4
+    - []
+    - []
+    - - canonical: F55CBF1FEA478625
+        replacedWith: x-subresource-0000000175-x
+        occurrences:
+            - original: F55CBF1FEA478625
+              count: 4
+      - canonical: 5E80F498CF1FE44E
+        replacedWith: x-subresource-0000000001-x
+        occurrences:
+            - original: 5E80F498CF1FE44E
+              count: 4
+      - canonical: cust-kv-xyrv6fg5g54zg
+        replacedWith: x-resource-0000000054-x
+        occurrences:
+            - original: cust-kv-xyrv6fg5g54zg
+              count: 42
+      - canonical: 00ef79d4-67af-5c84-afb1-1a3dea294c5e
+        replacedWith: x-resource-0000000102-x
+        occurrences:
+            - original: 00ef79d4-67af-5c84-afb1-1a3dea294c5e
+              count: 10
+      - canonical: 77C8BCF9F9F3B4BB
+        replacedWith: x-subresource-0000000087-x
+        occurrences:
+            - original: 77C8BCF9F9F3B4BB
+              count: 4
+      - canonical: BD5C38603BEF5332
+        replacedWith: x-subresource-0000000125-x
+        occurrences:
+            - original: BD5C38603BEF5332
+              count: 4
+      - canonical: np-1
+        replacedWith: x-subresource-0000000014-x
+        occurrences:
+            - original: np-1
+              count: 26
+      - canonical: BF4BDFAB5EC16C6E
+        replacedWith: x-subresource-0000000110-x
+        occurrences:
+            - original: BF4BDFAB5EC16C6E
+              count: 4
+      - canonical: C51CCB1E5B831EED
+        replacedWith: x-subresource-0000000135-x
+        occurrences:
+            - original: C51CCB1E5B831EED
+              count: 4
+      - canonical: 34D5215012D29BEC
+        replacedWith: x-subresource-0000000139-x
+        occurrences:
+            - original: 34D5215012D29BEC
+              count: 4
+      - canonical: 12338af0-0e69-4776-bea7-57ae8d297424
+        replacedWith: x-resource-0000000139-x
+        occurrences:
+            - original: 12338af0-0e69-4776-bea7-57ae8d297424
+              count: 8
+      - canonical: disabled-image-registry-hcp-cluster-dp-disk-csi-driver-hsj7olkh3t7qk
+        replacedWith: x-resource-0000000038-x
+        occurrences:
+            - original: disabled-image-registry-hcp-cluster-dp-disk-csi-driver-hsj7olkh3t7qk
+              count: 22
+      - canonical: AC6942807A3A6ED6
+        replacedWith: x-subresource-0000000081-x
+        occurrences:
+            - original: AC6942807A3A6ED6
+              count: 4
+      - canonical: d6763a0a-58a4-5916-aab2-9b4ef1fb2c4f
+        replacedWith: x-resource-0000000127-x
+        occurrences:
+            - original: d6763a0a-58a4-5916-aab2-9b4ef1fb2c4f
+              count: 10
+      - canonical: B0FA1606C6152E92
+        replacedWith: x-subresource-0000000004-x
+        occurrences:
+            - original: B0FA1606C6152E92
+              count: 4
+      - canonical: e91cfd7c-c3ae-5b42-afdf-fd8d216bd3b4
+        replacedWith: x-resource-0000000103-x
+        occurrences:
+            - original: e91cfd7c-c3ae-5b42-afdf-fd8d216bd3b4
+              count: 12
+      - canonical: f63fc942-59f8-5611-a1d4-5ccdab06fdc8
+        replacedWith: x-resource-0000000142-x
+        occurrences:
+            - original: f63fc942-59f8-5611-a1d4-5ccdab06fdc8
+              count: 10
+      - canonical: 8069BAD5FCA6A7AB
+        replacedWith: x-subresource-0000000105-x
+        occurrences:
+            - original: 8069BAD5FCA6A7AB
+              count: 4
+      - canonical: EF0684BFDC77E11C
+        replacedWith: x-subresource-0000000160-x
+        occurrences:
+            - original: EF0684BFDC77E11C
+              count: 4
+      - canonical: B8F9D1910C2AD3B1
+        replacedWith: x-subresource-0000000191-x
+        occurrences:
+            - original: B8F9D1910C2AD3B1
+              count: 4
+      - canonical: etcd-data-kms-encryption-key
+        replacedWith: x-subresource-0000000008-x
+        occurrences:
+            - original: etcd-data-kms-encryption-key
+              count: 108
+      - canonical: b98d878d-657d-5fe1-b00c-00bc5ea451fc
+        replacedWith: x-resource-0000000107-x
+        occurrences:
+            - original: b98d878d-657d-5fe1-b00c-00bc5ea451fc
+              count: 12
+      - canonical: C8852BF6DC704A04
+        replacedWith: x-subresource-0000000203-x
+        occurrences:
+            - original: C8852BF6DC704A04
+              count: 4
+      - canonical: disabled-image-registry-hcp-cluster-cp-ingress-hsj7olkh3t7qk
+        replacedWith: x-resource-0000000028-x
+        occurrences:
+            - original: disabled-image-registry-hcp-cluster-cp-ingress-hsj7olkh3t7qk
+              count: 40
+      - canonical: 15ec09c2-7a9a-56dd-bdc9-3be72da5c237
+        replacedWith: x-resource-0000000155-x
+        occurrences:
+            - original: 15ec09c2-7a9a-56dd-bdc9-3be72da5c237
+              count: 10
+      - canonical: 2fa77dbb-7d9d-5df3-a5a7-bd2220e2421f
+        replacedWith: x-resource-0000000131-x
+        occurrences:
+            - original: 2fa77dbb-7d9d-5df3-a5a7-bd2220e2421f
+              count: 12
+      - canonical: 0e06520d-8ad1-5326-8975-1bf8cdc14b5b
+        replacedWith: x-resource-0000000091-x
+        occurrences:
+            - original: 0e06520d-8ad1-5326-8975-1bf8cdc14b5b
+              count: 10
+      - canonical: 202ab698-fda7-5e83-8073-6cb747861f79
+        replacedWith: x-resource-0000000098-x
+        occurrences:
+            - original: 202ab698-fda7-5e83-8073-6cb747861f79
+              count: 10
+      - canonical: FD4A896BB77D6635
+        replacedWith: x-subresource-0000000074-x
+        occurrences:
+            - original: FD4A896BB77D6635
+              count: 4
+      - canonical: 6ED8C13434C9BE4F
+        replacedWith: x-subresource-0000000084-x
+        occurrences:
+            - original: 6ED8C13434C9BE4F
+              count: 4
+      - canonical: "08584453809568288890"
+        replacedWith: x-subresource-0000000256-x
+        occurrences:
+            - original: "08584453809568288890"
+              count: 4
+      - canonical: disabled-image-registry-hcp-cluster-dp-image-registry-hsj7olkh3t7qk
+        replacedWith: x-resource-0000000041-x
+        occurrences:
+            - original: disabled-image-registry-hcp-cluster-dp-image-registry-hsj7olkh3t7qk
+              count: 22
+      - canonical: illegal-hcp-cluster-dp-image-registry-xyrv6fg5g54zg
+        replacedWith: x-resource-0000000099-x
+        occurrences:
+            - original: illegal-hcp-cluster-dp-image-registry-xyrv6fg5g54zg
+              count: 22
+      - canonical: E902AD8E783567C6
+        replacedWith: x-subresource-0000000151-x
+        occurrences:
+            - original: E902AD8E783567C6
+              count: 4
+      - canonical: 4E66CEBF4E2C1602
+        replacedWith: x-subresource-0000000204-x
+        occurrences:
+            - original: 4E66CEBF4E2C1602
+              count: 4
+      - canonical: AB99AF0CEF7DC167
+        replacedWith: x-subresource-0000000217-x
+        occurrences:
+            - original: AB99AF0CEF7DC167
+              count: 4
+      - canonical: "08584453809377282106"
+        replacedWith: x-subresource-0000000046-x
+        occurrences:
+            - original: "08584453809377282106"
+              count: 4
+      - canonical: 8ABC87319E58F46D
+        replacedWith: x-subresource-0000000067-x
+        occurrences:
+            - original: 8ABC87319E58F46D
+              count: 4
+      - canonical: eb5798ad-6f99-5b4a-952c-ed106fba5a8a
+        replacedWith: x-resource-0000000118-x
+        occurrences:
+            - original: eb5798ad-6f99-5b4a-952c-ed106fba5a8a
+              count: 10
+      - canonical: 65c2b5fd-661d-5180-a565-5231830488a4
+        replacedWith: x-resource-0000000163-x
+        occurrences:
+            - original: 65c2b5fd-661d-5180-a565-5231830488a4
+              count: 10
+      - canonical: DDBAC9AEFC6AF37D
+        replacedWith: x-subresource-0000000241-x
+        occurrences:
+            - original: DDBAC9AEFC6AF37D
+              count: 4
+      - canonical: gpu-nodepool-cluster-pht6k5-cp-file-csi-driver-pj2d7pwdc2da2
+        replacedWith: x-resource-0000000078-x
+        occurrences:
+            - original: gpu-nodepool-cluster-pht6k5-cp-file-csi-driver-pj2d7pwdc2da2
+              count: 52
+      - canonical: 4e361cd7-476b-5e6a-ad13-bb6cbeeab9f5
+        replacedWith: x-resource-0000000146-x
+        occurrences:
+            - original: 4e361cd7-476b-5e6a-ad13-bb6cbeeab9f5
+              count: 10
+      - canonical: 0b3dd8e5-ecf6-55da-a6b0-9c10b1630688
+        replacedWith: x-resource-0000000106-x
+        occurrences:
+            - original: 0b3dd8e5-ecf6-55da-a6b0-9c10b1630688
+              count: 10
+      - canonical: 2B995E64C766E47B
+        replacedWith: x-subresource-0000000189-x
+        occurrences:
+            - original: 2B995E64C766E47B
+              count: 4
+      - canonical: 683A76BB101220E2
+        replacedWith: x-subresource-0000000251-x
+        occurrences:
+            - original: 683A76BB101220E2
+              count: 4
+      - canonical: hcp-cluster
+        replacedWith: x-resource-0000000002-x
+        occurrences:
+            - original: hcp-cluster
+              count: 591
+      - canonical: 0961039082CA77E0
+        replacedWith: x-subresource-0000000194-x
+        occurrences:
+            - original: 0961039082CA77E0
+              count: 4
+      - canonical: E7C88762AFA69904
+        replacedWith: x-subresource-0000000049-x
+        occurrences:
+            - original: E7C88762AFA69904
+              count: 4
+      - canonical: 973be7f0-b646-51c4-96f4-5280b1c2b203
+        replacedWith: x-resource-0000000190-x
+        occurrences:
+            - original: 973be7f0-b646-51c4-96f4-5280b1c2b203
+              count: 10
+      - canonical: DDEB59E29A08B8C8
+        replacedWith: x-subresource-0000000171-x
+        occurrences:
+            - original: DDEB59E29A08B8C8
+              count: 4
+      - canonical: A0ACD8E426379098
+        replacedWith: x-subresource-0000000026-x
+        occurrences:
+            - original: A0ACD8E426379098
+              count: 4
+      - canonical: disabled-image-registry-hcp-cluster-cp-kms-hsj7olkh3t7qk
+        replacedWith: x-resource-0000000030-x
+        occurrences:
+            - original: disabled-image-registry-hcp-cluster-cp-kms-hsj7olkh3t7qk
+              count: 40
+      - canonical: illegal-hcp-cluster-cp-control-plane-xyrv6fg5g54zg
+        replacedWith: x-resource-0000000061-x
+        occurrences:
+            - original: illegal-hcp-cluster-cp-control-plane-xyrv6fg5g54zg
+              count: 48
+      - canonical: 7A1130065DBA4488
+        replacedWith: x-subresource-0000000066-x
+        occurrences:
+            - original: 7A1130065DBA4488
+              count: 4
+      - canonical: A8C1083B245552CA
+        replacedWith: x-subresource-0000000068-x
+        occurrences:
+            - original: A8C1083B245552CA
+              count: 4
+      - canonical: E14FE1EB3741E1B4
+        replacedWith: x-subresource-0000000071-x
+        occurrences:
+            - original: E14FE1EB3741E1B4
+              count: 4
+      - canonical: B703DDF817C7EA2D
+        replacedWith: x-subresource-0000000253-x
+        occurrences:
+            - original: B703DDF817C7EA2D
+              count: 4
+      - canonical: illegal-hcp-cluster-cp-cloud-controller-manager-xyrv6fg5g54zg
+        replacedWith: x-resource-0000000051-x
+        occurrences:
+            - original: illegal-hcp-cluster-cp-cloud-controller-manager-xyrv6fg5g54zg
+              count: 48
+      - canonical: F64F342727F189FC
+        replacedWith: x-subresource-0000000057-x
+        occurrences:
+            - original: F64F342727F189FC
+              count: 4
+      - canonical: 96D30BDA7DAA752E
+        replacedWith: x-subresource-0000000126-x
+        occurrences:
+            - original: 96D30BDA7DAA752E
+              count: 4
+      - canonical: basic-hcp-cluster-cp-cloud-controller-manager-qtzz6m6tpprgu
+        replacedWith: x-resource-0000000003-x
+        occurrences:
+            - original: basic-hcp-cluster-cp-cloud-controller-manager-qtzz6m6tpprgu
+              count: 48
+      - canonical: F2B130A6B802B335
+        replacedWith: x-subresource-0000000195-x
+        occurrences:
+            - original: F2B130A6B802B335
+              count: 4
+      - canonical: node-pool
+        replacedWith: x-resource-0000000004-x
+        occurrences:
+            - original: node-pool
+              count: 14
+      - canonical: basic-hcp-cluster-dp-disk-csi-driver-qtzz6m6tpprgu
+        replacedWith: x-resource-0000000043-x
+        occurrences:
+            - original: basic-hcp-cluster-dp-disk-csi-driver-qtzz6m6tpprgu
+              count: 22
+      - canonical: disabled-image-registry-hcp-cluster
+        replacedWith: x-resource-0000000044-x
+        occurrences:
+            - original: disabled-image-registry-hcp-cluster
+              count: 196
+      - canonical: 845344AFA41A7789
+        replacedWith: x-subresource-0000000088-x
+        occurrences:
+            - original: 845344AFA41A7789
+              count: 4
+      - canonical: DE4C9A3F4984B487
+        replacedWith: x-subresource-0000000255-x
+        occurrences:
+            - original: DE4C9A3F4984B487
+              count: 4
+      - canonical: customer-subnet-1
+        replacedWith: x-subresource-0000000016-x
+        occurrences:
+            - original: customer-subnet-1
+              count: 72
+      - canonical: disabled-image-registry-hcp-cluster-cp-disk-csi-driver-hsj7olkh3t7qk
+        replacedWith: x-resource-0000000024-x
+        occurrences:
+            - original: disabled-image-registry-hcp-cluster-cp-disk-csi-driver-hsj7olkh3t7qk
+              count: 28
+      - canonical: AF631B6F2D1DF3BF
+        replacedWith: x-subresource-0000000041-x
+        occurrences:
+            - original: AF631B6F2D1DF3BF
+              count: 4
+      - canonical: 010270f7-c202-5b69-a133-c97da3248d05
+        replacedWith: x-resource-0000000114-x
+        occurrences:
+            - original: 010270f7-c202-5b69-a133-c97da3248d05
+              count: 10
+      - canonical: 6F0449B611DD0980
+        replacedWith: x-subresource-0000000010-x
+        occurrences:
+            - original: 6F0449B611DD0980
+              count: 4
+      - canonical: basic-hcp-cluster-dp-file-csi-driver-qtzz6m6tpprgu
+        replacedWith: x-resource-0000000046-x
+        occurrences:
+            - original: basic-hcp-cluster-dp-file-csi-driver-qtzz6m6tpprgu
+              count: 42
+      - canonical: c2b4ae41-a70a-56c5-88c6-7599e1defa5e
+        replacedWith: x-resource-0000000128-x
+        occurrences:
+            - original: c2b4ae41-a70a-56c5-88c6-7599e1defa5e
+              count: 10
+      - canonical: fa1261d5-9761-56fc-951f-d7c3168a6a69
+        replacedWith: x-resource-0000000132-x
+        occurrences:
+            - original: fa1261d5-9761-56fc-951f-d7c3168a6a69
+              count: 12
+      - canonical: e2591054-0047-5274-9067-e1b066c71e91
+        replacedWith: x-resource-0000000138-x
+        occurrences:
+            - original: e2591054-0047-5274-9067-e1b066c71e91
+              count: 10
+      - canonical: disabled-image-registry-hcp-cluster-cp-cluster-api-azure-hsj7olkh3t7qk
+        replacedWith: x-resource-0000000020-x
+        occurrences:
+            - original: disabled-image-registry-hcp-cluster-cp-cluster-api-azure-hsj7olkh3t7qk
+              count: 40
+      - canonical: illegal-hcp-cluster-cp-disk-csi-driver-xyrv6fg5g54zg
+        replacedWith: x-resource-0000000062-x
+        occurrences:
+            - original: illegal-hcp-cluster-cp-disk-csi-driver-xyrv6fg5g54zg
+              count: 28
+      - canonical: 556C1090EE34B1A4
+        replacedWith: x-subresource-0000000058-x
+        occurrences:
+            - original: 556C1090EE34B1A4
+              count: 4
+      - canonical: 6CF44137C571E8C4
+        replacedWith: x-subresource-0000000254-x
+        occurrences:
+            - original: 6CF44137C571E8C4
+              count: 4
+      - canonical: "08584453809960576279"
+        replacedWith: x-subresource-0000000032-x
+        occurrences:
+            - original: "08584453809960576279"
+              count: 4
+      - canonical: b19eb6c8-43bb-52be-9165-9330dba7d250
+        replacedWith: x-resource-0000000110-x
+        occurrences:
+            - original: b19eb6c8-43bb-52be-9165-9330dba7d250
+              count: 10
+      - canonical: 6F597A41291C6787
+        replacedWith: x-subresource-0000000098-x
+        occurrences:
+            - original: 6F597A41291C6787
+              count: 4
+      - canonical: CA589E44B1C1FE14
+        replacedWith: x-subresource-0000000121-x
+        occurrences:
+            - original: CA589E44B1C1FE14
+              count: 4
+      - canonical: f82c451a-5120-5d0c-a895-dd6d92603f4f
+        replacedWith: x-resource-0000000060-x
+        occurrences:
+            - original: f82c451a-5120-5d0c-a895-dd6d92603f4f
+              count: 10
+      - canonical: 59ed79b3-a6af-5cd1-bdec-4846fae54486
+        replacedWith: x-resource-0000000157-x
+        occurrences:
+            - original: 59ed79b3-a6af-5cd1-bdec-4846fae54486
+              count: 10
+      - canonical: "08584453809564613809"
+        replacedWith: x-subresource-0000000245-x
+        occurrences:
+            - original: "08584453809564613809"
+              count: 4
+      - canonical: 6b4cd64f-ecef-56b4-be5c-02beca755b02
+        replacedWith: x-resource-0000000126-x
+        occurrences:
+            - original: 6b4cd64f-ecef-56b4-be5c-02beca755b02
+              count: 12
+      - canonical: 1AF723392B29EACB
+        replacedWith: x-subresource-0000000128-x
+        occurrences:
+            - original: 1AF723392B29EACB
+              count: 4
+      - canonical: 32420e9a-13aa-51db-8e7b-e82d4dccc20f
+        replacedWith: x-resource-0000000175-x
+        occurrences:
+            - original: 32420e9a-13aa-51db-8e7b-e82d4dccc20f
+              count: 12
+      - canonical: 6ABAB77036685BEB
+        replacedWith: x-subresource-0000000035-x
+        occurrences:
+            - original: 6ABAB77036685BEB
+              count: 4
+      - canonical: illegal-hcp-cluster-dp-file-csi-driver-xyrv6fg5g54zg
+        replacedWith: x-resource-0000000096-x
+        occurrences:
+            - original: illegal-hcp-cluster-dp-file-csi-driver-xyrv6fg5g54zg
+              count: 42
+      - canonical: 7a25903b-8caf-5177-bf96-7d5e8a714bb3
+        replacedWith: x-resource-0000000100-x
+        occurrences:
+            - original: 7a25903b-8caf-5177-bf96-7d5e8a714bb3
+              count: 10
+      - canonical: af40a738-be27-51f1-bf2e-eed96d87dd41
+        replacedWith: x-resource-0000000113-x
+        occurrences:
+            - original: af40a738-be27-51f1-bf2e-eed96d87dd41
+              count: 12
+      - canonical: 7e1a4d3e-ac43-58b1-b84b-7e737385bed2
+        replacedWith: x-resource-0000000130-x
+        occurrences:
+            - original: 7e1a4d3e-ac43-58b1-b84b-7e737385bed2
+              count: 10
+      - canonical: D8BC609FAB29297D
+        replacedWith: x-subresource-0000000104-x
+        occurrences:
+            - original: D8BC609FAB29297D
+              count: 4
+      - canonical: 845B650EFAA5CB33
+        replacedWith: x-subresource-0000000134-x
+        occurrences:
+            - original: 845B650EFAA5CB33
+              count: 4
+      - canonical: 258184818978A48B
+        replacedWith: x-subresource-0000000156-x
+        occurrences:
+            - original: 258184818978A48B
+              count: 4
+      - canonical: b52ef1d4-5cf6-5d20-853f-9c3327d3a2fd
+        replacedWith: x-resource-0000000049-x
+        occurrences:
+            - original: b52ef1d4-5cf6-5d20-853f-9c3327d3a2fd
+              count: 12
+      - canonical: 55B68FFF45D2FF76
+        replacedWith: x-subresource-0000000235-x
+        occurrences:
+            - original: 55B68FFF45D2FF76
+              count: 4
+      - canonical: D07715B13499A7AB
+        replacedWith: x-subresource-0000000186-x
+        occurrences:
+            - original: D07715B13499A7AB
+              count: 4
+      - canonical: 1A87A22C31BA9A83
+        replacedWith: x-subresource-0000000118-x
+        occurrences:
+            - original: 1A87A22C31BA9A83
+              count: 4
+      - canonical: 721e8a4e-ae43-5a6c-94ad-18a7cc9690ee
+        replacedWith: x-resource-0000000144-x
+        occurrences:
+            - original: 721e8a4e-ae43-5a6c-94ad-18a7cc9690ee
+              count: 10
+      - canonical: e7c3f166-3bab-526b-9f44-6335db119a2b
+        replacedWith: x-resource-0000000133-x
+        occurrences:
+            - original: e7c3f166-3bab-526b-9f44-6335db119a2b
+              count: 10
+      - canonical: 6c77d5ff-f560-58c3-a522-866737489be7
+        replacedWith: x-resource-0000000180-x
+        occurrences:
+            - original: 6c77d5ff-f560-58c3-a522-866737489be7
+              count: 10
+      - canonical: 0FBF5F24706F63B0
+        replacedWith: x-subresource-0000000202-x
+        occurrences:
+            - original: 0FBF5F24706F63B0
+              count: 4
+      - canonical: 9bfec5cf-eef5-57a2-a719-416f6fdb699b
+        replacedWith: x-resource-0000000085-x
+        occurrences:
+            - original: 9bfec5cf-eef5-57a2-a719-416f6fdb699b
+              count: 10
+      - canonical: ED24FB60AE05A5A5
+        replacedWith: x-subresource-0000000034-x
+        occurrences:
+            - original: ED24FB60AE05A5A5
+              count: 4
+      - canonical: 3018502e-151e-5237-8d02-cd91c61feba7
+        replacedWith: x-resource-0000000059-x
+        occurrences:
+            - original: 3018502e-151e-5237-8d02-cd91c61feba7
+              count: 12
+      - canonical: "08584453809959677388"
+        replacedWith: x-subresource-0000000060-x
+        occurrences:
+            - original: "08584453809959677388"
+              count: 4
+      - canonical: gpu-nodepool-cluster-pht6k5-service-managed-identity-pj2d7pwdc2da2
+        replacedWith: x-resource-0000000082-x
+        occurrences:
+            - original: gpu-nodepool-cluster-pht6k5-service-managed-identity-pj2d7pwdc2da2
+              count: 144
+      - canonical: 62C7871E1B4103BF
+        replacedWith: x-subresource-0000000061-x
+        occurrences:
+            - original: 62C7871E1B4103BF
+              count: 4
+      - canonical: disabled-image-registry-hcp-cluster-service-managed-identity-hsj7olkh3t7qk
+        replacedWith: x-resource-0000000031-x
+        occurrences:
+            - original: disabled-image-registry-hcp-cluster-service-managed-identity-hsj7olkh3t7qk
+              count: 142
+      - canonical: fc0c873f-45e9-4d0d-a7d1-585aab30c6ed
+        replacedWith: x-resource-0000000094-x
+        occurrences:
+            - original: fc0c873f-45e9-4d0d-a7d1-585aab30c6ed
+              count: 14
+      - canonical: 616BED1776BBD84E
+        replacedWith: x-subresource-0000000167-x
+        occurrences:
+            - original: 616BED1776BBD84E
+              count: 4
+      - canonical: D44CD522BF64D7A7
+        replacedWith: x-subresource-0000000250-x
+        occurrences:
+            - original: D44CD522BF64D7A7
+              count: 4
+      - canonical: managed-identities
+        replacedWith: x-resource-0000000037-x
+        occurrences:
+            - original: managed-identities
+              count: 335
+      - canonical: FA560E0CE99DF2E9
+        replacedWith: x-subresource-0000000100-x
+        occurrences:
+            - original: FA560E0CE99DF2E9
+              count: 4
+      - canonical: "08584453809913127064"
+        replacedWith: x-subresource-0000000043-x
+        occurrences:
+            - original: "08584453809913127064"
+              count: 4
+      - canonical: 726B609C6D2C1322
+        replacedWith: x-subresource-0000000015-x
+        occurrences:
+            - original: 726B609C6D2C1322
+              count: 4
+      - canonical: 25e6540d-3e0b-5495-bad4-57a564066e99
+        replacedWith: x-resource-0000000154-x
+        occurrences:
+            - original: 25e6540d-3e0b-5495-bad4-57a564066e99
+              count: 10
+      - canonical: E1C81DD9E677018A
+        replacedWith: x-subresource-0000000224-x
+        occurrences:
+            - original: E1C81DD9E677018A
+              count: 4
+      - canonical: 25C8522891FD3E36
+        replacedWith: x-subresource-0000000240-x
+        occurrences:
+            - original: 25C8522891FD3E36
+              count: 4
+      - canonical: disabled-image-registry-gxzgff
+        replacedWith: x-resourcegroup-0000000001-x
+        occurrences:
+            - original: disabled-image-registry-gxzgff
+              count: 691
+      - canonical: gpu-nodepool-cluster-pht6k5-cp-cluster-api-azure-pj2d7pwdc2da2
+        replacedWith: x-resource-0000000075-x
+        occurrences:
+            - original: gpu-nodepool-cluster-pht6k5-cp-cluster-api-azure-pj2d7pwdc2da2
+              count: 44
+      - canonical: cbb5ad34-2107-59b9-8c25-6ad3e35366ac
+        replacedWith: x-resource-0000000172-x
+        occurrences:
+            - original: cbb5ad34-2107-59b9-8c25-6ad3e35366ac
+              count: 12
+      - canonical: gpu-nodepool-cluster-pht6k5-cp-cloud-network-config-pj2d7pwdc2da2
+        replacedWith: x-resource-0000000074-x
+        occurrences:
+            - original: gpu-nodepool-cluster-pht6k5-cp-cloud-network-config-pj2d7pwdc2da2
+              count: 52
+      - canonical: b13c1680-02f6-553e-bbc6-a5ad2304d40b
+        replacedWith: x-resource-0000000141-x
+        occurrences:
+            - original: b13c1680-02f6-553e-bbc6-a5ad2304d40b
+              count: 10
+      - canonical: 11760818E067F6FD
+        replacedWith: x-subresource-0000000133-x
+        occurrences:
+            - original: 11760818E067F6FD
+              count: 4
+      - canonical: DC3F8C82869A8D70
+        replacedWith: x-subresource-0000000170-x
+        occurrences:
+            - original: DC3F8C82869A8D70
+              count: 4
+      - canonical: cust-kv-hsj7olkh3t7qk
+        replacedWith: x-resource-0000000011-x
+        occurrences:
+            - original: cust-kv-hsj7olkh3t7qk
+              count: 42
+      - canonical: illegal-hcp-cluster
+        replacedWith: x-resource-0000000089-x
+        occurrences:
+            - original: illegal-hcp-cluster
+              count: 192
+      - canonical: C0062D0111E9B53A
+        replacedWith: x-subresource-0000000196-x
+        occurrences:
+            - original: C0062D0111E9B53A
+              count: 4
+      - canonical: "08584453809681131938"
+        replacedWith: x-subresource-0000000211-x
+        occurrences:
+            - original: "08584453809681131938"
+              count: 4
+      - canonical: "08584453795354504228"
+        replacedWith: x-subresource-0000000024-x
+        occurrences:
+            - original: "08584453795354504228"
+              count: 4
+      - canonical: E2789D377488FCAE
+        replacedWith: x-subresource-0000000097-x
+        occurrences:
+            - original: E2789D377488FCAE
+              count: 4
+      - canonical: 80479C10BFB25948
+        replacedWith: x-subresource-0000000148-x
+        occurrences:
+            - original: 80479C10BFB25948
+              count: 4
+      - canonical: 39F0DA660E66CE5D
+        replacedWith: x-subresource-0000000161-x
+        occurrences:
+            - original: 39F0DA660E66CE5D
+              count: 4
+      - canonical: B150F508DC9E62B2
+        replacedWith: x-subresource-0000000065-x
+        occurrences:
+            - original: B150F508DC9E62B2
+              count: 4
+      - canonical: db5387eb-76fd-5c47-918b-2454eb9c1c0d
+        replacedWith: x-resource-0000000125-x
+        occurrences:
+            - original: db5387eb-76fd-5c47-918b-2454eb9c1c0d
+              count: 10
+      - canonical: gpu-nodepool-cluster-pht6k5-cp-image-registry-pj2d7pwdc2da2
+        replacedWith: x-resource-0000000079-x
+        occurrences:
+            - original: gpu-nodepool-cluster-pht6k5-cp-image-registry-pj2d7pwdc2da2
+              count: 32
+      - canonical: A8918B42C0591D7F
+        replacedWith: x-subresource-0000000077-x
+        occurrences:
+            - original: A8918B42C0591D7F
+              count: 4
+      - canonical: basic-cluster-k4tbpz
+        replacedWith: x-resourcegroup-0000000002-x
+        occurrences:
+            - original: basic-cluster-k4tbpz
+              count: 713
+      - canonical: 0365E7F366F98006
+        replacedWith: x-subresource-0000000113-x
+        occurrences:
+            - original: 0365E7F366F98006
+              count: 4
+      - canonical: B0E864A285702DFC
+        replacedWith: x-subresource-0000000177-x
+        occurrences:
+            - original: B0E864A285702DFC
+              count: 4
+      - canonical: 73339b96-7ff6-575d-a522-a93ebb21cd17
+        replacedWith: x-resource-0000000135-x
+        occurrences:
+            - original: 73339b96-7ff6-575d-a522-a93ebb21cd17
+              count: 10
+      - canonical: 60898FC1A642028D
+        replacedWith: x-subresource-0000000033-x
+        occurrences:
+            - original: 60898FC1A642028D
+              count: 4
+      - canonical: illegal-ocp-version-6k6dxj
+        replacedWith: x-resourcegroup-0000000004-x
+        occurrences:
+            - original: illegal-ocp-version-6k6dxj
+              count: 686
+      - canonical: 6E2EAFAF665D00EB
+        replacedWith: x-subresource-0000000022-x
+        occurrences:
+            - original: 6E2EAFAF665D00EB
+              count: 8
+      - canonical: be7a6435-15ae-4171-8f30-4a343eff9e8f
+        replacedWith: x-resource-0000000058-x
+        occurrences:
+            - original: be7a6435-15ae-4171-8f30-4a343eff9e8f
+              count: 14
+      - canonical: c2270380-2e9e-55ff-964a-b44735a3fe2b
+        replacedWith: x-resource-0000000123-x
+        occurrences:
+            - original: c2270380-2e9e-55ff-964a-b44735a3fe2b
+              count: 10
+      - canonical: F54353C5B220D568
+        replacedWith: x-subresource-0000000158-x
+        occurrences:
+            - original: F54353C5B220D568
+              count: 4
+      - canonical: C0EE1FB6F1D74C48
+        replacedWith: x-subresource-0000000216-x
+        occurrences:
+            - original: C0EE1FB6F1D74C48
+              count: 4
+      - canonical: disabled-image-registry-hcp-cluster-cp-image-registry-hsj7olkh3t7qk
+        replacedWith: x-resource-0000000026-x
+        occurrences:
+            - original: disabled-image-registry-hcp-cluster-cp-image-registry-hsj7olkh3t7qk
+              count: 28
+      - canonical: 1f84ecea-d3f5-5034-a02c-c0f5a0f45e84
+        replacedWith: x-resource-0000000065-x
+        occurrences:
+            - original: 1f84ecea-d3f5-5034-a02c-c0f5a0f45e84
+              count: 10
+      - canonical: disabled-image-registry-hcp-cluster-cp-cloud-controller-manager-hsj7olkh3t7qk
+        replacedWith: x-resource-0000000016-x
+        occurrences:
+            - original: disabled-image-registry-hcp-cluster-cp-cloud-controller-manager-hsj7olkh3t7qk
+              count: 48
+      - canonical: 66060A088FFC1980
+        replacedWith: x-subresource-0000000075-x
+        occurrences:
+            - original: 66060A088FFC1980
+              count: 4
+      - canonical: 2CFA4B6E1F1706BB
+        replacedWith: x-subresource-0000000130-x
+        occurrences:
+            - original: 2CFA4B6E1F1706BB
+              count: 4
+      - canonical: 399CAE9FAD4CD282
+        replacedWith: x-subresource-0000000162-x
+        occurrences:
+            - original: 399CAE9FAD4CD282
+              count: 4
+      - canonical: 2EB838562CD17B2E
+        replacedWith: x-subresource-0000000051-x
+        occurrences:
+            - original: 2EB838562CD17B2E
+              count: 4
+      - canonical: 804a56b0-16db-59f1-b550-a4e32d0718e7
+        replacedWith: x-resource-0000000067-x
+        occurrences:
+            - original: 804a56b0-16db-59f1-b550-a4e32d0718e7
+              count: 12
+      - canonical: ceab04a3-8163-59f3-b0a8-7413394e3804
+        replacedWith: x-resource-0000000168-x
+        occurrences:
+            - original: ceab04a3-8163-59f3-b0a8-7413394e3804
+              count: 10
+      - canonical: C9A8CDF9E99C0DE0
+        replacedWith: x-subresource-0000000173-x
+        occurrences:
+            - original: C9A8CDF9E99C0DE0
+              count: 4
+      - canonical: 9FF3628B605297FB
+        replacedWith: x-subresource-0000000020-x
+        occurrences:
+            - original: 9FF3628B605297FB
+              count: 4
+      - canonical: FA229C9C875E3959
+        replacedWith: x-subresource-0000000103-x
+        occurrences:
+            - original: FA229C9C875E3959
+              count: 4
+      - canonical: b5517ef7-adf6-5fe7-8d93-7c5c6ddca127
+        replacedWith: x-resource-0000000189-x
+        occurrences:
+            - original: b5517ef7-adf6-5fe7-8d93-7c5c6ddca127
+              count: 10
+      - canonical: DCC2E9B72A46C8BF
+        replacedWith: x-subresource-0000000227-x
+        occurrences:
+            - original: DCC2E9B72A46C8BF
+              count: 4
+      - canonical: cluster
+        replacedWith: x-resource-0000000001-x
+        occurrences:
+            - original: cluster
+              count: 1291
+      - canonical: 9FC67827B6459C50
+        replacedWith: x-subresource-0000000037-x
+        occurrences:
+            - original: 9FC67827B6459C50
+              count: 4
+      - canonical: A264C2ADA418192A
+        replacedWith: x-subresource-0000000119-x
+        occurrences:
+            - original: A264C2ADA418192A
+              count: 4
+      - canonical: 13B092E80C0539A5
+        replacedWith: x-subresource-0000000152-x
+        occurrences:
+            - original: 13B092E80C0539A5
+              count: 4
+      - canonical: 0F6A648F29000A36
+        replacedWith: x-subresource-0000000176-x
+        occurrences:
+            - original: 0F6A648F29000A36
+              count: 4
+      - canonical: aro-hcp-demo
+        replacedWith: x-resource-0000000036-x
+        occurrences:
+            - original: aro-hcp-demo
+              count: 23
+      - canonical: 69BFF5E5B62611ED
+        replacedWith: x-subresource-0000000108-x
+        occurrences:
+            - original: 69BFF5E5B62611ED
+              count: 4
+      - canonical: 149AAB8A08BE3160
+        replacedWith: x-subresource-0000000116-x
+        occurrences:
+            - original: 149AAB8A08BE3160
+              count: 4
+      - canonical: 9a44ea65-a470-57b1-af83-691ca539c71f
+        replacedWith: x-resource-0000000181-x
+        occurrences:
+            - original: 9a44ea65-a470-57b1-af83-691ca539c71f
+              count: 10
+      - canonical: F8E3B4124EE28864
+        replacedWith: x-subresource-0000000234-x
+        occurrences:
+            - original: F8E3B4124EE28864
+              count: 4
+      - canonical: 8AFFC7B0DAFD2FB6
+        replacedWith: x-subresource-0000000236-x
+        occurrences:
+            - original: 8AFFC7B0DAFD2FB6
+              count: 4
+      - canonical: 21988A34897AB9D0
+        replacedWith: x-subresource-0000000019-x
+        occurrences:
+            - original: 21988A34897AB9D0
+              count: 4
+      - canonical: 7E44CD0D1C52043A
+        replacedWith: x-subresource-0000000184-x
+        occurrences:
+            - original: 7E44CD0D1C52043A
+              count: 4
+      - canonical: 8ECE36AB533F71A4
+        replacedWith: x-subresource-0000000092-x
+        occurrences:
+            - original: 8ECE36AB533F71A4
+              count: 4
+      - canonical: 3C741F31D7E3AB5F
+        replacedWith: x-subresource-0000000183-x
+        occurrences:
+            - original: 3C741F31D7E3AB5F
+              count: 4
+      - canonical: AC7039187E234C8C
+        replacedWith: x-subresource-0000000246-x
+        occurrences:
+            - original: AC7039187E234C8C
+              count: 4
+      - canonical: customer-nsg-name
+        replacedWith: x-resource-0000000012-x
+        occurrences:
+            - original: customer-nsg-name
+              count: 156
+      - canonical: DEE72B4FA30C56B9
+        replacedWith: x-subresource-0000000166-x
+        occurrences:
+            - original: DEE72B4FA30C56B9
+              count: 4
+      - canonical: 75CDA0ADE30BF140
+        replacedWith: x-subresource-0000000215-x
+        occurrences:
+            - original: 75CDA0ADE30BF140
+              count: 4
+      - canonical: 8D992F7452DF4AF5
+        replacedWith: x-subresource-0000000093-x
+        occurrences:
+            - original: 8D992F7452DF4AF5
+              count: 4
+      - canonical: basic-hcp-cluster-cp-ingress-qtzz6m6tpprgu
+        replacedWith: x-resource-0000000032-x
+        occurrences:
+            - original: basic-hcp-cluster-cp-ingress-qtzz6m6tpprgu
+              count: 40
+      - canonical: customer-infra
+        replacedWith: x-resource-0000000005-x
+        occurrences:
+            - original: customer-infra
+              count: 53
+      - canonical: illegal-hcp-cluster-cp-cloud-network-config-xyrv6fg5g54zg
+        replacedWith: x-resource-0000000053-x
+        occurrences:
+            - original: illegal-hcp-cluster-cp-cloud-network-config-xyrv6fg5g54zg
+              count: 48
+      - canonical: illegal-hcp-cluster-dp-disk-csi-driver-xyrv6fg5g54zg
+        replacedWith: x-resource-0000000095-x
+        occurrences:
+            - original: illegal-hcp-cluster-dp-disk-csi-driver-xyrv6fg5g54zg
+              count: 22
+      - canonical: 5f0d2121-19e1-5dca-92fe-537b6e751eb0
+        replacedWith: x-resource-0000000147-x
+        occurrences:
+            - original: 5f0d2121-19e1-5dca-92fe-537b6e751eb0
+              count: 12
+      - canonical: 01E0B8095280F4EE
+        replacedWith: x-subresource-0000000155-x
+        occurrences:
+            - original: 01E0B8095280F4EE
+              count: 4
+      - canonical: 6BCC494EB5316397
+        replacedWith: x-subresource-0000000210-x
+        occurrences:
+            - original: 6BCC494EB5316397
+              count: 4
+      - canonical: basic-hcp-cluster
+        replacedWith: x-resource-0000000013-x
+        occurrences:
+            - original: basic-hcp-cluster
+              count: 216
+      - canonical: 6d7fd864-ade2-5df9-b244-96f62495346a
+        replacedWith: x-resource-0000000121-x
+        occurrences:
+            - original: 6d7fd864-ade2-5df9-b244-96f62495346a
+              count: 12
+      - canonical: 57787fc5-9448-55d2-8908-372452aaf057
+        replacedWith: x-resource-0000000178-x
+        occurrences:
+            - original: 57787fc5-9448-55d2-8908-372452aaf057
+              count: 10
+      - canonical: E4A57F4C71812B59
+        replacedWith: x-subresource-0000000205-x
+        occurrences:
+            - original: E4A57F4C71812B59
+              count: 4
+      - canonical: 22269004FF668655
+        replacedWith: x-subresource-0000000053-x
+        occurrences:
+            - original: 22269004FF668655
+              count: 4
+      - canonical: illegal-hcp-cluster-cp-cluster-api-azure-xyrv6fg5g54zg
+        replacedWith: x-resource-0000000057-x
+        occurrences:
+            - original: illegal-hcp-cluster-cp-cluster-api-azure-xyrv6fg5g54zg
+              count: 40
+      - canonical: 0E0F1DB391B8018F
+        replacedWith: x-subresource-0000000062-x
+        occurrences:
+            - original: 0E0F1DB391B8018F
+              count: 4
+      - canonical: bab01f41-1b0a-5818-8435-d48c3d7206b3
+        replacedWith: x-resource-0000000187-x
+        occurrences:
+            - original: bab01f41-1b0a-5818-8435-d48c3d7206b3
+              count: 10
+      - canonical: basic-hcp-cluster-cp-kms-qtzz6m6tpprgu
+        replacedWith: x-resource-0000000033-x
+        occurrences:
+            - original: basic-hcp-cluster-cp-kms-qtzz6m6tpprgu
+              count: 40
+      - canonical: 0FFA3D7AB2FF1718
+        replacedWith: x-subresource-0000000157-x
+        occurrences:
+            - original: 0FFA3D7AB2FF1718
+              count: 4
+      - canonical: d92adeab-0a78-5ae6-9da0-8460ee607430
+        replacedWith: x-resource-0000000179-x
+        occurrences:
+            - original: d92adeab-0a78-5ae6-9da0-8460ee607430
+              count: 10
+      - canonical: 7d5d5d53-a7d4-556f-ad19-ba0d0ef1b2de
+        replacedWith: x-resource-0000000160-x
+        occurrences:
+            - original: 7d5d5d53-a7d4-556f-ad19-ba0d0ef1b2de
+              count: 10
+      - canonical: 3619A75D1DB0BDB9
+        replacedWith: x-subresource-0000000145-x
+        occurrences:
+            - original: 3619A75D1DB0BDB9
+              count: 4
+      - canonical: 5106abfa-a7d4-5a67-b630-1db7fc8c6543
+        replacedWith: x-resource-0000000112-x
+        occurrences:
+            - original: 5106abfa-a7d4-5a67-b630-1db7fc8c6543
+              count: 10
+      - canonical: F546A327C0E7499E
+        replacedWith: x-subresource-0000000117-x
+        occurrences:
+            - original: F546A327C0E7499E
+              count: 4
+      - canonical: de6432e6-f1a9-5e85-a447-de3ccd5b0232
+        replacedWith: x-resource-0000000115-x
+        occurrences:
+            - original: de6432e6-f1a9-5e85-a447-de3ccd5b0232
+              count: 10
+      - canonical: a1f96423-95ce-4224-ab27-4e3dc72facd4
+        replacedWith: x-resource-0000000101-x
+        occurrences:
+            - original: a1f96423-95ce-4224-ab27-4e3dc72facd4
+              count: 14
+      - canonical: 0F6A0806E8A4D11F
+        replacedWith: x-subresource-0000000089-x
+        occurrences:
+            - original: 0F6A0806E8A4D11F
+              count: 4
+      - canonical: 7BCD6EAD8CB2B7B8
+        replacedWith: x-subresource-0000000069-x
+        occurrences:
+            - original: 7BCD6EAD8CB2B7B8
+              count: 4
+      - canonical: e24da550-ffc9-554a-87e2-57984352c9d6
+        replacedWith: x-resource-0000000166-x
+        occurrences:
+            - original: e24da550-ffc9-554a-87e2-57984352c9d6
+              count: 12
+      - canonical: ebd87595-e1fb-50b6-b20b-2e8638920ebb
+        replacedWith: x-resource-0000000145-x
+        occurrences:
+            - original: ebd87595-e1fb-50b6-b20b-2e8638920ebb
+              count: 10
+      - canonical: 40BB44A63772699A
+        replacedWith: x-subresource-0000000124-x
+        occurrences:
+            - original: 40BB44A63772699A
+              count: 4
+      - canonical: 1A09343EE18F5B37
+        replacedWith: x-subresource-0000000132-x
+        occurrences:
+            - original: 1A09343EE18F5B37
+              count: 4
+      - canonical: 449446AD5117CD81
+        replacedWith: x-subresource-0000000031-x
+        occurrences:
+            - original: 449446AD5117CD81
+              count: 4
+      - canonical: B606C8C07041B20B
+        replacedWith: x-subresource-0000000078-x
+        occurrences:
+            - original: B606C8C07041B20B
+              count: 4
+      - canonical: basic-hcp-cluster-dp-image-registry-qtzz6m6tpprgu
+        replacedWith: x-resource-0000000052-x
+        occurrences:
+            - original: basic-hcp-cluster-dp-image-registry-qtzz6m6tpprgu
+              count: 22
+      - canonical: 0e670519-7c31-5ad8-ab3b-a5e09973a9fd
+        replacedWith: x-resource-0000000148-x
+        occurrences:
+            - original: 0e670519-7c31-5ad8-ab3b-a5e09973a9fd
+              count: 12
+      - canonical: BD6CE256E1805D09
+        replacedWith: x-subresource-0000000123-x
+        occurrences:
+            - original: BD6CE256E1805D09
+              count: 4
+      - canonical: 14ACBD5EF0993BBA
+        replacedWith: x-subresource-0000000144-x
+        occurrences:
+            - original: 14ACBD5EF0993BBA
+              count: 4
+      - canonical: 281B3CACD86345D4
+        replacedWith: x-subresource-0000000179-x
+        occurrences:
+            - original: 281B3CACD86345D4
+              count: 4
+      - canonical: CDCB8FAF9A7BB613
+        replacedWith: x-subresource-0000000192-x
+        occurrences:
+            - original: CDCB8FAF9A7BB613
+              count: 4
+      - canonical: dd8731fc-4a65-5edc-a6e1-b903819de887
+        replacedWith: x-resource-0000000050-x
+        occurrences:
+            - original: dd8731fc-4a65-5edc-a6e1-b903819de887
+              count: 10
+      - canonical: "08584453809570350626"
+        replacedWith: x-subresource-0000000025-x
+        occurrences:
+            - original: "08584453809570350626"
+              count: 4
+      - canonical: E9B290D12FA86684
+        replacedWith: x-subresource-0000000169-x
+        occurrences:
+            - original: E9B290D12FA86684
+              count: 4
+      - canonical: 3B22D7E33BD2D670
+        replacedWith: x-subresource-0000000238-x
+        occurrences:
+            - original: 3B22D7E33BD2D670
+              count: 4
+      - canonical: disabled-image-registry-hcp-cluster-cp-file-csi-driver-hsj7olkh3t7qk
+        replacedWith: x-resource-0000000025-x
+        occurrences:
+            - original: disabled-image-registry-hcp-cluster-cp-file-csi-driver-hsj7olkh3t7qk
+              count: 48
+      - canonical: DDCFB4D5C4F0223D
+        replacedWith: x-subresource-0000000142-x
+        occurrences:
+            - original: DDCFB4D5C4F0223D
+              count: 4
+      - canonical: 924A0238B5F0C87D
+        replacedWith: x-subresource-0000000193-x
+        occurrences:
+            - original: 924A0238B5F0C87D
+              count: 4
+      - canonical: 220B0A90DDA2D53F
+        replacedWith: x-subresource-0000000213-x
+        occurrences:
+            - original: 220B0A90DDA2D53F
+              count: 4
+      - canonical: 760E19D2278E2891
+        replacedWith: x-subresource-0000000247-x
+        occurrences:
+            - original: 760E19D2278E2891
+              count: 4
+      - canonical: 69c87914-cf0f-5f61-91bb-7b85f7a891a3
+        replacedWith: x-resource-0000000170-x
+        occurrences:
+            - original: 69c87914-cf0f-5f61-91bb-7b85f7a891a3
+              count: 10
+      - canonical: 39A18039D58D32B1
+        replacedWith: x-subresource-0000000229-x
+        occurrences:
+            - original: 39A18039D58D32B1
+              count: 4
+      - canonical: 2912350955CCCC8E
+        replacedWith: x-subresource-0000000201-x
+        occurrences:
+            - original: 2912350955CCCC8E
+              count: 4
+      - canonical: basic-hcp-cluster-service-managed-identity-qtzz6m6tpprgu
+        replacedWith: x-resource-0000000034-x
+        occurrences:
+            - original: basic-hcp-cluster-service-managed-identity-qtzz6m6tpprgu
+              count: 142
+      - canonical: D407A0C9149E77DC
+        replacedWith: x-subresource-0000000040-x
+        occurrences:
+            - original: D407A0C9149E77DC
+              count: 4
+      - canonical: E76C9264F14BF633
+        replacedWith: x-subresource-0000000055-x
+        occurrences:
+            - original: E76C9264F14BF633
+              count: 4
+      - canonical: 975310ad-9517-589b-821c-200616b3a2d1
+        replacedWith: x-resource-0000000191-x
+        occurrences:
+            - original: 975310ad-9517-589b-821c-200616b3a2d1
+              count: 10
+      - canonical: C46314E3B067C68E
+        replacedWith: x-subresource-0000000206-x
+        occurrences:
+            - original: C46314E3B067C68E
+              count: 4
+      - canonical: 092BC2F4AAFBFF76
+        replacedWith: x-subresource-0000000018-x
+        occurrences:
+            - original: 092BC2F4AAFBFF76
+              count: 4
+      - canonical: 945E5C6CDB5A8EBA
+        replacedWith: x-subresource-0000000085-x
+        occurrences:
+            - original: 945E5C6CDB5A8EBA
+              count: 4
+      - canonical: 9A1135A4C46D7C98
+        replacedWith: x-subresource-0000000243-x
+        occurrences:
+            - original: 9A1135A4C46D7C98
+              count: 4
+      - canonical: a4982db8-dba9-50a1-bfb3-262756cd7b11
+        replacedWith: x-resource-0000000104-x
+        occurrences:
+            - original: a4982db8-dba9-50a1-bfb3-262756cd7b11
+              count: 10
+      - canonical: 87986749396A4F38
+        replacedWith: x-subresource-0000000172-x
+        occurrences:
+            - original: 87986749396A4F38
+              count: 4
+      - canonical: F259D5444F55B18A
+        replacedWith: x-subresource-0000000120-x
+        occurrences:
+            - original: F259D5444F55B18A
+              count: 4
+      - canonical: 8C917A4A90FDCC90
+        replacedWith: x-subresource-0000000048-x
+        occurrences:
+            - original: 8C917A4A90FDCC90
+              count: 4
+      - canonical: 0d7aedc0-15fd-4a67-a412-efad370c947e
+        replacedWith: x-resource-0000000088-x
+        occurrences:
+            - original: 0d7aedc0-15fd-4a67-a412-efad370c947e
+              count: 26
+      - canonical: 56B8372C6B716C59
+        replacedWith: x-subresource-0000000095-x
+        occurrences:
+            - original: 56B8372C6B716C59
+              count: 4
+      - canonical: 6037D0E12F2C55AD
+        replacedWith: x-subresource-0000000138-x
+        occurrences:
+            - original: 6037D0E12F2C55AD
+              count: 4
+      - canonical: 14F1D1C8DB3949BE
+        replacedWith: x-subresource-0000000198-x
+        occurrences:
+            - original: 14F1D1C8DB3949BE
+              count: 4
+      - canonical: basic-hcp-cluster-cp-image-registry-qtzz6m6tpprgu
+        replacedWith: x-resource-0000000029-x
+        occurrences:
+            - original: basic-hcp-cluster-cp-image-registry-qtzz6m6tpprgu
+              count: 28
+      - canonical: disabled-image-registry-hcp-cluster-cp-control-plane-hsj7olkh3t7qk
+        replacedWith: x-resource-0000000023-x
+        occurrences:
+            - original: disabled-image-registry-hcp-cluster-cp-control-plane-hsj7olkh3t7qk
+              count: 48
+      - canonical: illegal-hcp-cluster-service-managed-identity-xyrv6fg5g54zg
+        replacedWith: x-resource-0000000069-x
+        occurrences:
+            - original: illegal-hcp-cluster-service-managed-identity-xyrv6fg5g54zg
+              count: 142
+      - canonical: e2225db9-62fb-53f9-9eba-f823b265e4db
+        replacedWith: x-resource-0000000185-x
+        occurrences:
+            - original: e2225db9-62fb-53f9-9eba-f823b265e4db
+              count: 10
+      - canonical: customer-vnet
+        replacedWith: x-resource-0000000014-x
+        occurrences:
+            - original: customer-vnet
+              count: 172
+      - canonical: 00a116cd-eaa0-5902-be5d-a7268c58bd5a
+        replacedWith: x-resource-0000000097-x
+        occurrences:
+            - original: 00a116cd-eaa0-5902-be5d-a7268c58bd5a
+              count: 10
+      - canonical: 73f69039-ec52-5631-a061-caa7ee669bc9
+        replacedWith: x-resource-0000000188-x
+        occurrences:
+            - original: 73f69039-ec52-5631-a061-caa7ee669bc9
+              count: 10
+      - canonical: Microsoft.Authorization
+        replacedWith: x-subresource-0000000038-x
+        occurrences:
+            - original: Microsoft.Authorization
+              count: 1425
+      - canonical: illegal-hcp-cluster-cp-file-csi-driver-xyrv6fg5g54zg
+        replacedWith: x-resource-0000000063-x
+        occurrences:
+            - original: illegal-hcp-cluster-cp-file-csi-driver-xyrv6fg5g54zg
+              count: 48
+      - canonical: 64f0619f-ebc2-4156-9d91-c4c781de7e54
+        replacedWith: x-subscription-0000000001-x
+        occurrences:
+            - original: 64f0619f-ebc2-4156-9d91-c4c781de7e54
+              count: 3068
+      - canonical: gpu-nodepool-cluster-pht6k5-cp-kms-pj2d7pwdc2da2
+        replacedWith: x-resource-0000000081-x
+        occurrences:
+            - original: gpu-nodepool-cluster-pht6k5-cp-kms-pj2d7pwdc2da2
+              count: 44
+      - canonical: 41d699c7-79ec-5bf4-953d-ca663de181d8
+        replacedWith: x-resource-0000000195-x
+        occurrences:
+            - original: 41d699c7-79ec-5bf4-953d-ca663de181d8
+              count: 10
+      - canonical: managedIdentities
+        replacedWith: x-resource-0000000045-x
+        occurrences:
+            - original: managedIdentities
+              count: 129
+      - canonical: customerInfra
+        replacedWith: x-resource-0000000022-x
+        occurrences:
+            - original: customerInfra
+              count: 41
+      - canonical: 548563a1-11c9-5dbd-ac44-3ac884e04fc7
+        replacedWith: x-resource-0000000084-x
+        occurrences:
+            - original: 548563a1-11c9-5dbd-ac44-3ac884e04fc7
+              count: 12
+      - canonical: 5e92a856-157c-562e-b11d-a4778984c09e
+        replacedWith: x-resource-0000000109-x
+        occurrences:
+            - original: 5e92a856-157c-562e-b11d-a4778984c09e
+              count: 10
+      - canonical: f3dcbfa2-f0b9-5ab8-a201-7a58100be8b7
+        replacedWith: x-resource-0000000120-x
+        occurrences:
+            - original: f3dcbfa2-f0b9-5ab8-a201-7a58100be8b7
+              count: 10
+      - canonical: 5f5f3212-b836-5d2e-9e31-d3e9260c6a16
+        replacedWith: x-resource-0000000129-x
+        occurrences:
+            - original: 5f5f3212-b836-5d2e-9e31-d3e9260c6a16
+              count: 10
+      - canonical: FCAB6F30773B95DA
+        replacedWith: x-subresource-0000000143-x
+        occurrences:
+            - original: FCAB6F30773B95DA
+              count: 4
+      - canonical: 31f46472-ddc9-54ed-83a1-63c33c15fa7e
+        replacedWith: x-resource-0000000193-x
+        occurrences:
+            - original: 31f46472-ddc9-54ed-83a1-63c33c15fa7e
+              count: 10
+      - canonical: cust-kv-qtzz6m6tpprgu
+        replacedWith: x-resource-0000000015-x
+        occurrences:
+            - original: cust-kv-qtzz6m6tpprgu
+              count: 42
+      - canonical: CF53FFA4D5E8145E
+        replacedWith: x-subresource-0000000174-x
+        occurrences:
+            - original: CF53FFA4D5E8145E
+              count: 4
+      - canonical: F2C92613D1F13A8E
+        replacedWith: x-subresource-0000000072-x
+        occurrences:
+            - original: F2C92613D1F13A8E
+              count: 4
+      - canonical: 40f79632-86f6-5844-8768-2fe1bb9041cd
+        replacedWith: x-resource-0000000108-x
+        occurrences:
+            - original: 40f79632-86f6-5844-8768-2fe1bb9041cd
+              count: 10
+      - canonical: 946D39F2C304843D
+        replacedWith: x-subresource-0000000080-x
+        occurrences:
+            - original: 946D39F2C304843D
+              count: 4
+      - canonical: F13670FACBB8973D
+        replacedWith: x-subresource-0000000185-x
+        occurrences:
+            - original: F13670FACBB8973D
+              count: 4
+      - canonical: 0737366C9AF93E01
+        replacedWith: x-subresource-0000000221-x
+        occurrences:
+            - original: 0737366C9AF93E01
+              count: 4
+      - canonical: 3109c41d-fbba-5db9-814f-67fcd6e38bf1
+        replacedWith: x-resource-0000000072-x
+        occurrences:
+            - original: 3109c41d-fbba-5db9-814f-67fcd6e38bf1
+              count: 10
+      - canonical: DF537DF6BF0B09C0
+        replacedWith: x-subresource-0000000101-x
+        occurrences:
+            - original: DF537DF6BF0B09C0
+              count: 4
+      - canonical: "08584453809956583015"
+        replacedWith: x-subresource-0000000013-x
+        occurrences:
+            - original: "08584453809956583015"
+              count: 4
+      - canonical: A05EEACEADA9FCF9
+        replacedWith: x-subresource-0000000114-x
+        occurrences:
+            - original: A05EEACEADA9FCF9
+              count: 4
+      - canonical: D11767924C209EEA
+        replacedWith: x-subresource-0000000214-x
+        occurrences:
+            - original: D11767924C209EEA
+              count: 4
+      - canonical: f99b069e-f7a5-5f24-91df-887148ba9ea4
+        replacedWith: x-resource-0000000151-x
+        occurrences:
+            - original: f99b069e-f7a5-5f24-91df-887148ba9ea4
+              count: 12
+      - canonical: gpu-nodepool-cluster-pht6k5-cp-ingress-pj2d7pwdc2da2
+        replacedWith: x-resource-0000000080-x
+        occurrences:
+            - original: gpu-nodepool-cluster-pht6k5-cp-ingress-pj2d7pwdc2da2
+              count: 44
+      - canonical: 1DBA66D913719E22
+        replacedWith: x-subresource-0000000137-x
+        occurrences:
+            - original: 1DBA66D913719E22
+              count: 4
+      - canonical: 018a8907-bb19-577b-bc31-d116cc56a0be
+        replacedWith: x-resource-0000000182-x
+        occurrences:
+            - original: 018a8907-bb19-577b-bc31-d116cc56a0be
+              count: 10
+      - canonical: 77FFA3F380E75E26
+        replacedWith: x-subresource-0000000164-x
+        occurrences:
+            - original: 77FFA3F380E75E26
+              count: 4
+      - canonical: illegal-hcp-cluster-cp-image-registry-xyrv6fg5g54zg
+        replacedWith: x-resource-0000000064-x
+        occurrences:
+            - original: illegal-hcp-cluster-cp-image-registry-xyrv6fg5g54zg
+              count: 28
+      - canonical: cust-kv-pj2d7pwdc2da2
+        replacedWith: x-resource-0000000027-x
+        occurrences:
+            - original: cust-kv-pj2d7pwdc2da2
+              count: 50
+      - canonical: 92B78713042BBCDB
+        replacedWith: x-subresource-0000000028-x
+        occurrences:
+            - original: 92B78713042BBCDB
+              count: 4
+      - canonical: 1a694c37-e0ed-5e24-b284-6fcf1331b571
+        replacedWith: x-resource-0000000153-x
+        occurrences:
+            - original: 1a694c37-e0ed-5e24-b284-6fcf1331b571
+              count: 10
+      - canonical: 88366f10-ed47-4cc0-9fab-c8a06148393e
+        replacedWith: x-resource-0000000165-x
+        occurrences:
+            - original: 88366f10-ed47-4cc0-9fab-c8a06148393e
+              count: 8
+      - canonical: basic-hcp-cluster-cp-cluster-api-azure-qtzz6m6tpprgu
+        replacedWith: x-resource-0000000008-x
+        occurrences:
+            - original: basic-hcp-cluster-cp-cluster-api-azure-qtzz6m6tpprgu
+              count: 40
+      - canonical: 7EA5DC5C1E528881
+        replacedWith: x-subresource-0000000231-x
+        occurrences:
+            - original: 7EA5DC5C1E528881
+              count: 4
+      - canonical: 06EB06F03FC57381
+        replacedWith: x-subresource-0000000027-x
+        occurrences:
+            - original: 06EB06F03FC57381
+              count: 4
+      - canonical: C200B5D8A82E2DBD
+        replacedWith: x-subresource-0000000099-x
+        occurrences:
+            - original: C200B5D8A82E2DBD
+              count: 4
+      - canonical: 0336e1d3-7a87-462b-b6db-342b63f7802c
+        replacedWith: x-resource-0000000162-x
+        occurrences:
+            - original: 0336e1d3-7a87-462b-b6db-342b63f7802c
+              count: 8
+      - canonical: 761ac47a-1e54-5fc8-ae8e-8930ebfa5905
+        replacedWith: x-resource-0000000184-x
+        occurrences:
+            - original: 761ac47a-1e54-5fc8-ae8e-8930ebfa5905
+              count: 10
+      - canonical: 5a850773-7032-5554-95ee-bcdc6ecd19e0
+        replacedWith: x-resource-0000000192-x
+        occurrences:
+            - original: 5a850773-7032-5554-95ee-bcdc6ecd19e0
+              count: 10
+      - canonical: 248C2CBE2EC246E2
+        replacedWith: x-subresource-0000000188-x
+        occurrences:
+            - original: 248C2CBE2EC246E2
+              count: 4
+      - canonical: 9A149E4E52055B81
+        replacedWith: x-subresource-0000000023-x
+        occurrences:
+            - original: 9A149E4E52055B81
+              count: 4
+      - canonical: "08584453800765454897"
+        replacedWith: x-subresource-0000000030-x
+        occurrences:
+            - original: "08584453800765454897"
+              count: 4
+      - canonical: 7DE038BFD3F47C2C
+        replacedWith: x-subresource-0000000052-x
+        occurrences:
+            - original: 7DE038BFD3F47C2C
+              count: 4
+      - canonical: e0a15861-7727-57e8-9acf-be4bbd913a97
+        replacedWith: x-resource-0000000194-x
+        occurrences:
+            - original: e0a15861-7727-57e8-9acf-be4bbd913a97
+              count: 10
+      - canonical: 6A12F86D195FA3D6
+        replacedWith: x-subresource-0000000200-x
+        occurrences:
+            - original: 6A12F86D195FA3D6
+              count: 4
+      - canonical: basic-hcp-cluster-cp-cloud-network-config-qtzz6m6tpprgu
+        replacedWith: x-resource-0000000006-x
+        occurrences:
+            - original: basic-hcp-cluster-cp-cloud-network-config-qtzz6m6tpprgu
+              count: 48
+      - canonical: 7678D64EC2D4E580
+        replacedWith: x-subresource-0000000187-x
+        occurrences:
+            - original: 7678D64EC2D4E580
+              count: 4
+      - canonical: 37bb9926-24c0-5510-94ce-e4d08e567bbe
+        replacedWith: x-resource-0000000164-x
+        occurrences:
+            - original: 37bb9926-24c0-5510-94ce-e4d08e567bbe
+              count: 10
+      - canonical: 40AC4E4A3427484F
+        replacedWith: x-subresource-0000000045-x
+        occurrences:
+            - original: 40AC4E4A3427484F
+              count: 4
+      - canonical: 5F7E61DA4AFB0CC7
+        replacedWith: x-subresource-0000000083-x
+        occurrences:
+            - original: 5F7E61DA4AFB0CC7
+              count: 4
+      - canonical: 0c2df1ef-d136-59bf-b687-1a90f4593ba4
+        replacedWith: x-resource-0000000122-x
+        occurrences:
+            - original: 0c2df1ef-d136-59bf-b687-1a90f4593ba4
+              count: 10
+      - canonical: 92ca268c-3451-5edf-8268-9ed9cedb3808
+        replacedWith: x-resource-0000000137-x
+        occurrences:
+            - original: 92ca268c-3451-5edf-8268-9ed9cedb3808
+              count: 10
+      - canonical: 963D36596D07F54D
+        replacedWith: x-subresource-0000000199-x
+        occurrences:
+            - original: 963D36596D07F54D
+              count: 4
+      - canonical: 4C7243743C6F40B0
+        replacedWith: x-subresource-0000000003-x
+        occurrences:
+            - original: 4C7243743C6F40B0
+              count: 4
+      - canonical: d4eb2374-cdc3-52a0-95ef-41534808a2ae
+        replacedWith: x-resource-0000000177-x
+        occurrences:
+            - original: d4eb2374-cdc3-52a0-95ef-41534808a2ae
+              count: 12
+      - canonical: e11afc23-8e04-5c92-a53f-af0d30ee0c32
+        replacedWith: x-resource-0000000149-x
+        occurrences:
+            - original: e11afc23-8e04-5c92-a53f-af0d30ee0c32
+              count: 10
+      - canonical: basic-hcp-cluster-cp-control-plane-qtzz6m6tpprgu
+        replacedWith: x-resource-0000000009-x
+        occurrences:
+            - original: basic-hcp-cluster-cp-control-plane-qtzz6m6tpprgu
+              count: 48
+      - canonical: EC0F8331B2B5A666
+        replacedWith: x-subresource-0000000012-x
+        occurrences:
+            - original: EC0F8331B2B5A666
+              count: 4
+      - canonical: EE22FF84FAF04FBA
+        replacedWith: x-subresource-0000000056-x
+        occurrences:
+            - original: EE22FF84FAF04FBA
+              count: 4
+      - canonical: bd2387f1-33c7-529c-8c3a-206f20099db2
+        replacedWith: x-resource-0000000143-x
+        occurrences:
+            - original: bd2387f1-33c7-529c-8c3a-206f20099db2
+              count: 12
+      - canonical: eb8adeba-e07b-5adc-8488-df019926652e
+        replacedWith: x-resource-0000000156-x
+        occurrences:
+            - original: eb8adeba-e07b-5adc-8488-df019926652e
+              count: 10
+      - canonical: 50A808EC8275B030
+        replacedWith: x-subresource-0000000232-x
+        occurrences:
+            - original: 50A808EC8275B030
+              count: 4
+      - canonical: 3CDDC4239EED6CB6
+        replacedWith: x-subresource-0000000248-x
+        occurrences:
+            - original: 3CDDC4239EED6CB6
+              count: 4
+      - canonical: 6FDC10EE95C4B791
+        replacedWith: x-subresource-0000000002-x
+        occurrences:
+            - original: 6FDC10EE95C4B791
+              count: 4
+      - canonical: 94FAEDCC6B67E440
+        replacedWith: x-subresource-0000000111-x
+        occurrences:
+            - original: 94FAEDCC6B67E440
+              count: 4
+      - canonical: 1A2C52F420760D4D
+        replacedWith: x-subresource-0000000207-x
+        occurrences:
+            - original: 1A2C52F420760D4D
+              count: 4
+      - canonical: gpu-nodepools-NC6sv3-wz4mrv
+        replacedWith: x-resourcegroup-0000000003-x
+        occurrences:
+            - original: gpu-nodepools-NC6sv3-wz4mrv
+              count: 873
+      - canonical: 000baf42-2fa2-51ac-855c-057ba3f0c5a1
+        replacedWith: x-resource-0000000183-x
+        occurrences:
+            - original: 000baf42-2fa2-51ac-855c-057ba3f0c5a1
+              count: 12
+      - canonical: A78E66655098FA96
+        replacedWith: x-subresource-0000000168-x
+        occurrences:
+            - original: A78E66655098FA96
+              count: 4
+      - canonical: B1C2F9D9E9A1C974
+        replacedWith: x-subresource-0000000222-x
+        occurrences:
+            - original: B1C2F9D9E9A1C974
+              count: 4
+      - canonical: d5241a0b-c8c2-51ea-8d5a-719115b8a197
+        replacedWith: x-resource-0000000159-x
+        occurrences:
+            - original: d5241a0b-c8c2-51ea-8d5a-719115b8a197
+              count: 10
+      - canonical: 5618C877B6F8BB15
+        replacedWith: x-subresource-0000000047-x
+        occurrences:
+            - original: 5618C877B6F8BB15
+              count: 4
+      - canonical: gpu-nodepool-cluster-pht6k5-cp-cloud-controller-manager-pj2d7pwdc2da2
+        replacedWith: x-resource-0000000070-x
+        occurrences:
+            - original: gpu-nodepool-cluster-pht6k5-cp-cloud-controller-manager-pj2d7pwdc2da2
+              count: 52
+      - canonical: 78bacd0c-dbb1-56f4-8c4c-55260a41ada7
+        replacedWith: x-resource-0000000136-x
+        occurrences:
+            - original: 78bacd0c-dbb1-56f4-8c4c-55260a41ada7
+              count: 12
+      - canonical: 9adebe41-3941-5722-861c-5588c9924002
+        replacedWith: x-resource-0000000173-x
+        occurrences:
+            - original: 9adebe41-3941-5722-861c-5588c9924002
+              count: 10
+      - canonical: 5080FB572C73C8F2
+        replacedWith: x-subresource-0000000147-x
+        occurrences:
+            - original: 5080FB572C73C8F2
+              count: 4
+      - canonical: A1DD50E6464B9019
+        replacedWith: x-subresource-0000000154-x
+        occurrences:
+            - original: A1DD50E6464B9019
+              count: 4
+      - canonical: "08584453809957082179"
+        replacedWith: x-subresource-0000000225-x
+        occurrences:
+            - original: "08584453809957082179"
+              count: 4
+      - canonical: customer-vnet-subnet1
+        replacedWith: x-subresource-0000000006-x
+        occurrences:
+            - original: customer-vnet-subnet1
+              count: 164
+      - canonical: 90689F4A179A7FD3
+        replacedWith: x-subresource-0000000228-x
+        occurrences:
+            - original: 90689F4A179A7FD3
+              count: 4
+      - canonical: D3CB41CDFB577A3B
+        replacedWith: x-subresource-0000000190-x
+        occurrences:
+            - original: D3CB41CDFB577A3B
+              count: 4
+      - canonical: D3421FC650C63DCD
+        replacedWith: x-subresource-0000000159-x
+        occurrences:
+            - original: D3421FC650C63DCD
+              count: 4
+      - canonical: 1F05A2E68AA7F724
+        replacedWith: x-subresource-0000000178-x
+        occurrences:
+            - original: 1F05A2E68AA7F724
+              count: 4
+      - canonical: 15DF2711E3B49D27
+        replacedWith: x-subresource-0000000220-x
+        occurrences:
+            - original: 15DF2711E3B49D27
+              count: 4
+      - canonical: EF7DE702C2CD7280
+        replacedWith: x-subresource-0000000226-x
+        occurrences:
+            - original: EF7DE702C2CD7280
+              count: 4
+      - canonical: 07FF5994D4B06DAF
+        replacedWith: x-subresource-0000000070-x
+        occurrences:
+            - original: 07FF5994D4B06DAF
+              count: 4
+      - canonical: 32F61806B6AE4980
+        replacedWith: x-subresource-0000000223-x
+        occurrences:
+            - original: 32F61806B6AE4980
+              count: 4
+      - canonical: 40F7B8FFC92D8626
+        replacedWith: x-subresource-0000000112-x
+        occurrences:
+            - original: 40F7B8FFC92D8626
+              count: 4
+      - canonical: 9a7980f8-49c6-5ccb-b943-6738e7198f45
+        replacedWith: x-resource-0000000116-x
+        occurrences:
+            - original: 9a7980f8-49c6-5ccb-b943-6738e7198f45
+              count: 12
+      - canonical: EB8D903136345EAC
+        replacedWith: x-subresource-0000000131-x
+        occurrences:
+            - original: EB8D903136345EAC
+              count: 4
+      - canonical: customer-nsg
+        replacedWith: x-resource-0000000048-x
+        occurrences:
+            - original: customer-nsg
+              count: 100
+      - canonical: gpu-nodepool-cluster-pht6k5
+        replacedWith: x-resource-0000000021-x
+        occurrences:
+            - original: gpu-nodepool-cluster-pht6k5
+              count: 250
+      - canonical: 118550BA81BB4D14
+        replacedWith: x-subresource-0000000094-x
+        occurrences:
+            - original: 118550BA81BB4D14
+              count: 4
+      - canonical: 1EDADE19335DA32C
+        replacedWith: x-subresource-0000000106-x
+        occurrences:
+            - original: 1EDADE19335DA32C
+              count: 4
+      - canonical: 1AB72AF7962C62C3
+        replacedWith: x-subresource-0000000136-x
+        occurrences:
+            - original: 1AB72AF7962C62C3
+              count: 4
+      - canonical: 9E6757343D1C3049
+        replacedWith: x-subresource-0000000150-x
+        occurrences:
+            - original: 9E6757343D1C3049
+              count: 4
+      - canonical: aro-hcp-gpu-nodepool-NC6sv3
+        replacedWith: x-resource-0000000007-x
+        occurrences:
+            - original: aro-hcp-gpu-nodepool-NC6sv3
+              count: 14
+      - canonical: 7397F8680688EBA5
+        replacedWith: x-subresource-0000000079-x
+        occurrences:
+            - original: 7397F8680688EBA5
+              count: 4
+      - canonical: E131CA53BB18C6B2
+        replacedWith: x-subresource-0000000244-x
+        occurrences:
+            - original: E131CA53BB18C6B2
+              count: 4
+      - canonical: 47BCD01832376B05
+        replacedWith: x-subresource-0000000009-x
+        occurrences:
+            - original: 47BCD01832376B05
+              count: 4
+      - canonical: 710354a1-03eb-5f39-9343-5840c2704687
+        replacedWith: x-resource-0000000073-x
+        occurrences:
+            - original: 710354a1-03eb-5f39-9343-5840c2704687
+              count: 12
+      - canonical: F9366ABCFC1A3D42
+        replacedWith: x-subresource-0000000086-x
+        occurrences:
+            - original: F9366ABCFC1A3D42
+              count: 4
+      - canonical: 3461d521-72d2-5fe0-baa7-1b9de1e4e665
+        replacedWith: x-resource-0000000171-x
+        occurrences:
+            - original: 3461d521-72d2-5fe0-baa7-1b9de1e4e665
+              count: 10
+      - canonical: acdd72a7-3385-48ef-bd42-f606fba81ae7
+        replacedWith: x-resource-0000000047-x
+        occurrences:
+            - original: acdd72a7-3385-48ef-bd42-f606fba81ae7
+              count: 56
+      - canonical: gpu-nodepool-cluster-pht6k5-dp-disk-csi-driver-pj2d7pwdc2da2
+        replacedWith: x-resource-0000000090-x
+        occurrences:
+            - original: gpu-nodepool-cluster-pht6k5-dp-disk-csi-driver-pj2d7pwdc2da2
+              count: 26
+      - canonical: D5EA3B837C99C84E
+        replacedWith: x-subresource-0000000076-x
+        occurrences:
+            - original: D5EA3B837C99C84E
+              count: 4
+      - canonical: C10584C71E4E48FA
+        replacedWith: x-subresource-0000000109-x
+        occurrences:
+            - original: C10584C71E4E48FA
+              count: 4
+      - canonical: f5bd632f-e1bd-51fa-b6c1-0f41463a8ce5
+        replacedWith: x-resource-0000000174-x
+        occurrences:
+            - original: f5bd632f-e1bd-51fa-b6c1-0f41463a8ce5
+              count: 10
+      - canonical: c88c6ba0-e927-51df-bad1-b9e54dc2623f
+        replacedWith: x-resource-0000000176-x
+        occurrences:
+            - original: c88c6ba0-e927-51df-bad1-b9e54dc2623f
+              count: 10
+      - canonical: basic-hcp-cluster-cp-file-csi-driver-qtzz6m6tpprgu
+        replacedWith: x-resource-0000000019-x
+        occurrences:
+            - original: basic-hcp-cluster-cp-file-csi-driver-qtzz6m6tpprgu
+              count: 48
+      - canonical: FCC6407DB2578AAA
+        replacedWith: x-subresource-0000000029-x
+        occurrences:
+            - original: FCC6407DB2578AAA
+              count: 4
+      - canonical: E541D03EC05EA2B4
+        replacedWith: x-subresource-0000000107-x
+        occurrences:
+            - original: E541D03EC05EA2B4
+              count: 4
+      - canonical: 72446bb6-c1b7-57d0-91fa-41aed7e7554e
+        replacedWith: x-resource-0000000150-x
+        occurrences:
+            - original: 72446bb6-c1b7-57d0-91fa-41aed7e7554e
+              count: 10
+      - canonical: 7c114c9b-1b10-5b80-9514-a0cfc6609dcd
+        replacedWith: x-resource-0000000167-x
+        occurrences:
+            - original: 7c114c9b-1b10-5b80-9514-a0cfc6609dcd
+              count: 10
+      - canonical: 39a07a2a-d71b-57ae-a594-454e11429132
+        replacedWith: x-resource-0000000186-x
+        occurrences:
+            - original: 39a07a2a-d71b-57ae-a594-454e11429132
+              count: 10
+      - canonical: DDEDD5FBA8F64740
+        replacedWith: x-subresource-0000000146-x
+        occurrences:
+            - original: DDEDD5FBA8F64740
+              count: 4
+      - canonical: 3B2B412DFC3D9738
+        replacedWith: x-subresource-0000000233-x
+        occurrences:
+            - original: 3B2B412DFC3D9738
+              count: 4
+      - canonical: disabled-image-registry-hcp-cluster-cp-cloud-network-config-hsj7olkh3t7qk
+        replacedWith: x-resource-0000000018-x
+        occurrences:
+            - original: disabled-image-registry-hcp-cluster-cp-cloud-network-config-hsj7olkh3t7qk
+              count: 48
+      - canonical: DB2EA796E86397DF
+        replacedWith: x-subresource-0000000237-x
+        occurrences:
+            - original: DB2EA796E86397DF
+              count: 4
+      - canonical: 0E4712440615741C
+        replacedWith: x-subresource-0000000011-x
+        occurrences:
+            - original: 0E4712440615741C
+              count: 4
+      - canonical: 7A7E83696FEAB1EC
+        replacedWith: x-subresource-0000000064-x
+        occurrences:
+            - original: 7A7E83696FEAB1EC
+              count: 4
+      - canonical: bb92748f-d0db-5df8-b9b2-7b3b7f2f3fd3
+        replacedWith: x-resource-0000000152-x
+        occurrences:
+            - original: bb92748f-d0db-5df8-b9b2-7b3b7f2f3fd3
+              count: 10
+      - canonical: CD90FCA0CAD6D276
+        replacedWith: x-subresource-0000000165-x
+        occurrences:
+            - original: CD90FCA0CAD6D276
+              count: 4
+      - canonical: 89BD4BED365E4641
+        replacedWith: x-subresource-0000000005-x
+        occurrences:
+            - original: 89BD4BED365E4641
+              count: 4
+      - canonical: illegal-hcp-cluster-cp-ingress-xyrv6fg5g54zg
+        replacedWith: x-resource-0000000066-x
+        occurrences:
+            - original: illegal-hcp-cluster-cp-ingress-xyrv6fg5g54zg
+              count: 40
+      - canonical: 0c671752-a07f-5cbe-bbf0-a5f65bcc04b7
+        replacedWith: x-resource-0000000117-x
+        occurrences:
+            - original: 0c671752-a07f-5cbe-bbf0-a5f65bcc04b7
+              count: 10
+      - canonical: basic-hcp-cluster-cp-disk-csi-driver-qtzz6m6tpprgu
+        replacedWith: x-resource-0000000017-x
+        occurrences:
+            - original: basic-hcp-cluster-cp-disk-csi-driver-qtzz6m6tpprgu
+              count: 28
+      - canonical: customer-vnet-name
+        replacedWith: x-resource-0000000010-x
+        occurrences:
+            - original: customer-vnet-name
+              count: 242
+      - canonical: gpu-nodepool-cluster-pht6k5-cp-control-plane-pj2d7pwdc2da2
+        replacedWith: x-resource-0000000076-x
+        occurrences:
+            - original: gpu-nodepool-cluster-pht6k5-cp-control-plane-pj2d7pwdc2da2
+              count: 52
+      - canonical: 797BE2B333713BB2
+        replacedWith: x-subresource-0000000163-x
+        occurrences:
+            - original: 797BE2B333713BB2
+              count: 4
+      - canonical: "08584453809592885335"
+        replacedWith: x-subresource-0000000242-x
+        occurrences:
+            - original: "08584453809592885335"
+              count: 4
+      - canonical: 2EFEBC34620938AA
+        replacedWith: x-subresource-0000000007-x
+        occurrences:
+            - original: 2EFEBC34620938AA
+              count: 4
+      - canonical: 218E4370BDEE2C79
+        replacedWith: x-subresource-0000000197-x
+        occurrences:
+            - original: 218E4370BDEE2C79
+              count: 4
+      - canonical: A10A07D7EE658D20
+        replacedWith: x-subresource-0000000209-x
+        occurrences:
+            - original: A10A07D7EE658D20
+              count: 4
+      - canonical: A6AEC19B8510C8A7
+        replacedWith: x-subresource-0000000182-x
+        occurrences:
+            - original: A6AEC19B8510C8A7
+              count: 4
+      - canonical: 9aee9e1c-7e89-5ffb-9e0a-4773e28ae6bb
+        replacedWith: x-resource-0000000169-x
+        occurrences:
+            - original: 9aee9e1c-7e89-5ffb-9e0a-4773e28ae6bb
+              count: 12
+      - canonical: 9D6D82288F45B958
+        replacedWith: x-subresource-0000000063-x
+        occurrences:
+            - original: 9D6D82288F45B958
+              count: 4
+      - canonical: gpu-nodepool-cluster-pht6k5-cp-disk-csi-driver-pj2d7pwdc2da2
+        replacedWith: x-resource-0000000077-x
+        occurrences:
+            - original: gpu-nodepool-cluster-pht6k5-cp-disk-csi-driver-pj2d7pwdc2da2
+              count: 32
+      - canonical: 77280897-7043-549b-a371-d40e639f9edb
+        replacedWith: x-resource-0000000119-x
+        occurrences:
+            - original: 77280897-7043-549b-a371-d40e639f9edb
+              count: 10
+      - canonical: bf721182-babf-5e3f-a0e2-bb5672a2482b
+        replacedWith: x-resource-0000000134-x
+        occurrences:
+            - original: bf721182-babf-5e3f-a0e2-bb5672a2482b
+              count: 10
+      - canonical: FC4AA943B4651ADA
+        replacedWith: x-subresource-0000000252-x
+        occurrences:
+            - original: FC4AA943B4651ADA
+              count: 4
+      - canonical: c9b18005-af3e-5a04-8fd0-805d9d197e21
+        replacedWith: x-resource-0000000111-x
+        occurrences:
+            - original: c9b18005-af3e-5a04-8fd0-805d9d197e21
+              count: 10
+      - canonical: 43065C0C828AD540
+        replacedWith: x-subresource-0000000218-x
+        occurrences:
+            - original: 43065C0C828AD540
+              count: 4
+      - canonical: 3F5BEA3071FB48F6
+        replacedWith: x-subresource-0000000082-x
+        occurrences:
+            - original: 3F5BEA3071FB48F6
+              count: 4
+      - canonical: faa6cc44-3c80-5498-86fb-2fd594b1f394
+        replacedWith: x-resource-0000000105-x
+        occurrences:
+            - original: faa6cc44-3c80-5498-86fb-2fd594b1f394
+              count: 12
+      - canonical: 4ed8f7a0-cc61-5ae2-9acc-fc77d060570e
+        replacedWith: x-resource-0000000140-x
+        occurrences:
+            - original: 4ed8f7a0-cc61-5ae2-9acc-fc77d060570e
+              count: 10
+      - canonical: E480E74F5404DA6F
+        replacedWith: x-subresource-0000000181-x
+        occurrences:
+            - original: E480E74F5404DA6F
+              count: 4
+      - canonical: f334f55d-e23f-53d2-aeb8-49a9384da5c1
+        replacedWith: x-resource-0000000083-x
+        occurrences:
+            - original: f334f55d-e23f-53d2-aeb8-49a9384da5c1
+              count: 10
+      - canonical: D884CD2DCAE519A7
+        replacedWith: x-subresource-0000000059-x
+        occurrences:
+            - original: D884CD2DCAE519A7
+              count: 4
+      - canonical: gpu-nodepool-cluster-pht6k5-dp-image-registry-pj2d7pwdc2da2
+        replacedWith: x-resource-0000000093-x
+        occurrences:
+            - original: gpu-nodepool-cluster-pht6k5-dp-image-registry-pj2d7pwdc2da2
+              count: 26
+      - canonical: D1882FA2D1694F64
+        replacedWith: x-subresource-0000000073-x
+        occurrences:
+            - original: D1882FA2D1694F64
+              count: 4
+      - canonical: C9AB27006A4147F7
+        replacedWith: x-subresource-0000000141-x
+        occurrences:
+            - original: C9AB27006A4147F7
+              count: 4
+      - canonical: disabled-image-registry-hcp-cluster-dp-file-csi-driver-hsj7olkh3t7qk
+        replacedWith: x-resource-0000000040-x
+        occurrences:
+            - original: disabled-image-registry-hcp-cluster-dp-file-csi-driver-hsj7olkh3t7qk
+              count: 42
+      - canonical: 108812DC054BF0C0
+        replacedWith: x-subresource-0000000102-x
+        occurrences:
+            - original: 108812DC054BF0C0
+              count: 4
+      - canonical: 810B0584396BF112
+        replacedWith: x-subresource-0000000212-x
+        occurrences:
+            - original: 810B0584396BF112
+              count: 4
+      - canonical: C767DA0968E2054A
+        replacedWith: x-subresource-0000000091-x
+        occurrences:
+            - original: C767DA0968E2054A
+              count: 4
+      - canonical: 4134FDCF62F70326
+        replacedWith: x-subresource-0000000039-x
+        occurrences:
+            - original: 4134FDCF62F70326
+              count: 4
+      - canonical: 8FE35BA68A94BF1B
+        replacedWith: x-subresource-0000000054-x
+        occurrences:
+            - original: 8FE35BA68A94BF1B
+              count: 4
+      - canonical: gpu-nodepool-cluster-pht6k5-dp-file-csi-driver-pj2d7pwdc2da2
+        replacedWith: x-resource-0000000092-x
+        occurrences:
+            - original: gpu-nodepool-cluster-pht6k5-dp-file-csi-driver-pj2d7pwdc2da2
+              count: 46
+      - canonical: 3f1b19c1-6017-5ebb-b2d2-0b04aa65595a
+        replacedWith: x-resource-0000000161-x
+        occurrences:
+            - original: 3f1b19c1-6017-5ebb-b2d2-0b04aa65595a
+              count: 12
+      - canonical: 1E0E6F0325B831B1
+        replacedWith: x-subresource-0000000122-x
+        occurrences:
+            - original: 1E0E6F0325B831B1
+              count: 4
+      - canonical: 72503D40767C79DD
+        replacedWith: x-subresource-0000000149-x
+        occurrences:
+            - original: 72503D40767C79DD
+              count: 4
+      - canonical: EFD8BEECABB41113
+        replacedWith: x-subresource-0000000219-x
+        occurrences:
+            - original: EFD8BEECABB41113
+              count: 4
+      - canonical: 496F721E7088C02C
+        replacedWith: x-subresource-0000000036-x
+        occurrences:
+            - original: 496F721E7088C02C
+              count: 4
+      - canonical: 48B61CC5B17249A8
+        replacedWith: x-subresource-0000000239-x
+        occurrences:
+            - original: 48B61CC5B17249A8
+              count: 4
+      - canonical: 3161E3792C4C9141
+        replacedWith: x-subresource-0000000129-x
+        occurrences:
+            - original: 3161E3792C4C9141
+              count: 4
+      - canonical: FB6BCAF547FE7A0E
+        replacedWith: x-subresource-0000000153-x
+        occurrences:
+            - original: FB6BCAF547FE7A0E
+              count: 4
+      - canonical: 3448890AA24CCBBC
+        replacedWith: x-subresource-0000000180-x
+        occurrences:
+            - original: 3448890AA24CCBBC
+              count: 4
+      - canonical: c81c823e-7deb-5895-a92c-f92de07b9f9a
+        replacedWith: x-resource-0000000196-x
+        occurrences:
+            - original: c81c823e-7deb-5895-a92c-f92de07b9f9a
+              count: 10
+      - canonical: 83C592AC3778023D
+        replacedWith: x-subresource-0000000230-x
+        occurrences:
+            - original: 83C592AC3778023D
+              count: 4
+      - canonical: FE819712198270C0
+        replacedWith: x-subresource-0000000096-x
+        occurrences:
+            - original: FE819712198270C0
+              count: 4
+      - canonical: 1071f7c3-4b83-580f-b5fe-1a0b4a465f4f
+        replacedWith: x-resource-0000000042-x
+        occurrences:
+            - original: 1071f7c3-4b83-580f-b5fe-1a0b4a465f4f
+              count: 10
+      - canonical: 7ceb08e3-90cd-5168-ace2-23d893177e20
+        replacedWith: x-resource-0000000124-x
+        occurrences:
+            - original: 7ceb08e3-90cd-5168-ace2-23d893177e20
+              count: 10
+      - canonical: 246fff54-f44e-50c6-a196-d12216b56a89
+        replacedWith: x-resource-0000000158-x
+        occurrences:
+            - original: 246fff54-f44e-50c6-a196-d12216b56a89
+              count: 12
+      - canonical: 9DBBCBBAE6BD40E5
+        replacedWith: x-subresource-0000000208-x
+        occurrences:
+            - original: 9DBBCBBAE6BD40E5
+              count: 4
+      - canonical: nodepool-1
+        replacedWith: x-resource-0000000035-x
+        occurrences:
+            - original: nodepool-1
+              count: 37
+      - canonical: c1c23877-9c3c-535a-a7c9-4c25730604d4
+        replacedWith: x-resource-0000000086-x
+        occurrences:
+            - original: c1c23877-9c3c-535a-a7c9-4c25730604d4
+              count: 12
+      - canonical: 8FFA7FFD6B214B7D
+        replacedWith: x-subresource-0000000115-x
+        occurrences:
+            - original: 8FFA7FFD6B214B7D
+              count: 4
+      - canonical: 4219DE3D0E4FE46D
+        replacedWith: x-subresource-0000000021-x
+        occurrences:
+            - original: 4219DE3D0E4FE46D
+              count: 4
+      - canonical: "08584453809234795023"
+        replacedWith: x-subresource-0000000050-x
+        occurrences:
+            - original: "08584453809234795023"
+              count: 4
+      - canonical: 7DE0740084187445
+        replacedWith: x-subresource-0000000044-x
+        occurrences:
+            - original: 7DE0740084187445
+              count: 4
+      - canonical: 99412651-c5de-5c3c-bbf3-8fd4872a2cdc
+        replacedWith: x-resource-0000000071-x
+        occurrences:
+            - original: 99412651-c5de-5c3c-bbf3-8fd4872a2cdc
+              count: 10
+      - canonical: 7A8A5D33FF5AF479
+        replacedWith: x-subresource-0000000140-x
+        occurrences:
+            - original: 7A8A5D33FF5AF479
+              count: 4
+      - canonical: "08584453799752542462"
+        replacedWith: x-subresource-0000000017-x
+        occurrences:
+            - original: "08584453799752542462"
+              count: 4
+      - canonical: B79B5BD03CE9843E
+        replacedWith: x-subresource-0000000090-x
+        occurrences:
+            - original: B79B5BD03CE9843E
+              count: 4
+      - canonical: 2661AB073FE51FC5
+        replacedWith: x-subresource-0000000249-x
+        occurrences:
+            - original: 2661AB073FE51FC5
+              count: 4
+      - canonical: ef318e2a-8334-4a05-9e4a-295a196c6a6e
+        replacedWith: x-resource-0000000055-x
+        occurrences:
+            - original: ef318e2a-8334-4a05-9e4a-295a196c6a6e
+              count: 20
+      - canonical: 11298DF824B2F9D8
+        replacedWith: x-subresource-0000000042-x
+        occurrences:
+            - original: 11298DF824B2F9D8
+              count: 4
+      - canonical: d472094e-4d5e-5044-bfd9-fe0d18a3c1f0
+        replacedWith: x-resource-0000000056-x
+        occurrences:
+            - original: d472094e-4d5e-5044-bfd9-fe0d18a3c1f0
+              count: 10
+      - canonical: illegal-hcp-cluster-cp-kms-xyrv6fg5g54zg
+        replacedWith: x-resource-0000000068-x
+        occurrences:
+            - original: illegal-hcp-cluster-cp-kms-xyrv6fg5g54zg
+              count: 40
+      - canonical: 02c1451f-7e19-5b78-9328-4f7b132f9492
+        replacedWith: x-resource-0000000087-x
+        occurrences:
+            - original: 02c1451f-7e19-5b78-9328-4f7b132f9492
+              count: 10
+      - canonical: C0DADF04030DC98F
+        replacedWith: x-subresource-0000000127-x
+        occurrences:
+            - original: C0DADF04030DC98F
+              count: 4
+      - canonical: c0ff367d-66d8-445e-917c-583feb0ef0d4
+        replacedWith: x-resource-0000000039-x
+        occurrences:
+            - original: c0ff367d-66d8-445e-917c-583feb0ef0d4
+              count: 20
+config:
+    obfuscate:
+        - replacement:
+            1.0.0.0: x-ipv4-0000000003-x
+            10.0.0.0: x-ipv4-0000000001-x
+            10.128.0.0: x-ipv4-0000000002-x
+            172.30.0.0: x-ipv4-0000000004-x
+          replacementType: Consistent
+          target: All
+          type: IP
+        - replacementType: Consistent
+          target: All
+          type: MAC
+        - domainNames:
+            - rhcloud.com
+            - dev.rhcloud.com
+          replacementType: Consistent
+          target: All
+          type: Domain
+        - replacement:
+            0E0F1DB391B8018F: x-subresource-0000000062-x
+            0E4712440615741C: x-subresource-0000000011-x
+            0F6A648F29000A36: x-subresource-0000000176-x
+            0F6A0806E8A4D11F: x-subresource-0000000089-x
+            0FBF5F24706F63B0: x-subresource-0000000202-x
+            0FFA3D7AB2FF1718: x-subresource-0000000157-x
+            0b3dd8e5-ecf6-55da-a6b0-9c10b1630688: x-resource-0000000106-x
+            0c2df1ef-d136-59bf-b687-1a90f4593ba4: x-resource-0000000122-x
+            0c671752-a07f-5cbe-bbf0-a5f65bcc04b7: x-resource-0000000117-x
+            0d7aedc0-15fd-4a67-a412-efad370c947e: x-resource-0000000088-x
+            0e06520d-8ad1-5326-8975-1bf8cdc14b5b: x-resource-0000000091-x
+            0e670519-7c31-5ad8-ab3b-a5e09973a9fd: x-resource-0000000148-x
+            00a116cd-eaa0-5902-be5d-a7268c58bd5a: x-resource-0000000097-x
+            00ef79d4-67af-5c84-afb1-1a3dea294c5e: x-resource-0000000102-x
+            000baf42-2fa2-51ac-855c-057ba3f0c5a1: x-resource-0000000183-x
+            1A2C52F420760D4D: x-subresource-0000000207-x
+            1A87A22C31BA9A83: x-subresource-0000000118-x
+            1A09343EE18F5B37: x-subresource-0000000132-x
+            1AB72AF7962C62C3: x-subresource-0000000136-x
+            1AF723392B29EACB: x-subresource-0000000128-x
+            1DBA66D913719E22: x-subresource-0000000137-x
+            1E0E6F0325B831B1: x-subresource-0000000122-x
+            1EDADE19335DA32C: x-subresource-0000000106-x
+            1F05A2E68AA7F724: x-subresource-0000000178-x
+            1a694c37-e0ed-5e24-b284-6fcf1331b571: x-resource-0000000153-x
+            1f84ecea-d3f5-5034-a02c-c0f5a0f45e84: x-resource-0000000065-x
+            01E0B8095280F4EE: x-subresource-0000000155-x
+            2B995E64C766E47B: x-subresource-0000000189-x
+            2CFA4B6E1F1706BB: x-subresource-0000000130-x
+            2EB838562CD17B2E: x-subresource-0000000051-x
+            2EFEBC34620938AA: x-subresource-0000000007-x
+            2fa77dbb-7d9d-5df3-a5a7-bd2220e2421f: x-resource-0000000131-x
+            02c1451f-7e19-5b78-9328-4f7b132f9492: x-resource-0000000087-x
+            3B2B412DFC3D9738: x-subresource-0000000233-x
+            3B22D7E33BD2D670: x-subresource-0000000238-x
+            3C741F31D7E3AB5F: x-subresource-0000000183-x
+            3CDDC4239EED6CB6: x-subresource-0000000248-x
+            3F5BEA3071FB48F6: x-subresource-0000000082-x
+            3f1b19c1-6017-5ebb-b2d2-0b04aa65595a: x-resource-0000000161-x
+            4C7243743C6F40B0: x-subresource-0000000003-x
+            4E66CEBF4E2C1602: x-subresource-0000000204-x
+            4e361cd7-476b-5e6a-ad13-bb6cbeeab9f5: x-resource-0000000146-x
+            4ed8f7a0-cc61-5ae2-9acc-fc77d060570e: x-resource-0000000140-x
+            5E80F498CF1FE44E: x-subresource-0000000001-x
+            5F7E61DA4AFB0CC7: x-subresource-0000000083-x
+            5a850773-7032-5554-95ee-bcdc6ecd19e0: x-resource-0000000192-x
+            5e92a856-157c-562e-b11d-a4778984c09e: x-resource-0000000109-x
+            5f0d2121-19e1-5dca-92fe-537b6e751eb0: x-resource-0000000147-x
+            5f5f3212-b836-5d2e-9e31-d3e9260c6a16: x-resource-0000000129-x
+            6A12F86D195FA3D6: x-subresource-0000000200-x
+            6ABAB77036685BEB: x-subresource-0000000035-x
+            6BCC494EB5316397: x-subresource-0000000210-x
+            6CF44137C571E8C4: x-subresource-0000000254-x
+            6E2EAFAF665D00EB: x-subresource-0000000022-x
+            6ED8C13434C9BE4F: x-subresource-0000000084-x
+            6F0449B611DD0980: x-subresource-0000000010-x
+            6F597A41291C6787: x-subresource-0000000098-x
+            6FDC10EE95C4B791: x-subresource-0000000002-x
+            6b4cd64f-ecef-56b4-be5c-02beca755b02: x-resource-0000000126-x
+            6c77d5ff-f560-58c3-a522-866737489be7: x-resource-0000000180-x
+            6d7fd864-ade2-5df9-b244-96f62495346a: x-resource-0000000121-x
+            06EB06F03FC57381: x-subresource-0000000027-x
+            7A7E83696FEAB1EC: x-subresource-0000000064-x
+            7A8A5D33FF5AF479: x-subresource-0000000140-x
+            7A1130065DBA4488: x-subresource-0000000066-x
+            7BCD6EAD8CB2B7B8: x-subresource-0000000069-x
+            7DE038BFD3F47C2C: x-subresource-0000000052-x
+            7DE0740084187445: x-subresource-0000000044-x
+            7E44CD0D1C52043A: x-subresource-0000000184-x
+            7EA5DC5C1E528881: x-subresource-0000000231-x
+            7a25903b-8caf-5177-bf96-7d5e8a714bb3: x-resource-0000000100-x
+            7c114c9b-1b10-5b80-9514-a0cfc6609dcd: x-resource-0000000167-x
+            7ceb08e3-90cd-5168-ace2-23d893177e20: x-resource-0000000124-x
+            7d5d5d53-a7d4-556f-ad19-ba0d0ef1b2de: x-resource-0000000160-x
+            7e1a4d3e-ac43-58b1-b84b-7e737385bed2: x-resource-0000000130-x
+            07FF5994D4B06DAF: x-subresource-0000000070-x
+            8ABC87319E58F46D: x-subresource-0000000067-x
+            8AFFC7B0DAFD2FB6: x-subresource-0000000236-x
+            8C917A4A90FDCC90: x-subresource-0000000048-x
+            8D992F7452DF4AF5: x-subresource-0000000093-x
+            8ECE36AB533F71A4: x-subresource-0000000092-x
+            8FE35BA68A94BF1B: x-subresource-0000000054-x
+            8FFA7FFD6B214B7D: x-subresource-0000000115-x
+            9A149E4E52055B81: x-subresource-0000000023-x
+            9A1135A4C46D7C98: x-subresource-0000000243-x
+            9D6D82288F45B958: x-subresource-0000000063-x
+            9DBBCBBAE6BD40E5: x-subresource-0000000208-x
+            9E6757343D1C3049: x-subresource-0000000150-x
+            9FC67827B6459C50: x-subresource-0000000037-x
+            9FF3628B605297FB: x-subresource-0000000020-x
+            9a44ea65-a470-57b1-af83-691ca539c71f: x-resource-0000000181-x
+            9a7980f8-49c6-5ccb-b943-6738e7198f45: x-resource-0000000116-x
+            9adebe41-3941-5722-861c-5588c9924002: x-resource-0000000173-x
+            9aee9e1c-7e89-5ffb-9e0a-4773e28ae6bb: x-resource-0000000169-x
+            9bfec5cf-eef5-57a2-a719-416f6fdb699b: x-resource-0000000085-x
+            13B092E80C0539A5: x-subresource-0000000152-x
+            14ACBD5EF0993BBA: x-subresource-0000000144-x
+            14F1D1C8DB3949BE: x-subresource-0000000198-x
+            15DF2711E3B49D27: x-subresource-0000000220-x
+            15ec09c2-7a9a-56dd-bdc9-3be72da5c237: x-resource-0000000155-x
+            018a8907-bb19-577b-bc31-d116cc56a0be: x-resource-0000000182-x
+            25C8522891FD3E36: x-subresource-0000000240-x
+            25e6540d-3e0b-5495-bad4-57a564066e99: x-resource-0000000154-x
+            31f46472-ddc9-54ed-83a1-63c33c15fa7e: x-resource-0000000193-x
+            32F61806B6AE4980: x-subresource-0000000223-x
+            34D5215012D29BEC: x-subresource-0000000139-x
+            37bb9926-24c0-5510-94ce-e4d08e567bbe: x-resource-0000000164-x
+            39A18039D58D32B1: x-subresource-0000000229-x
+            39F0DA660E66CE5D: x-subresource-0000000161-x
+            39a07a2a-d71b-57ae-a594-454e11429132: x-resource-0000000186-x
+            40AC4E4A3427484F: x-subresource-0000000045-x
+            40BB44A63772699A: x-subresource-0000000124-x
+            40F7B8FFC92D8626: x-subresource-0000000112-x
+            40f79632-86f6-5844-8768-2fe1bb9041cd: x-resource-0000000108-x
+            41d699c7-79ec-5bf4-953d-ca663de181d8: x-resource-0000000195-x
+            47BCD01832376B05: x-subresource-0000000009-x
+            48B61CC5B17249A8: x-subresource-0000000239-x
+            50A808EC8275B030: x-subresource-0000000232-x
+            55B68FFF45D2FF76: x-subresource-0000000235-x
+            56B8372C6B716C59: x-subresource-0000000095-x
+            59ed79b3-a6af-5cd1-bdec-4846fae54486: x-resource-0000000157-x
+            62C7871E1B4103BF: x-subresource-0000000061-x
+            64f0619f-ebc2-4156-9d91-c4c781de7e54: x-subscription-0000000001-x
+            65c2b5fd-661d-5180-a565-5231830488a4: x-resource-0000000163-x
+            69BFF5E5B62611ED: x-subresource-0000000108-x
+            69c87914-cf0f-5f61-91bb-7b85f7a891a3: x-resource-0000000170-x
+            73f69039-ec52-5631-a061-caa7ee669bc9: x-resource-0000000188-x
+            75CDA0ADE30BF140: x-subresource-0000000215-x
+            77C8BCF9F9F3B4BB: x-subresource-0000000087-x
+            77FFA3F380E75E26: x-subresource-0000000164-x
+            78bacd0c-dbb1-56f4-8c4c-55260a41ada7: x-resource-0000000136-x
+            83C592AC3778023D: x-subresource-0000000230-x
+            89BD4BED365E4641: x-subresource-0000000005-x
+            92B78713042BBCDB: x-subresource-0000000028-x
+            92ca268c-3451-5edf-8268-9ed9cedb3808: x-resource-0000000137-x
+            092BC2F4AAFBFF76: x-subresource-0000000018-x
+            94FAEDCC6B67E440: x-subresource-0000000111-x
+            96D30BDA7DAA752E: x-subresource-0000000126-x
+            149AAB8A08BE3160: x-subresource-0000000116-x
+            202ab698-fda7-5e83-8073-6cb747861f79: x-resource-0000000098-x
+            218E4370BDEE2C79: x-subresource-0000000197-x
+            220B0A90DDA2D53F: x-subresource-0000000213-x
+            246fff54-f44e-50c6-a196-d12216b56a89: x-resource-0000000158-x
+            248C2CBE2EC246E2: x-subresource-0000000188-x
+            281B3CACD86345D4: x-subresource-0000000179-x
+            0336e1d3-7a87-462b-b6db-342b63f7802c: x-resource-0000000162-x
+            0365E7F366F98006: x-subresource-0000000113-x
+            399CAE9FAD4CD282: x-subresource-0000000162-x
+            496F721E7088C02C: x-subresource-0000000036-x
+            556C1090EE34B1A4: x-subresource-0000000058-x
+            616BED1776BBD84E: x-subresource-0000000167-x
+            683A76BB101220E2: x-subresource-0000000251-x
+            721e8a4e-ae43-5a6c-94ad-18a7cc9690ee: x-resource-0000000144-x
+            726B609C6D2C1322: x-subresource-0000000015-x
+            760E19D2278E2891: x-subresource-0000000247-x
+            761ac47a-1e54-5fc8-ae8e-8930ebfa5905: x-resource-0000000184-x
+            797BE2B333713BB2: x-subresource-0000000163-x
+            804a56b0-16db-59f1-b550-a4e32d0718e7: x-resource-0000000067-x
+            810B0584396BF112: x-subresource-0000000212-x
+            845B650EFAA5CB33: x-subresource-0000000134-x
+            924A0238B5F0C87D: x-subresource-0000000193-x
+            945E5C6CDB5A8EBA: x-subresource-0000000085-x
+            946D39F2C304843D: x-subresource-0000000080-x
+            963D36596D07F54D: x-subresource-0000000199-x
+            973be7f0-b646-51c4-96f4-5280b1c2b203: x-resource-0000000190-x
+            1071f7c3-4b83-580f-b5fe-1a0b4a465f4f: x-resource-0000000042-x
+            2661AB073FE51FC5: x-subresource-0000000249-x
+            3109c41d-fbba-5db9-814f-67fcd6e38bf1: x-resource-0000000072-x
+            3161E3792C4C9141: x-subresource-0000000129-x
+            3461d521-72d2-5fe0-baa7-1b9de1e4e665: x-resource-0000000171-x
+            3619A75D1DB0BDB9: x-subresource-0000000145-x
+            4134FDCF62F70326: x-subresource-0000000039-x
+            4219DE3D0E4FE46D: x-subresource-0000000021-x
+            5080FB572C73C8F2: x-subresource-0000000147-x
+            5106abfa-a7d4-5a67-b630-1db7fc8c6543: x-resource-0000000112-x
+            5618C877B6F8BB15: x-subresource-0000000047-x
+            6037D0E12F2C55AD: x-subresource-0000000138-x
+            7397F8680688EBA5: x-subresource-0000000079-x
+            7678D64EC2D4E580: x-subresource-0000000187-x
+            8069BAD5FCA6A7AB: x-subresource-0000000105-x
+            010270f7-c202-5b69-a133-c97da3248d05: x-resource-0000000114-x
+            11298DF824B2F9D8: x-subresource-0000000042-x
+            12338af0-0e69-4776-bea7-57ae8d297424: x-resource-0000000139-x
+            21988A34897AB9D0: x-subresource-0000000019-x
+            32420e9a-13aa-51db-8e7b-e82d4dccc20f: x-resource-0000000175-x
+            43065C0C828AD540: x-subresource-0000000218-x
+            57787fc5-9448-55d2-8908-372452aaf057: x-resource-0000000178-x
+            60898FC1A642028D: x-subresource-0000000033-x
+            66060A088FFC1980: x-subresource-0000000075-x
+            72446bb6-c1b7-57d0-91fa-41aed7e7554e: x-resource-0000000150-x
+            72503D40767C79DD: x-subresource-0000000149-x
+            73339b96-7ff6-575d-a522-a93ebb21cd17: x-resource-0000000135-x
+            80479C10BFB25948: x-subresource-0000000148-x
+            88366f10-ed47-4cc0-9fab-c8a06148393e: x-resource-0000000165-x
+            90689F4A179A7FD3: x-subresource-0000000228-x
+            108812DC054BF0C0: x-subresource-0000000102-x
+            118550BA81BB4D14: x-subresource-0000000094-x
+            449446AD5117CD81: x-subresource-0000000031-x
+            548563a1-11c9-5dbd-ac44-3ac884e04fc7: x-resource-0000000084-x
+            710354a1-03eb-5f39-9343-5840c2704687: x-resource-0000000073-x
+            0737366C9AF93E01: x-subresource-0000000221-x
+            845344AFA41A7789: x-subresource-0000000088-x
+            975310ad-9517-589b-821c-200616b3a2d1: x-resource-0000000191-x
+            3018502e-151e-5237-8d02-cd91c61feba7: x-resource-0000000059-x
+            3448890AA24CCBBC: x-subresource-0000000180-x
+            11760818E067F6FD: x-subresource-0000000133-x
+            22269004FF668655: x-subresource-0000000053-x
+            77280897-7043-549b-a371-d40e639f9edb: x-resource-0000000119-x
+            99412651-c5de-5c3c-bbf3-8fd4872a2cdc: x-resource-0000000071-x
+            0961039082CA77E0: x-subresource-0000000194-x
+            2912350955CCCC8E: x-subresource-0000000201-x
+            87986749396A4F38: x-subresource-0000000172-x
+            258184818978A48B: x-subresource-0000000156-x
+            "08584453795354504228": x-subresource-0000000024-x
+            "08584453799752542462": x-subresource-0000000017-x
+            "08584453800765454897": x-subresource-0000000030-x
+            "08584453809234795023": x-subresource-0000000050-x
+            "08584453809377282106": x-subresource-0000000046-x
+            "08584453809564613809": x-subresource-0000000245-x
+            "08584453809568288890": x-subresource-0000000256-x
+            "08584453809570350626": x-subresource-0000000025-x
+            "08584453809592885335": x-subresource-0000000242-x
+            "08584453809681131938": x-subresource-0000000211-x
+            "08584453809913127064": x-subresource-0000000043-x
+            "08584453809956583015": x-subresource-0000000013-x
+            "08584453809957082179": x-subresource-0000000225-x
+            "08584453809959677388": x-subresource-0000000060-x
+            "08584453809960576279": x-subresource-0000000032-x
+            A0ACD8E426379098: x-subresource-0000000026-x
+            A1DD50E6464B9019: x-subresource-0000000154-x
+            A05EEACEADA9FCF9: x-subresource-0000000114-x
+            A6AEC19B8510C8A7: x-subresource-0000000182-x
+            A8C1083B245552CA: x-subresource-0000000068-x
+            A10A07D7EE658D20: x-subresource-0000000209-x
+            A78E66655098FA96: x-subresource-0000000168-x
+            A264C2ADA418192A: x-subresource-0000000119-x
+            A8918B42C0591D7F: x-subresource-0000000077-x
+            AB99AF0CEF7DC167: x-subresource-0000000217-x
+            AC6942807A3A6ED6: x-subresource-0000000081-x
+            AC7039187E234C8C: x-subresource-0000000246-x
+            AF631B6F2D1DF3BF: x-subresource-0000000041-x
+            B0E864A285702DFC: x-subresource-0000000177-x
+            B0FA1606C6152E92: x-subresource-0000000004-x
+            B1C2F9D9E9A1C974: x-subresource-0000000222-x
+            B8F9D1910C2AD3B1: x-subresource-0000000191-x
+            B79B5BD03CE9843E: x-subresource-0000000090-x
+            B150F508DC9E62B2: x-subresource-0000000065-x
+            B606C8C07041B20B: x-subresource-0000000078-x
+            B703DDF817C7EA2D: x-subresource-0000000253-x
+            BD5C38603BEF5332: x-subresource-0000000125-x
+            BD6CE256E1805D09: x-subresource-0000000123-x
+            BF4BDFAB5EC16C6E: x-subresource-0000000110-x
+            C0DADF04030DC98F: x-subresource-0000000127-x
+            C0EE1FB6F1D74C48: x-subresource-0000000216-x
+            C9A8CDF9E99C0DE0: x-subresource-0000000173-x
+            C9AB27006A4147F7: x-subresource-0000000141-x
+            C51CCB1E5B831EED: x-subresource-0000000135-x
+            C0062D0111E9B53A: x-subresource-0000000196-x
+            C200B5D8A82E2DBD: x-subresource-0000000099-x
+            C767DA0968E2054A: x-subresource-0000000091-x
+            C8852BF6DC704A04: x-subresource-0000000203-x
+            C10584C71E4E48FA: x-subresource-0000000109-x
+            C46314E3B067C68E: x-subresource-0000000206-x
+            CA589E44B1C1FE14: x-subresource-0000000121-x
+            CD90FCA0CAD6D276: x-subresource-0000000165-x
+            CDCB8FAF9A7BB613: x-subresource-0000000192-x
+            CF53FFA4D5E8145E: x-subresource-0000000174-x
+            D3CB41CDFB577A3B: x-subresource-0000000190-x
+            D5EA3B837C99C84E: x-subresource-0000000076-x
+            D8BC609FAB29297D: x-subresource-0000000104-x
+            D44CD522BF64D7A7: x-subresource-0000000250-x
+            D407A0C9149E77DC: x-subresource-0000000040-x
+            D884CD2DCAE519A7: x-subresource-0000000059-x
+            D1882FA2D1694F64: x-subresource-0000000073-x
+            D3421FC650C63DCD: x-subresource-0000000159-x
+            D07715B13499A7AB: x-subresource-0000000186-x
+            D11767924C209EEA: x-subresource-0000000214-x
+            DB2EA796E86397DF: x-subresource-0000000237-x
+            DC3F8C82869A8D70: x-subresource-0000000170-x
+            DCC2E9B72A46C8BF: x-subresource-0000000227-x
+            DDBAC9AEFC6AF37D: x-subresource-0000000241-x
+            DDCFB4D5C4F0223D: x-subresource-0000000142-x
+            DDEB59E29A08B8C8: x-subresource-0000000171-x
+            DDEDD5FBA8F64740: x-subresource-0000000146-x
+            DE4C9A3F4984B487: x-subresource-0000000255-x
+            DEE72B4FA30C56B9: x-subresource-0000000166-x
+            DF537DF6BF0B09C0: x-subresource-0000000101-x
+            E1C81DD9E677018A: x-subresource-0000000224-x
+            E4A57F4C71812B59: x-subresource-0000000205-x
+            E7C88762AFA69904: x-subresource-0000000049-x
+            E9B290D12FA86684: x-subresource-0000000169-x
+            E14FE1EB3741E1B4: x-subresource-0000000071-x
+            E76C9264F14BF633: x-subresource-0000000055-x
+            E131CA53BB18C6B2: x-subresource-0000000244-x
+            E480E74F5404DA6F: x-subresource-0000000181-x
+            E541D03EC05EA2B4: x-subresource-0000000107-x
+            E902AD8E783567C6: x-subresource-0000000151-x
+            E2789D377488FCAE: x-subresource-0000000097-x
+            EB8D903136345EAC: x-subresource-0000000131-x
+            EC0F8331B2B5A666: x-subresource-0000000012-x
+            ED24FB60AE05A5A5: x-subresource-0000000034-x
+            EE22FF84FAF04FBA: x-subresource-0000000056-x
+            EF7DE702C2CD7280: x-subresource-0000000226-x
+            EF0684BFDC77E11C: x-subresource-0000000160-x
+            EFD8BEECABB41113: x-subresource-0000000219-x
+            F2B130A6B802B335: x-subresource-0000000195-x
+            F2C92613D1F13A8E: x-subresource-0000000072-x
+            F8E3B4124EE28864: x-subresource-0000000234-x
+            F55CBF1FEA478625: x-subresource-0000000175-x
+            F64F342727F189FC: x-subresource-0000000057-x
+            F259D5444F55B18A: x-subresource-0000000120-x
+            F546A327C0E7499E: x-subresource-0000000117-x
+            F9366ABCFC1A3D42: x-subresource-0000000086-x
+            F13670FACBB8973D: x-subresource-0000000185-x
+            F54353C5B220D568: x-subresource-0000000158-x
+            FA229C9C875E3959: x-subresource-0000000103-x
+            FA560E0CE99DF2E9: x-subresource-0000000100-x
+            FB6BCAF547FE7A0E: x-subresource-0000000153-x
+            FC4AA943B4651ADA: x-subresource-0000000252-x
+            FCAB6F30773B95DA: x-subresource-0000000143-x
+            FCC6407DB2578AAA: x-subresource-0000000029-x
+            FD4A896BB77D6635: x-subresource-0000000074-x
+            FE819712198270C0: x-subresource-0000000096-x
+            Microsoft.Authorization: x-subresource-0000000038-x
+            a1f96423-95ce-4224-ab27-4e3dc72facd4: x-resource-0000000101-x
+            a4982db8-dba9-50a1-bfb3-262756cd7b11: x-resource-0000000104-x
+            acdd72a7-3385-48ef-bd42-f606fba81ae7: x-resource-0000000047-x
+            af40a738-be27-51f1-bf2e-eed96d87dd41: x-resource-0000000113-x
+            aro-hcp-demo: x-resource-0000000036-x
+            aro-hcp-gpu-nodepool-NC6sv3: x-resource-0000000007-x
+            b13c1680-02f6-553e-bbc6-a5ad2304d40b: x-resource-0000000141-x
+            b19eb6c8-43bb-52be-9165-9330dba7d250: x-resource-0000000110-x
+            b52ef1d4-5cf6-5d20-853f-9c3327d3a2fd: x-resource-0000000049-x
+            b98d878d-657d-5fe1-b00c-00bc5ea451fc: x-resource-0000000107-x
+            b5517ef7-adf6-5fe7-8d93-7c5c6ddca127: x-resource-0000000189-x
+            bab01f41-1b0a-5818-8435-d48c3d7206b3: x-resource-0000000187-x
+            basic-cluster-k4tbpz: x-resourcegroup-0000000002-x
+            basic-hcp-cluster: x-resource-0000000013-x
+            basic-hcp-cluster-cp-cloud-controller-manager-qtzz6m6tpprgu: x-resource-0000000003-x
+            basic-hcp-cluster-cp-cloud-network-config-qtzz6m6tpprgu: x-resource-0000000006-x
+            basic-hcp-cluster-cp-cluster-api-azure-qtzz6m6tpprgu: x-resource-0000000008-x
+            basic-hcp-cluster-cp-control-plane-qtzz6m6tpprgu: x-resource-0000000009-x
+            basic-hcp-cluster-cp-disk-csi-driver-qtzz6m6tpprgu: x-resource-0000000017-x
+            basic-hcp-cluster-cp-file-csi-driver-qtzz6m6tpprgu: x-resource-0000000019-x
+            basic-hcp-cluster-cp-image-registry-qtzz6m6tpprgu: x-resource-0000000029-x
+            basic-hcp-cluster-cp-ingress-qtzz6m6tpprgu: x-resource-0000000032-x
+            basic-hcp-cluster-cp-kms-qtzz6m6tpprgu: x-resource-0000000033-x
+            basic-hcp-cluster-dp-disk-csi-driver-qtzz6m6tpprgu: x-resource-0000000043-x
+            basic-hcp-cluster-dp-file-csi-driver-qtzz6m6tpprgu: x-resource-0000000046-x
+            basic-hcp-cluster-dp-image-registry-qtzz6m6tpprgu: x-resource-0000000052-x
+            basic-hcp-cluster-service-managed-identity-qtzz6m6tpprgu: x-resource-0000000034-x
+            bb92748f-d0db-5df8-b9b2-7b3b7f2f3fd3: x-resource-0000000152-x
+            bd2387f1-33c7-529c-8c3a-206f20099db2: x-resource-0000000143-x
+            be7a6435-15ae-4171-8f30-4a343eff9e8f: x-resource-0000000058-x
+            bf721182-babf-5e3f-a0e2-bb5672a2482b: x-resource-0000000134-x
+            c0ff367d-66d8-445e-917c-583feb0ef0d4: x-resource-0000000039-x
+            c1c23877-9c3c-535a-a7c9-4c25730604d4: x-resource-0000000086-x
+            c2b4ae41-a70a-56c5-88c6-7599e1defa5e: x-resource-0000000128-x
+            c9b18005-af3e-5a04-8fd0-805d9d197e21: x-resource-0000000111-x
+            c81c823e-7deb-5895-a92c-f92de07b9f9a: x-resource-0000000196-x
+            c88c6ba0-e927-51df-bad1-b9e54dc2623f: x-resource-0000000176-x
+            c2270380-2e9e-55ff-964a-b44735a3fe2b: x-resource-0000000123-x
+            cbb5ad34-2107-59b9-8c25-6ad3e35366ac: x-resource-0000000172-x
+            ceab04a3-8163-59f3-b0a8-7413394e3804: x-resource-0000000168-x
+            cluster: x-resource-0000000001-x
+            cust-kv-hsj7olkh3t7qk: x-resource-0000000011-x
+            cust-kv-pj2d7pwdc2da2: x-resource-0000000027-x
+            cust-kv-qtzz6m6tpprgu: x-resource-0000000015-x
+            cust-kv-xyrv6fg5g54zg: x-resource-0000000054-x
+            customer-infra: x-resource-0000000005-x
+            customer-nsg: x-resource-0000000048-x
+            customer-nsg-name: x-resource-0000000012-x
+            customer-subnet-1: x-subresource-0000000016-x
+            customer-vnet: x-resource-0000000014-x
+            customer-vnet-name: x-resource-0000000010-x
+            customer-vnet-subnet1: x-subresource-0000000006-x
+            customerInfra: x-resource-0000000022-x
+            d4eb2374-cdc3-52a0-95ef-41534808a2ae: x-resource-0000000177-x
+            d92adeab-0a78-5ae6-9da0-8460ee607430: x-resource-0000000179-x
+            d5241a0b-c8c2-51ea-8d5a-719115b8a197: x-resource-0000000159-x
+            d6763a0a-58a4-5916-aab2-9b4ef1fb2c4f: x-resource-0000000127-x
+            d472094e-4d5e-5044-bfd9-fe0d18a3c1f0: x-resource-0000000056-x
+            db5387eb-76fd-5c47-918b-2454eb9c1c0d: x-resource-0000000125-x
+            dd8731fc-4a65-5edc-a6e1-b903819de887: x-resource-0000000050-x
+            de6432e6-f1a9-5e85-a447-de3ccd5b0232: x-resource-0000000115-x
+            disabled-image-registry-gxzgff: x-resourcegroup-0000000001-x
+            disabled-image-registry-hcp-cluster: x-resource-0000000044-x
+            disabled-image-registry-hcp-cluster-cp-cloud-controller-manager-hsj7olkh3t7qk: x-resource-0000000016-x
+            disabled-image-registry-hcp-cluster-cp-cloud-network-config-hsj7olkh3t7qk: x-resource-0000000018-x
+            disabled-image-registry-hcp-cluster-cp-cluster-api-azure-hsj7olkh3t7qk: x-resource-0000000020-x
+            disabled-image-registry-hcp-cluster-cp-control-plane-hsj7olkh3t7qk: x-resource-0000000023-x
+            disabled-image-registry-hcp-cluster-cp-disk-csi-driver-hsj7olkh3t7qk: x-resource-0000000024-x
+            disabled-image-registry-hcp-cluster-cp-file-csi-driver-hsj7olkh3t7qk: x-resource-0000000025-x
+            disabled-image-registry-hcp-cluster-cp-image-registry-hsj7olkh3t7qk: x-resource-0000000026-x
+            disabled-image-registry-hcp-cluster-cp-ingress-hsj7olkh3t7qk: x-resource-0000000028-x
+            disabled-image-registry-hcp-cluster-cp-kms-hsj7olkh3t7qk: x-resource-0000000030-x
+            disabled-image-registry-hcp-cluster-dp-disk-csi-driver-hsj7olkh3t7qk: x-resource-0000000038-x
+            disabled-image-registry-hcp-cluster-dp-file-csi-driver-hsj7olkh3t7qk: x-resource-0000000040-x
+            disabled-image-registry-hcp-cluster-dp-image-registry-hsj7olkh3t7qk: x-resource-0000000041-x
+            disabled-image-registry-hcp-cluster-service-managed-identity-hsj7olkh3t7qk: x-resource-0000000031-x
+            e0a15861-7727-57e8-9acf-be4bbd913a97: x-resource-0000000194-x
+            e7c3f166-3bab-526b-9f44-6335db119a2b: x-resource-0000000133-x
+            e11afc23-8e04-5c92-a53f-af0d30ee0c32: x-resource-0000000149-x
+            e24da550-ffc9-554a-87e2-57984352c9d6: x-resource-0000000166-x
+            e91cfd7c-c3ae-5b42-afdf-fd8d216bd3b4: x-resource-0000000103-x
+            e2225db9-62fb-53f9-9eba-f823b265e4db: x-resource-0000000185-x
+            e2591054-0047-5274-9067-e1b066c71e91: x-resource-0000000138-x
+            eb8adeba-e07b-5adc-8488-df019926652e: x-resource-0000000156-x
+            eb5798ad-6f99-5b4a-952c-ed106fba5a8a: x-resource-0000000118-x
+            ebd87595-e1fb-50b6-b20b-2e8638920ebb: x-resource-0000000145-x
+            ef318e2a-8334-4a05-9e4a-295a196c6a6e: x-resource-0000000055-x
+            etcd-data-kms-encryption-key: x-subresource-0000000008-x
+            f3dcbfa2-f0b9-5ab8-a201-7a58100be8b7: x-resource-0000000120-x
+            f5bd632f-e1bd-51fa-b6c1-0f41463a8ce5: x-resource-0000000174-x
+            f63fc942-59f8-5611-a1d4-5ccdab06fdc8: x-resource-0000000142-x
+            f82c451a-5120-5d0c-a895-dd6d92603f4f: x-resource-0000000060-x
+            f99b069e-f7a5-5f24-91df-887148ba9ea4: x-resource-0000000151-x
+            f334f55d-e23f-53d2-aeb8-49a9384da5c1: x-resource-0000000083-x
+            fa1261d5-9761-56fc-951f-d7c3168a6a69: x-resource-0000000132-x
+            faa6cc44-3c80-5498-86fb-2fd594b1f394: x-resource-0000000105-x
+            fc0c873f-45e9-4d0d-a7d1-585aab30c6ed: x-resource-0000000094-x
+            gpu-nodepool-cluster-pht6k5: x-resource-0000000021-x
+            gpu-nodepool-cluster-pht6k5-cp-cloud-controller-manager-pj2d7pwdc2da2: x-resource-0000000070-x
+            gpu-nodepool-cluster-pht6k5-cp-cloud-network-config-pj2d7pwdc2da2: x-resource-0000000074-x
+            gpu-nodepool-cluster-pht6k5-cp-cluster-api-azure-pj2d7pwdc2da2: x-resource-0000000075-x
+            gpu-nodepool-cluster-pht6k5-cp-control-plane-pj2d7pwdc2da2: x-resource-0000000076-x
+            gpu-nodepool-cluster-pht6k5-cp-disk-csi-driver-pj2d7pwdc2da2: x-resource-0000000077-x
+            gpu-nodepool-cluster-pht6k5-cp-file-csi-driver-pj2d7pwdc2da2: x-resource-0000000078-x
+            gpu-nodepool-cluster-pht6k5-cp-image-registry-pj2d7pwdc2da2: x-resource-0000000079-x
+            gpu-nodepool-cluster-pht6k5-cp-ingress-pj2d7pwdc2da2: x-resource-0000000080-x
+            gpu-nodepool-cluster-pht6k5-cp-kms-pj2d7pwdc2da2: x-resource-0000000081-x
+            gpu-nodepool-cluster-pht6k5-dp-disk-csi-driver-pj2d7pwdc2da2: x-resource-0000000090-x
+            gpu-nodepool-cluster-pht6k5-dp-file-csi-driver-pj2d7pwdc2da2: x-resource-0000000092-x
+            gpu-nodepool-cluster-pht6k5-dp-image-registry-pj2d7pwdc2da2: x-resource-0000000093-x
+            gpu-nodepool-cluster-pht6k5-service-managed-identity-pj2d7pwdc2da2: x-resource-0000000082-x
+            gpu-nodepools-NC6sv3-wz4mrv: x-resourcegroup-0000000003-x
+            hcp-cluster: x-resource-0000000002-x
+            illegal-hcp-cluster: x-resource-0000000089-x
+            illegal-hcp-cluster-cp-cloud-controller-manager-xyrv6fg5g54zg: x-resource-0000000051-x
+            illegal-hcp-cluster-cp-cloud-network-config-xyrv6fg5g54zg: x-resource-0000000053-x
+            illegal-hcp-cluster-cp-cluster-api-azure-xyrv6fg5g54zg: x-resource-0000000057-x
+            illegal-hcp-cluster-cp-control-plane-xyrv6fg5g54zg: x-resource-0000000061-x
+            illegal-hcp-cluster-cp-disk-csi-driver-xyrv6fg5g54zg: x-resource-0000000062-x
+            illegal-hcp-cluster-cp-file-csi-driver-xyrv6fg5g54zg: x-resource-0000000063-x
+            illegal-hcp-cluster-cp-image-registry-xyrv6fg5g54zg: x-resource-0000000064-x
+            illegal-hcp-cluster-cp-ingress-xyrv6fg5g54zg: x-resource-0000000066-x
+            illegal-hcp-cluster-cp-kms-xyrv6fg5g54zg: x-resource-0000000068-x
+            illegal-hcp-cluster-dp-disk-csi-driver-xyrv6fg5g54zg: x-resource-0000000095-x
+            illegal-hcp-cluster-dp-file-csi-driver-xyrv6fg5g54zg: x-resource-0000000096-x
+            illegal-hcp-cluster-dp-image-registry-xyrv6fg5g54zg: x-resource-0000000099-x
+            illegal-hcp-cluster-service-managed-identity-xyrv6fg5g54zg: x-resource-0000000069-x
+            illegal-ocp-version-6k6dxj: x-resourcegroup-0000000004-x
+            managed-identities: x-resource-0000000037-x
+            managedIdentities: x-resource-0000000045-x
+            node-pool: x-resource-0000000004-x
+            nodepool-1: x-resource-0000000035-x
+            np-1: x-subresource-0000000014-x
+          replacementType: Consistent
+          target: All
+          type: AzureResources
+    omit:
+        - kubernetesResource:
+            kind: Secret
+          type: Kubernetes
+        - kubernetesResource:
+            kind: ConfigMap
+          type: Kubernetes
+        - kubernetesResource:
+            apiVersion: certificates.k8s.io/v1
+            kind: CertificateSigningRequest
+          type: Kubernetes
+        - kubernetesResource:
+            apiVersion: certificates.k8s.io/v1
+            kind: CertificateSigningRequestList
+          type: Kubernetes
+        - kubernetesResource:
+            apiVersion: machineconfiguration.openshift.io/v1
+            kind: MachineConfig
+          type: Kubernetes
