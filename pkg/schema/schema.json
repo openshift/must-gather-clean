@@ -123,7 +123,9 @@
                 "type": {
                     "type": "string",
                     "enum": [
+                        "AzureResources",
                         "Domain",
+                        "Exact",
                         "IP",
                         "Keywords",
                         "MAC",
@@ -137,6 +139,28 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "exactReplacements": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "original",
+                            "replacement"
+                        ],
+                        "properties": {
+                            "original": {
+                                "type": "string",
+                                "description": "original is the exact text to be replaced."
+                            },
+                            "replacement": {
+                                "type": "string",
+                                "description": "replacement is the string to replace original with."
+                            }
+                        },
+                        "description": "Provides original,replacement tuples to replace all.  They will be executed in order."
+                    },
+                    "description": "Provides original,replacement tuples to replace all.  They will be executed in order."
                 },
                 "target": {
                     "type": "string",

@@ -3,13 +3,17 @@
 package schema
 
 import "fmt"
-import "reflect"
 import "encoding/json"
+import "reflect"
 
 type Obfuscate struct {
 	// The list of domains and their subdomains which should be obfuscated in the
 	// output, only used with the type Domain obfuscator.
 	DomainNames []string `json:"domainNames,omitempty" yaml:"domainNames,omitempty"`
+
+	// Provides original,replacement tuples to replace all.  They will be executed in
+	// order.
+	ExactReplacements []ObfuscateExactReplacementsElem `json:"exactReplacements,omitempty" yaml:"exactReplacements,omitempty"`
 
 	// when replacementType 'Regex' is used, the supplied Golang regexp
 	// (https://pkg.go.dev/regexp) will be used to detect the string that should be
@@ -43,6 +47,16 @@ type Obfuscate struct {
 	Type ObfuscateType `json:"type" yaml:"type"`
 }
 
+// Provides original,replacement tuples to replace all.  They will be executed in
+// order.
+type ObfuscateExactReplacementsElem struct {
+	// original is the exact text to be replaced.
+	Original string `json:"original" yaml:"original"`
+
+	// replacement is the string to replace original with.
+	Replacement string `json:"replacement" yaml:"replacement"`
+}
+
 // on replacement 'Keywords', this will override a given input string with another
 // output string. On duplicate keys it will use the last defined value as
 // replacement. The input values are matched in a case-sensitive fashion and only
@@ -62,7 +76,9 @@ const ObfuscateTargetFilePath ObfuscateTarget = "FilePath"
 
 type ObfuscateType string
 
+const ObfuscateTypeAzureResources ObfuscateType = "AzureResources"
 const ObfuscateTypeDomain ObfuscateType = "Domain"
+const ObfuscateTypeExact ObfuscateType = "Exact"
 const ObfuscateTypeIP ObfuscateType = "IP"
 const ObfuscateTypeKeywords ObfuscateType = "Keywords"
 const ObfuscateTypeMAC ObfuscateType = "MAC"
@@ -95,6 +111,8 @@ type OmitKubernetesResource struct {
 	Namespaces []string `json:"namespaces,omitempty" yaml:"namespaces,omitempty"`
 }
 
+type OmitType string
+
 // UnmarshalJSON implements json.Unmarshaler.
 func (j *OmitType) UnmarshalJSON(b []byte) error {
 	var v string
@@ -115,35 +133,40 @@ func (j *OmitType) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-var enumValues_ObfuscateTarget = []interface{}{
-	"FilePath",
-	"FileContents",
-	"All",
+var enumValues_ObfuscateType = []interface{}{
+	"AzureResources",
+	"Domain",
+	"Exact",
+	"IP",
+	"Keywords",
+	"MAC",
+	"Regex",
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *ObfuscateType) UnmarshalJSON(b []byte) error {
+func (j *ObfuscateTarget) UnmarshalJSON(b []byte) error {
 	var v string
 	if err := json.Unmarshal(b, &v); err != nil {
 		return err
 	}
 	var ok bool
-	for _, expected := range enumValues_ObfuscateType {
+	for _, expected := range enumValues_ObfuscateTarget {
 		if reflect.DeepEqual(v, expected) {
 			ok = true
 			break
 		}
 	}
 	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateType, v)
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateTarget, v)
 	}
-	*j = ObfuscateType(v)
+	*j = ObfuscateTarget(v)
 	return nil
 }
 
-var enumValues_ObfuscateReplacementType = []interface{}{
-	"Consistent",
-	"Static",
+var enumValues_ObfuscateTarget = []interface{}{
+	"FilePath",
+	"FileContents",
+	"All",
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
@@ -171,34 +194,6 @@ func (j *Obfuscate) UnmarshalJSON(b []byte) error {
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *ObfuscateTarget) UnmarshalJSON(b []byte) error {
-	var v string
-	if err := json.Unmarshal(b, &v); err != nil {
-		return err
-	}
-	var ok bool
-	for _, expected := range enumValues_ObfuscateTarget {
-		if reflect.DeepEqual(v, expected) {
-			ok = true
-			break
-		}
-	}
-	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateTarget, v)
-	}
-	*j = ObfuscateTarget(v)
-	return nil
-}
-
-type OmitType string
-
-var enumValues_OmitType = []interface{}{
-	"Kubernetes",
-	"File",
-	"SymbolicLink",
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
 func (j *ObfuscateReplacementType) UnmarshalJSON(b []byte) error {
 	var v string
 	if err := json.Unmarshal(b, &v); err != nil {
@@ -218,16 +213,59 @@ func (j *ObfuscateReplacementType) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+var enumValues_ObfuscateReplacementType = []interface{}{
+	"Consistent",
+	"Static",
+}
+var enumValues_OmitType = []interface{}{
+	"Kubernetes",
+	"File",
+	"SymbolicLink",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ObfuscateType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_ObfuscateType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateType, v)
+	}
+	*j = ObfuscateType(v)
+	return nil
+}
+
 const OmitTypeKubernetes OmitType = "Kubernetes"
 const OmitTypeFile OmitType = "File"
 const OmitTypeSymbolicLink OmitType = "SymbolicLink"
 
-var enumValues_ObfuscateType = []interface{}{
-	"Domain",
-	"IP",
-	"Keywords",
-	"MAC",
-	"Regex",
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ObfuscateExactReplacementsElem) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["original"]; !ok || v == nil {
+		return fmt.Errorf("field original: required")
+	}
+	if v, ok := raw["replacement"]; !ok || v == nil {
+		return fmt.Errorf("field replacement: required")
+	}
+	type Plain ObfuscateExactReplacementsElem
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = ObfuscateExactReplacementsElem(plain)
+	return nil
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
