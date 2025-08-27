@@ -12,6 +12,9 @@ config:
       domainNames:
         - "rhcloud.com"
         - "dev.rhcloud.com"
+    - type: AzureResources
+      replacementType: Consistent
+      target: All
   omit:
     - type: Kubernetes
       kubernetesResource:
