@@ -96,14 +96,18 @@ func (c *FileProcessor) Process(path string) error {
 }
 
 func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile string) error {
+	reportOnly := len(c.outputFolder) == 0
+
 	readPath := filepath.Join(c.inputFolder, inputFile)
 	readPathParentDir := filepath.Dir(readPath)
 	writePath := filepath.Join(c.outputFolder, outputFile)
 	writePathParentDir := filepath.Dir(writePath)
 
-	err := fsutil.MkdirAllWithChown(writePathParentDir, readPathParentDir)
-	if err != nil {
-		return err
+	if !reportOnly {
+		err := fsutil.MkdirAllWithChown(writePathParentDir, readPathParentDir)
+		if err != nil {
+			return err
+		}
 	}
 
 	readPathStat, err := os.Lstat(readPath)
@@ -113,6 +117,9 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 
 	// symbolic links need some special handling to relink instead of obfuscation
 	if fsutil.IsSymbolicLink(readPathStat) {
+		if reportOnly {
+			return nil
+		}
 		return fsutil.Relink(readPath, writePath, readPathStat)
 	}
 
@@ -124,9 +131,13 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 		return fmt.Errorf("failed to open '%s': %w", readPath, err)
 	}
 
-	outputOsFile, err = c.createNonConflictingFileUnderLock(writePath, readPathStat)
-	if err != nil {
-		return fmt.Errorf("failed to create and open '%s': %w", writePath, err)
+	if reportOnly {
+		outputOsFile = nopCloser{io.Discard}
+	} else {
+		outputOsFile, err = c.createNonConflictingFileUnderLock(writePath, readPathStat)
+		if err != nil {
+			return fmt.Errorf("failed to create and open '%s': %w", writePath, err)
+		}
 	}
 
 	// must-gathers can include gunzipped log files nowadays, handling this special case here once
@@ -136,7 +147,9 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 			return fmt.Errorf("failed to create a gzip reader when opening '%s': %w", readPath, err)
 		}
 
-		outputOsFile = gzip.NewWriter(outputOsFile)
+		if !reportOnly {
+			outputOsFile = gzip.NewWriter(outputOsFile)
+		}
 	}
 
 	err = c.ObfuscateReader(inputOsFile, outputOsFile)
@@ -154,6 +167,14 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 		return fmt.Errorf("failed to close output file '%s': %w", writePath, err)
 	}
 
+	return nil
+}
+
+type nopCloser struct {
+	io.Writer
+}
+
+func (nopCloser) Close() error {
 	return nil
 }
 
@@ -193,7 +214,6 @@ func (c *ContentObfuscator) ObfuscateReader(inputReader io.Reader, outputWriter 
 		}
 
 		contents := c.Obfuscator.Contents(line)
-
 		_, err = fmt.Fprint(writer, contents)
 		if err != nil {
 			return err

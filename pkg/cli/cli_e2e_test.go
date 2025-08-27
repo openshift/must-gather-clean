@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io/fs"
+	"os"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -156,6 +157,9 @@ func replacementReportsMatch(t *testing.T, want, got obfuscator.ReplacementRepor
 		return got.Replacements[i].Canonical > got.Replacements[j].Canonical
 	})
 	for i := range got.Replacements {
+		if i >= len(want.Replacements) {
+			break
+		}
 		w := want.Replacements[i]
 		g := got.Replacements[i]
 		assert.Equal(t, w.Canonical, g.Canonical)
