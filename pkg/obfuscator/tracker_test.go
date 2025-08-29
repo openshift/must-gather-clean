@@ -86,12 +86,17 @@ func TestHappyPathInit(t *testing.T) {
 
 func replacementReportsMatch(t *testing.T, want, got ReplacementReport) {
 	assert.Equal(t, len(want.Replacements), len(got.Replacements))
+	if len(want.Replacements) != len(got.Replacements) {
+		return
+	}
+
 	sort.Slice(want.Replacements, func(i, j int) bool {
 		return want.Replacements[i].Canonical > want.Replacements[j].Canonical
 	})
 	sort.Slice(got.Replacements, func(i, j int) bool {
 		return got.Replacements[i].Canonical > got.Replacements[j].Canonical
 	})
+
 	for i := range got.Replacements {
 		w := want.Replacements[i]
 		g := got.Replacements[i]

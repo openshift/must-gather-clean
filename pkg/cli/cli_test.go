@@ -71,7 +71,7 @@ func TestCreateObfuscatorFromFullConfig(t *testing.T) {
 		Omit: nil,
 	}}
 
-	mfo, err := createObfuscatorsFromConfig(config)
+	mfo, _, err := createObfuscatorsFromConfig(config)
 	require.NoError(t, err)
 	assert.Equal(t, "something else", mfo.Contents("something"))
 }
