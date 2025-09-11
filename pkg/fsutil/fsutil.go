@@ -3,14 +3,11 @@ package fsutil
 import (
 	"fmt"
 	"io/fs"
+	"k8s.io/klog/v2"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strconv"
-	"syscall"
-
-	"k8s.io/klog/v2"
 )
 
 func IsSymbolicLink(fileInfo fs.FileInfo) bool {
@@ -181,17 +178,4 @@ func ensureOutputPath(path string, deleteIfExists bool, inputFolderPath string) 
 	}
 
 	return MkdirAllWithChown(path, inputFolderPath)
-}
-
-func chown(path string, stat fs.FileInfo) error {
-	// there is no equivalent to chown in windows, thus we ignore it explicitly
-	if runtime.GOOS != "windows" {
-		uid := stat.Sys().(*syscall.Stat_t).Uid
-		gid := stat.Sys().(*syscall.Stat_t).Gid
-		err := os.Chown(path, int(uid), int(gid))
-		if err != nil {
-			return fmt.Errorf("failed to chown '%s' back to owner (%d, %d): %w", path, uid, gid, err)
-		}
-	}
-	return nil
 }

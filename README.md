@@ -15,10 +15,6 @@
 
 # Installation
 
-must-gather-clean requires a library dependency called pcre, which is used for regular expressions. You can install it with:
-
-> $ sudo dnf install pcre-devel
-
 Then you can download the latest version of `must-gather-clean` from the [GitHub Release](https://github.com/openshift/must-gather-clean/releases) page. We currently support Linux and Mac (ADM64+ARM64) and Windows.
 
 Unpack the binary that you downloaded, for Linux the tar file can be extracted with:
