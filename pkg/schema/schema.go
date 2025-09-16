@@ -2,9 +2,11 @@
 
 package schema
 
-import "fmt"
-import "encoding/json"
-import "reflect"
+import (
+	"encoding/json"
+	"fmt"
+	"reflect"
+)
 
 type Obfuscate struct {
 	// The list of domains and their subdomains which should be obfuscated in the
@@ -76,6 +78,7 @@ const ObfuscateTargetFilePath ObfuscateTarget = "FilePath"
 
 type ObfuscateType string
 
+const ObfuscateTypeClusterId ObfuscateType = "ClusterId"
 const ObfuscateTypeAzureResources ObfuscateType = "AzureResources"
 const ObfuscateTypeDomain ObfuscateType = "Domain"
 const ObfuscateTypeExact ObfuscateType = "Exact"
@@ -134,6 +137,7 @@ func (j *OmitType) UnmarshalJSON(b []byte) error {
 }
 
 var enumValues_ObfuscateType = []interface{}{
+	"ClusterId",
 	"AzureResources",
 	"Domain",
 	"Exact",

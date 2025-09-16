@@ -180,6 +180,11 @@ func createObfuscatorsFromConfig(config *schema.SchemaJson) (finalObfuscator *ob
 				return nil, nil, err
 			}
 			prescanObfuscators = append(prescanObfuscators, k)
+		case schema.ObfuscateTypeClusterId:
+			k, err = obfuscator.NewClusterIDObfuscator(o.ReplacementType, tracker)
+			if err != nil {
+				return nil, nil, err
+			}
 		case schema.ObfuscateTypeExact:
 			k = obfuscator.NewExactReplacementObfuscator(o.ExactReplacements, tracker)
 		case schema.ObfuscateTypeIP:
