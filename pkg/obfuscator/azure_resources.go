@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
+	"k8s.io/klog/v2"
 	"k8s.io/utils/set"
 )
 
@@ -111,6 +112,11 @@ func (o *azureResourceObfuscator) replace(s string) string {
 
 		for _, canonicalStringToReplace := range canonicalReplacements {
 			if strings.Contains(patternReplacedString, canonicalStringToReplace) {
+				if len(canonicalStringToReplace) < 5 {
+					klog.Warningf("Azure resource obfuscator will skip '%s' because it's too short", canonicalStringToReplace)
+					// we don't want to replace the canonical string if it's too short, because it's probably a trivial string like "0"
+					continue
+				}
 				canonicalToReplacer[canonicalStringToReplace] = currGenerator
 				continue
 			}
