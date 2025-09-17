@@ -24,12 +24,12 @@ func TestClusterIDObfuscatorContents(t *testing.T) {
 				"Processing cluster 1234567890abcdefghijklmnopqrstuv",
 			},
 			output: []string{
-				"Cluster ID: obfuscatedclusterid0000000000001",
+				"Cluster ID: x-obfuscated-clusterid-0000001-x",
 				"Processing cluster 9876543210zyxwvutsrqponmlkjihgfe",
-				"Processing cluster obfuscatedclusterid0000000000001",
+				"Processing cluster x-obfuscated-clusterid-0000001-x",
 			},
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "1234567890abcdefghijklmnopqrstuv", ReplacedWith: "obfuscatedclusterid0000000000001", Counter: map[string]uint{
+				{Canonical: "1234567890abcdefghijklmnopqrstuv", ReplacedWith: "x-obfuscated-clusterid-0000001-x", Counter: map[string]uint{
 					"1234567890abcdefghijklmnopqrstuv": uint(2),
 				}},
 			}},
@@ -41,11 +41,11 @@ func TestClusterIDObfuscatorContents(t *testing.T) {
 				"The cluster abcdef1234567890abcdef1234567890 is healthy",
 			},
 			output: []string{
-				"Cluster: obfuscatedclusterid0000000000001 - Status: Running",
-				"The cluster obfuscatedclusterid0000000000001 is healthy",
+				"Cluster: x-obfuscated-clusterid-0000001-x - Status: Running",
+				"The cluster x-obfuscated-clusterid-0000001-x is healthy",
 			},
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "abcdef1234567890abcdef1234567890", ReplacedWith: "obfuscatedclusterid0000000000001", Counter: map[string]uint{
+				{Canonical: "abcdef1234567890abcdef1234567890", ReplacedWith: "x-obfuscated-clusterid-0000001-x", Counter: map[string]uint{
 					"abcdef1234567890abcdef1234567890": uint(2),
 				}},
 			}},
@@ -56,10 +56,10 @@ func TestClusterIDObfuscatorContents(t *testing.T) {
 				`{"clusterId": "0123456789abcdef0123456789abcdef", "status": "active"}`,
 			},
 			output: []string{
-				`{"clusterId": "obfuscatedclusterid0000000000001", "status": "active"}`,
+				`{"clusterId": "x-obfuscated-clusterid-0000001-x", "status": "active"}`,
 			},
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "0123456789abcdef0123456789abcdef", ReplacedWith: "obfuscatedclusterid0000000000001", Counter: map[string]uint{
+				{Canonical: "0123456789abcdef0123456789abcdef", ReplacedWith: "x-obfuscated-clusterid-0000001-x", Counter: map[string]uint{
 					"0123456789abcdef0123456789abcdef": uint(1),
 				}},
 			}},
@@ -74,10 +74,10 @@ func TestClusterIDObfuscatorContents(t *testing.T) {
 			output: []string{
 				"This is just regular text",
 				"No cluster IDs here: short-string",
-				"Substring format: obfuscatedclusterid0000000000001123",
+				"Substring format: x-obfuscated-clusterid-0000001-x123",
 			},
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "1234567890abcdefghijklmnopqrstuv", ReplacedWith: "obfuscatedclusterid0000000000001", Counter: map[string]uint{
+				{Canonical: "1234567890abcdefghijklmnopqrstuv", ReplacedWith: "x-obfuscated-clusterid-0000001-x", Counter: map[string]uint{
 					"1234567890abcdefghijklmnopqrstuv": uint(1),
 				}},
 			}},
@@ -89,14 +89,14 @@ func TestClusterIDObfuscatorContents(t *testing.T) {
 				"Another valid: fedcba9876543210fedcba9876543210",
 			},
 			output: []string{
-				"Valid: obfuscatedclusterid0000000000001 Invalid: xyz",
-				"Another valid: obfuscatedclusterid0000000000002",
+				"Valid: x-obfuscated-clusterid-0000001-x Invalid: xyz",
+				"Another valid: x-obfuscated-clusterid-0000002-x",
 			},
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "abcdef0123456789abcdef0123456789", ReplacedWith: "obfuscatedclusterid0000000000001", Counter: map[string]uint{
+				{Canonical: "abcdef0123456789abcdef0123456789", ReplacedWith: "x-obfuscated-clusterid-0000001-x", Counter: map[string]uint{
 					"abcdef0123456789abcdef0123456789": uint(1),
 				}},
-				{Canonical: "fedcba9876543210fedcba9876543210", ReplacedWith: "obfuscatedclusterid0000000000002", Counter: map[string]uint{
+				{Canonical: "fedcba9876543210fedcba9876543210", ReplacedWith: "x-obfuscated-clusterid-0000002-x", Counter: map[string]uint{
 					"fedcba9876543210fedcba9876543210": uint(1),
 				}},
 			}},
@@ -124,9 +124,9 @@ func TestClusterIDObfuscator_Path(t *testing.T) {
 		{
 			name:   "cluster ID in file path",
 			input:  "logs/cluster-abcdef0123456789abcdef0123456789/pods",
-			output: "logs/cluster-obfuscatedclusterid0000000000001/pods",
+			output: "logs/cluster-x-obfuscated-clusterid-0000001-x/pods",
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "abcdef0123456789abcdef0123456789", ReplacedWith: "obfuscatedclusterid0000000000001", Counter: map[string]uint{
+				{Canonical: "abcdef0123456789abcdef0123456789", ReplacedWith: "x-obfuscated-clusterid-0000001-x", Counter: map[string]uint{
 					"abcdef0123456789abcdef0123456789": uint(1),
 				}},
 			}},
@@ -134,9 +134,9 @@ func TestClusterIDObfuscator_Path(t *testing.T) {
 		{
 			name:   "cluster ID in filename",
 			input:  "cluster_fedcba9876543210fedcba9876543210.log",
-			output: "cluster_obfuscatedclusterid0000000000001.log",
+			output: "cluster_x-obfuscated-clusterid-0000001-x.log",
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "fedcba9876543210fedcba9876543210", ReplacedWith: "obfuscatedclusterid0000000000001", Counter: map[string]uint{
+				{Canonical: "fedcba9876543210fedcba9876543210", ReplacedWith: "x-obfuscated-clusterid-0000001-x", Counter: map[string]uint{
 					"fedcba9876543210fedcba9876543210": uint(1),
 				}},
 			}},
@@ -150,12 +150,12 @@ func TestClusterIDObfuscator_Path(t *testing.T) {
 		{
 			name:   "multiple cluster IDs in path",
 			input:  "backup/1234567890abcdef1234567890abcdef/restore/fedcba0987654321fedcba0987654321/data",
-			output: "backup/obfuscatedclusterid0000000000001/restore/obfuscatedclusterid0000000000002/data",
+			output: "backup/x-obfuscated-clusterid-0000001-x/restore/x-obfuscated-clusterid-0000002-x/data",
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "1234567890abcdef1234567890abcdef", ReplacedWith: "obfuscatedclusterid0000000000001", Counter: map[string]uint{
+				{Canonical: "1234567890abcdef1234567890abcdef", ReplacedWith: "x-obfuscated-clusterid-0000001-x", Counter: map[string]uint{
 					"1234567890abcdef1234567890abcdef": uint(1),
 				}},
-				{Canonical: "fedcba0987654321fedcba0987654321", ReplacedWith: "obfuscatedclusterid0000000000002", Counter: map[string]uint{
+				{Canonical: "fedcba0987654321fedcba0987654321", ReplacedWith: "x-obfuscated-clusterid-0000002-x", Counter: map[string]uint{
 					"fedcba0987654321fedcba0987654321": uint(1),
 				}},
 			}},
@@ -235,22 +235,22 @@ func TestClusterIDObfuscatorEdgeCases(t *testing.T) {
 		{
 			name:   "cluster ID at start of string",
 			input:  "abcdef1234567890abcdef1234567890 is the cluster",
-			output: "obfuscatedclusterid0000000000001 is the cluster",
+			output: "x-obfuscated-clusterid-0000001-x is the cluster",
 		},
 		{
 			name:   "cluster ID at end of string",
 			input:  "The cluster is abcdef1234567890abcdef1234567890",
-			output: "The cluster is obfuscatedclusterid0000000000001",
+			output: "The cluster is x-obfuscated-clusterid-0000001-x",
 		},
 		{
 			name:   "cluster ID with special characters around",
 			input:  "cluster_id=\"abcdef1234567890abcdef1234567890\"",
-			output: "cluster_id=\"obfuscatedclusterid0000000000001\"",
+			output: "cluster_id=\"x-obfuscated-clusterid-0000001-x\"",
 		},
 		{
 			name:   "cluster ID in URL",
 			input:  "https://api.cluster.com/v1/clusters/abcdef1234567890abcdef1234567890/status",
-			output: "https://api.cluster.com/v1/clusters/obfuscatedclusterid0000000000001/status",
+			output: "https://api.cluster.com/v1/clusters/x-obfuscated-clusterid-0000001-x/status",
 		},
 		{
 			name:   "invalid characters in cluster ID",

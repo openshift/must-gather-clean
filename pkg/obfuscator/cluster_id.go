@@ -11,8 +11,8 @@ import (
 var (
 	// From OCM codebase, pkg/models/uid.go
 	ocmClusterIdPattern            = "[0123456789abcdefghijklmnopqrstuv]{32}"
-	clusterIDReplacement           = "obfuscatedclusterid%013d"
-	staticClusterIDReplacement     = "obfuscatedclusterid0000000000001"
+	clusterIDReplacement           = "x-obfuscated-clusterid-%007d-x"
+	staticClusterIDReplacement     = "x-obfuscated-clusterid-aaaaaaa-x"
 	maximumSupportedObfuscationIDs = 99999999
 )
 
