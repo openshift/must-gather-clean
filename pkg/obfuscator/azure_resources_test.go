@@ -8,6 +8,82 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestDoNotReplaceShortStrings(t *testing.T) {
+	tests := []struct {
+		name           string
+		input          string
+		expectedOutput string
+	}{
+		{
+			name: "short_strings_not_replaced",
+			input: `
+providerID: azure:///subscriptions/x-subscription-0000000001-x/resourcegroups/0
+foo: 0
+bar: 1
+`,
+			expectedOutput: `
+providerID: azure:///subscriptions/x-subscription-0000000001-x/resourcegroups/x-resourcegroup-0000000001-x
+foo: 0
+bar: 1
+`,
+		},
+		{
+			name: "azure_subscription_pattern",
+			input: `
+short_sub: /subscriptions/0
+0
+`,
+			expectedOutput: `
+short_sub: /subscriptions/x-subscription-0000000001-x
+0
+`,
+		},
+		{
+			name: "azure_resource_group_pattern",
+			input: `
+short_rg: /resourceGroups/0
+0
+`,
+			expectedOutput: `
+short_rg: /resourcegroups/x-resourcegroup-0000000001-x
+0
+`,
+		},
+		{
+			name: "azure_subresource_pattern",
+			input: `
+short_sr: /providers/Microsoft.Compute/virtualMachineScaleSets/0
+0
+`,
+			expectedOutput: `
+short_sr: /providers/Microsoft.Compute/virtualMachineScaleSets/x-resource-0000000001-x
+0
+`,
+		},
+		{
+			name: "azure_node_pool_pattern",
+			input: `
+short_np: Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/0
+0
+`,
+			expectedOutput: `
+short_np: Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/x-resource-0000000001-x
+0
+`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			o, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
+			require.NoError(t, err)
+
+			actualOutput := o.Contents(tt.input)
+			assert.Equal(t, tt.expectedOutput, actualOutput)
+		})
+	}
+}
+
 func TestAzureResourcesObfuscatorContents(t *testing.T) {
 	for _, tc := range []struct {
 		name   string
