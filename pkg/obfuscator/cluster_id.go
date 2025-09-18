@@ -10,7 +10,7 @@ import (
 
 var (
 	// From OCM codebase, pkg/models/uid.go
-	ocmClusterIdPattern            = "[0123456789abcdefghijklmnopqrstuv]{32}"
+	ocmClusterIdPattern            = "(?:^|[^0-9a-zA-Z])([0-9a-v]{32})(?:[^0-9a-zA-Z]|$)"
 	clusterIDReplacement           = "x-obfuscated-clusterid-%007d-x"
 	staticClusterIDReplacement     = "x-obfuscated-clusterid-aaaaaaa-x"
 	maximumSupportedObfuscationIDs = 99999999
@@ -49,10 +49,15 @@ func (c *clusterIDObfuscator) Contents(s string) string {
 
 func (c *clusterIDObfuscator) replaceClusterIDs(input string) string {
 	output := input
-	matches := c.clusterIdRegex.FindAllString(input, -1)
-	for _, m := range matches {
-		replacement := c.obfsGenerator.generateReplacement(m, m, 1, c.ReplacementTracker)
-		output = strings.ReplaceAll(output, m, replacement)
+	matches := c.clusterIdRegex.FindAllStringSubmatch(input, -1)
+	for _, match := range matches {
+		if len(match) >= 2 {
+			clusterID := match[1] // Extract the captured cluster ID from group 1
+			fullMatch := match[0] // The full match including boundary characters
+			replacement := c.obfsGenerator.generateReplacement(clusterID, clusterID, 1, c.ReplacementTracker)
+			// Replace the full match with the boundary characters + replacement
+			output = strings.ReplaceAll(output, fullMatch, strings.Replace(fullMatch, clusterID, replacement, 1))
+		}
 	}
 	return output
 }

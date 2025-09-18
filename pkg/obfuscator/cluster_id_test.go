@@ -69,12 +69,12 @@ func TestClusterIDObfuscatorContents(t *testing.T) {
 			input: []string{
 				"This is just regular text",
 				"No cluster IDs here: short-string",
-				"Substring format: 1234567890abcdefghijklmnopqrstuv123", // too long
+				"Substring format: 1234567890abcdefghijklmnopqrstuv-extra", // cluster ID followed by non-hex
 			},
 			output: []string{
 				"This is just regular text",
 				"No cluster IDs here: short-string",
-				"Substring format: x-obfuscated-clusterid-0000001-x123",
+				"Substring format: x-obfuscated-clusterid-0000001-x-extra",
 			},
 			report: ReplacementReport{[]Replacement{
 				{Canonical: "1234567890abcdefghijklmnopqrstuv", ReplacedWith: "x-obfuscated-clusterid-0000001-x", Counter: map[string]uint{
@@ -100,6 +100,16 @@ func TestClusterIDObfuscatorContents(t *testing.T) {
 					"fedcba9876543210fedcba9876543210": uint(1),
 				}},
 			}},
+		},
+		{
+			name: "sha256 value",
+			input: []string{
+				"53b7ae0a5dac8c542073e69d1acc1b30cf21d367ab7718d9aca1494feed5fdbd",
+			},
+			output: []string{
+				"53b7ae0a5dac8c542073e69d1acc1b30cf21d367ab7718d9aca1494feed5fdbd",
+			},
+			report: ReplacementReport{[]Replacement{}},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
