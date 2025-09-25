@@ -15,9 +15,6 @@ config:
     - type: AzureResources
       replacementType: Consistent
       target: All
-    - type: ClusterId
-      replacementType: Consistent
-      target: All
   omit:
     - type: Kubernetes
       kubernetesResource:
