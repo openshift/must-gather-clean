@@ -20,11 +20,13 @@ const (
 	azureResourceGroupTemplate   = "x-resourcegroup-%010d-x"
 	azureResourceNameTemplate    = "x-resource-%010d-x"
 	azureSubresourceNameTemplate = "x-subresource-%010d-x"
+	azureClusterIDTemplate       = "x-obfuscated-clusterid-%007d-x"
 
 	staticAzureSubscriptionReplacement    = "obfuscated-subscription"
 	staticAzureResourceGroupReplacement   = "obfuscated-resourcegroup"
 	staticAzureResourceNameReplacement    = "obfuscated-resource-name"
 	staticAzureSubresourceNameReplacement = "obfuscated-subresource-name"
+	staticAzureClusterIDReplacement       = "x-obfuscated-clusterid-aaaaaaa-x"
 )
 
 var (
@@ -35,6 +37,7 @@ var (
 	azureResourcePattern      = `(?i)/providers/([^/]+)/([^/]+)/([^(/\s')]+)`
 	azureSubresourcePattern   = `(?i)` + azureResourcePattern + `/([^/]+)/([^(/\s')]+)`
 	azureNodePoolPattern      = `(?i)Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/([^(/\s')]+)`
+	azureClusterIdPattern     = "(?:^|[^0-9a-zA-Z])([0-9a-v]{32})(?:[^0-9a-zA-Z]|$)"
 )
 
 type partialRegexReplacer struct {
@@ -235,6 +238,21 @@ func NewAzureResourceObfuscator(replacementType schema.ObfuscateReplacementType,
 			fullReplacementString += fmt.Sprintf("Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/%s", resourceGroupNameReplacement)
 
 			return fullReplacementString
+		}),
+	)
+	orderedPartialRegexReplacers = append(orderedPartialRegexReplacers, newPartialRegexReplacer(
+		azureClusterIdPattern,
+		must(newGenerator(azureClusterIDTemplate, staticAzureClusterIDReplacement, maximumSupportedObfuscationsAzure, replacementType)),
+		func(original string, matches []string, replacer *partialRegexReplacer) string {
+			output := original
+			if len(matches) >= 2 {
+				clusterID := matches[1] // Extract the captured cluster ID from group 1
+				fullMatch := matches[0] // The full match including boundary characters
+				replacement := replacer.generateReplacement(clusterID, clusterID, 1, tracker)
+				// Replace the full match with the boundary characters + replacement
+				output = strings.ReplaceAll(output, fullMatch, strings.Replace(fullMatch, clusterID, replacement, 1))
+			}
+			return output
 		}),
 	)
 

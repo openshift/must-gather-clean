@@ -123,6 +123,7 @@
                 "type": {
                     "type": "string",
                     "enum": [
+                        "ClusterId",
                         "AzureResources",
                         "Domain",
                         "Exact",
