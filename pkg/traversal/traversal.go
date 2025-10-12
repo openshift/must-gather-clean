@@ -20,7 +20,7 @@ type FileWalker struct {
 	workerFactory func(int) QueueProcessor
 }
 
-// Traverse should be called to start processing the must-gather directory. This method will exist the CLI if an error is encountered.
+// Traverse should be called to start processing the must-gather directory. This method will exit the CLI if an error is encountered.
 func (w *FileWalker) Traverse() {
 	wg := sync.WaitGroup{}
 	errorCh := make(chan error, w.workerCount)
