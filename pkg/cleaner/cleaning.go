@@ -141,7 +141,7 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 	}
 
 	// must-gathers can include gunzipped log files nowadays, handling this special case here once
-	if strings.HasSuffix(readPath, ".gz") {
+	if strings.HasSuffix(readPath, ".gz") || strings.HasSuffix(readPath, ".tgz") {
 		inputOsFile, err = gzip.NewReader(inputOsFile)
 		if err != nil {
 			return fmt.Errorf("failed to create a gzip reader when opening '%s': %w", readPath, err)
