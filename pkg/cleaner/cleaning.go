@@ -209,8 +209,11 @@ func (c *ContentObfuscator) ObfuscateReader(inputReader io.Reader, outputWriter 
 			}
 		}
 
+		// Replace invalid UTF-8 sequences with the RuneError replacement character (U+FFFD)
+		// This allows processing files with non-UTF-8 content as seen in kube-controller-manager logs
 		if !utf8.ValidString(line) {
-			return fmt.Errorf("could not read valid utf-8 line: '%s'", line)
+			fmt.Println("Invalid UTF-8 sequence found in line: " + line + " and replacing with " + string(utf8.RuneError))
+			line = strings.ToValidUTF8(line, string(utf8.RuneError))
 		}
 
 		contents := c.Obfuscator.Contents(line)
