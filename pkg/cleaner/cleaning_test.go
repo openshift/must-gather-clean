@@ -108,6 +108,18 @@ func TestObfuscateReaderIOErrorPropagates(t *testing.T) {
 	require.ErrorIs(t, err, UnwritableErr)
 }
 
+func TestObfuscateReaderNonUTF8Content(t *testing.T) {
+	cf := ContentObfuscator{Obfuscator: noErrorIpObfuscator(t)}
+	// Create input with invalid UTF-8 sequence (0xFF 0xFE is invalid UTF-8)
+	// This simulates files like kube-controller-manager logs that may contain non-UTF-8 data
+	invalidUTF8 := []byte{0xFF, 0xFE, 'h', 'e', 'l', 'l', 'o', ' ', '1', '9', '2', '.', '1', '6', '8', '.', '1', '.', '1', '\n'}
+	output := &strings.Builder{}
+	err := cf.ObfuscateReader(strings.NewReader(string(invalidUTF8)), output)
+	// Should not error - invalid UTF-8 sequences should be replaced with replacement character
+	require.NoError(t, err)
+	assert.Contains(t, output.String(), "xxx.xxx.xxx.xxx")
+}
+
 func TestObfuscateFileOutputExists(t *testing.T) {
 	tmpInputDir, err := os.MkdirTemp("", "Worker-test-*")
 	require.NoError(t, err)
