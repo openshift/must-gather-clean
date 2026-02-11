@@ -9,6 +9,7 @@ import (
 	"github.com/openshift/must-gather-clean/pkg/fsutil"
 	"github.com/openshift/must-gather-clean/pkg/reporting"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/ptr"
 
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
 	"github.com/openshift/must-gather-clean/pkg/omitter"
@@ -175,7 +176,7 @@ func createObfuscatorsFromConfig(config *schema.SchemaJson) (finalObfuscator *ob
 				return nil, nil, err
 			}
 		case schema.ObfuscateTypeAzureResources:
-			k, err = obfuscator.NewAzureResourceObfuscator(o.ReplacementType, tracker)
+			k, err = obfuscator.NewAzureResourceObfuscator(o.ReplacementType, tracker, int64(ptr.Deref(config.Config.RandSeed, 0)))
 			if err != nil {
 				return nil, nil, err
 			}

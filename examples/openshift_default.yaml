@@ -34,3 +34,4 @@ config:
       kubernetesResource:
         kind: MachineConfig
         apiVersion: machineconfiguration.openshift.io/v1
+  randSeed: 1

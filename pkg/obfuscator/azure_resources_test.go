@@ -17,12 +17,12 @@ func TestDoNotReplaceShortStrings(t *testing.T) {
 		{
 			name: "short_strings_not_replaced",
 			input: `
-providerID: azure:///subscriptions/x-subscription-0000000001-x/resourcegroups/0
+providerID: azure:///subscriptions/some-subscription-id/resourcegroups/0
 foo: 0
 bar: 1
 `,
 			expectedOutput: `
-providerID: azure:///subscriptions/x-subscription-0000000001-x/resourcegroups/x-resourcegroup-0000000001-x
+providerID: azure:///subscriptions/subscription-generous-ostrich/resourcegroups/resourcegroup-touched-monkey
 foo: 0
 bar: 1
 `,
@@ -34,7 +34,7 @@ short_sub: /subscriptions/0
 0
 `,
 			expectedOutput: `
-short_sub: /subscriptions/x-subscription-0000000001-x
+short_sub: /subscriptions/subscription-touched-monkey
 0
 `,
 		},
@@ -45,7 +45,7 @@ short_rg: /resourceGroups/0
 0
 `,
 			expectedOutput: `
-short_rg: /resourcegroups/x-resourcegroup-0000000001-x
+short_rg: /resourcegroups/resourcegroup-touched-monkey
 0
 `,
 		},
@@ -56,7 +56,7 @@ short_sr: /providers/Microsoft.Compute/virtualMachineScaleSets/0
 0
 `,
 			expectedOutput: `
-short_sr: /providers/Microsoft.Compute/virtualMachineScaleSets/x-resource-0000000001-x
+short_sr: /providers/Microsoft.Compute/virtualMachineScaleSets/resource-touched-monkey
 0
 `,
 		},
@@ -67,7 +67,7 @@ short_np: Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/0
 0
 `,
 			expectedOutput: `
-short_np: Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/x-resource-0000000001-x
+short_np: Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/resource-touched-monkey
 0
 `,
 		},
@@ -75,7 +75,7 @@ short_np: Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/x-resource-00
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			o, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
+			o, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(), 1)
 			require.NoError(t, err)
 
 			actualOutput := o.Contents(tt.input)
@@ -98,24 +98,24 @@ func TestAzureResourcesObfuscatorContents(t *testing.T) {
 				"The Resource 'Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/np-gpu-NC4asT4v3' under resource group 'gpu-nodepools-NC4asT4v3-r79j5l' does not conform to the naming restriction",
 			},
 			output: []string{
-				"https://management.azure.com/subscriptions/x-subscription-0000000001-x/resourcegroups/x-resourcegroup-0000000001-x/providers/Microsoft.Resources/deployments/x-resource-0000000001-x/operationStatuses/x-subresource-0000000001-x",
+				"https://management.azure.com/subscriptions/subscription-precise-parakeet/resourcegroups/resourcegroup-feasible-magpie/providers/Microsoft.Resources/deployments/resource-generous-ostrich/operationStatuses/subresource-touched-monkey",
 				// notice here that we sub the nodePool *and* we sub using the xisting known resource group name
-				"The Resource 'Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/x-resource-0000000002-x' under resource group 'x-resourcegroup-0000000001-x' does not conform to the naming restriction",
+				"The Resource 'Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/resource-deciding-hyena' under resource group 'resourcegroup-feasible-magpie' does not conform to the naming restriction",
 			},
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "64f0619f-ebc2-4156-9d91-c4c781de7e54", ReplacedWith: "x-subscription-0000000001-x", Counter: map[string]uint{
+				{Canonical: "64f0619f-ebc2-4156-9d91-c4c781de7e54", ReplacedWith: "subscription-precise-parakeet", Counter: map[string]uint{
 					"64f0619f-ebc2-4156-9d91-c4c781de7e54": uint(1),
 				}},
-				{Canonical: "gpu-nodepools-NC4asT4v3-r79j5l", ReplacedWith: "x-resourcegroup-0000000001-x", Counter: map[string]uint{
+				{Canonical: "gpu-nodepools-NC4asT4v3-r79j5l", ReplacedWith: "resourcegroup-feasible-magpie", Counter: map[string]uint{
 					"gpu-nodepools-NC4asT4v3-r79j5l": uint(2),
 				}},
-				{Canonical: "aro-hcp-gpu-nodepool-NC4asT4v3", ReplacedWith: "x-resource-0000000001-x", Counter: map[string]uint{
+				{Canonical: "aro-hcp-gpu-nodepool-NC4asT4v3", ReplacedWith: "resource-generous-ostrich", Counter: map[string]uint{
 					"aro-hcp-gpu-nodepool-NC4asT4v3": uint(1),
 				}},
-				{Canonical: "08584458931762048867", ReplacedWith: "x-subresource-0000000001-x", Counter: map[string]uint{
+				{Canonical: "08584458931762048867", ReplacedWith: "subresource-touched-monkey", Counter: map[string]uint{
 					"08584458931762048867": uint(1),
 				}},
-				{Canonical: "np-gpu-NC4asT4v3", ReplacedWith: "x-resource-0000000002-x", Counter: map[string]uint{
+				{Canonical: "np-gpu-NC4asT4v3", ReplacedWith: "resource-deciding-hyena", Counter: map[string]uint{
 					"np-gpu-NC4asT4v3": uint(1),
 				}},
 			}},
@@ -128,25 +128,25 @@ func TestAzureResourcesObfuscatorContents(t *testing.T) {
 				"The Resource 'Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/np-gpu-NC4asT4v3' under resource group 'gpu-nodepools-NC4asT4v3-r79j5l' does not conform to the naming restriction",
 			},
 			output: []string{
-				"https://management.azure.com/subscriptions/x-subscription-0000000001-x/resourcegroups/x-resourcegroup-0000000001-x/providers/Microsoft.Resources/deployments/x-resource-0000000001-x/operationStatuses/x-subresource-0000000001-x",
-				"https://management.azure.com/subscriptions/x-subscription-0000000001-x/resourcegroups/x-resourcegroup-0000000001-x/providers/MiCrOsOfT.ReSeArChEs/dEpLoYmEnTs/x-resource-0000000001-x/oPeRaTiOnStAtUsEs/x-subresource-0000000001-x",
+				"https://management.azure.com/subscriptions/subscription-precise-parakeet/resourcegroups/resourcegroup-feasible-magpie/providers/Microsoft.Resources/deployments/resource-generous-ostrich/operationStatuses/subresource-touched-monkey",
+				"https://management.azure.com/subscriptions/subscription-precise-parakeet/resourcegroups/resourcegroup-feasible-magpie/providers/MiCrOsOfT.ReSeArChEs/dEpLoYmEnTs/resource-generous-ostrich/oPeRaTiOnStAtUsEs/subresource-touched-monkey",
 				// notice here that we sub the nodePool *and* we sub using the xisting known resource group name
-				"The Resource 'Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/x-resource-0000000002-x' under resource group 'x-resourcegroup-0000000001-x' does not conform to the naming restriction",
+				"The Resource 'Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/resource-deciding-hyena' under resource group 'resourcegroup-feasible-magpie' does not conform to the naming restriction",
 			},
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "64f0619f-ebc2-4156-9d91-c4c781de7e54", ReplacedWith: "x-subscription-0000000001-x", Counter: map[string]uint{
+				{Canonical: "64f0619f-ebc2-4156-9d91-c4c781de7e54", ReplacedWith: "subscription-precise-parakeet", Counter: map[string]uint{
 					"64f0619f-ebc2-4156-9d91-c4c781de7e54": uint(2),
 				}},
-				{Canonical: "gpu-nodepools-NC4asT4v3-r79j5l", ReplacedWith: "x-resourcegroup-0000000001-x", Counter: map[string]uint{
+				{Canonical: "gpu-nodepools-NC4asT4v3-r79j5l", ReplacedWith: "resourcegroup-feasible-magpie", Counter: map[string]uint{
 					"gpu-nodepools-NC4asT4v3-r79j5l": uint(3),
 				}},
-				{Canonical: "aro-hcp-gpu-nodepool-NC4asT4v3", ReplacedWith: "x-resource-0000000001-x", Counter: map[string]uint{
+				{Canonical: "aro-hcp-gpu-nodepool-NC4asT4v3", ReplacedWith: "resource-generous-ostrich", Counter: map[string]uint{
 					"aro-hcp-gpu-nodepool-NC4asT4v3": uint(2),
 				}},
-				{Canonical: "08584458931762048867", ReplacedWith: "x-subresource-0000000001-x", Counter: map[string]uint{
+				{Canonical: "08584458931762048867", ReplacedWith: "subresource-touched-monkey", Counter: map[string]uint{
 					"08584458931762048867": uint(2),
 				}},
-				{Canonical: "np-gpu-NC4asT4v3", ReplacedWith: "x-resource-0000000002-x", Counter: map[string]uint{
+				{Canonical: "np-gpu-NC4asT4v3", ReplacedWith: "resource-deciding-hyena", Counter: map[string]uint{
 					"np-gpu-NC4asT4v3": uint(1),
 				}},
 			}},
@@ -158,20 +158,20 @@ func TestAzureResourcesObfuscatorContents(t *testing.T) {
 				`The Resource "Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/np-gpu-NC4asT4v3" was not found`,
 			},
 			output: []string{
-				`"resourceId": "/subscriptions/x-subscription-0000000001-x/resourcegroups/x-resourcegroup-0000000001-x/providers/Microsoft.Resources/deployments/x-resource-0000000001-x"`,
-				`The Resource "Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/x-resource-0000000002-x" was not found`,
+				`"resourceId": "/subscriptions/subscription-feasible-magpie/resourcegroups/resourcegroup-generous-ostrich/providers/Microsoft.Resources/deployments/resource-touched-monkey"`,
+				`The Resource "Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/resource-precise-parakeet" was not found`,
 			},
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "64f0619f-ebc2-4156-9d91-c4c781de7e54", ReplacedWith: "x-subscription-0000000001-x", Counter: map[string]uint{
+				{Canonical: "64f0619f-ebc2-4156-9d91-c4c781de7e54", ReplacedWith: "subscription-feasible-magpie", Counter: map[string]uint{
 					"64f0619f-ebc2-4156-9d91-c4c781de7e54": uint(1),
 				}},
-				{Canonical: "gpu-nodepools-NC4asT4v3-r79j5l", ReplacedWith: "x-resourcegroup-0000000001-x", Counter: map[string]uint{
+				{Canonical: "gpu-nodepools-NC4asT4v3-r79j5l", ReplacedWith: "resourcegroup-generous-ostrich", Counter: map[string]uint{
 					"gpu-nodepools-NC4asT4v3-r79j5l": uint(1),
 				}},
-				{Canonical: "aro-hcp-gpu-nodepool-NC4asT4v3", ReplacedWith: "x-resource-0000000001-x", Counter: map[string]uint{
+				{Canonical: "aro-hcp-gpu-nodepool-NC4asT4v3", ReplacedWith: "resource-touched-monkey", Counter: map[string]uint{
 					"aro-hcp-gpu-nodepool-NC4asT4v3": uint(1),
 				}},
-				{Canonical: "np-gpu-NC4asT4v3", ReplacedWith: "x-resource-0000000002-x", Counter: map[string]uint{
+				{Canonical: "np-gpu-NC4asT4v3", ReplacedWith: "resource-precise-parakeet", Counter: map[string]uint{
 					"np-gpu-NC4asT4v3": uint(1),
 				}},
 			}},
@@ -182,26 +182,26 @@ func TestAzureResourcesObfuscatorContents(t *testing.T) {
 				"- id: /subscriptions/64f0619f-ebc2-4156-9d91-c4c781de7e54/resourceGroups/basic-cluster-k4tbpz/providers/Microsoft.Resources/deployments/managed-identities/operations/ED24FB60AE05A5A5",
 			},
 			output: []string{
-				"- id: /subscriptions/x-subscription-0000000001-x/resourcegroups/x-resourcegroup-0000000001-x/providers/Microsoft.Resources/deployments/x-resource-0000000001-x/operations/x-subresource-0000000001-x",
+				"- id: /subscriptions/subscription-precise-parakeet/resourcegroups/resourcegroup-feasible-magpie/providers/Microsoft.Resources/deployments/resource-generous-ostrich/operations/subresource-touched-monkey",
 			},
 			report: ReplacementReport{[]Replacement{
-				{Canonical: "64f0619f-ebc2-4156-9d91-c4c781de7e54", ReplacedWith: "x-subscription-0000000001-x", Counter: map[string]uint{
+				{Canonical: "64f0619f-ebc2-4156-9d91-c4c781de7e54", ReplacedWith: "subscription-precise-parakeet", Counter: map[string]uint{
 					"64f0619f-ebc2-4156-9d91-c4c781de7e54": uint(1),
 				}},
-				{Canonical: "basic-cluster-k4tbpz", ReplacedWith: "x-resourcegroup-0000000001-x", Counter: map[string]uint{
+				{Canonical: "basic-cluster-k4tbpz", ReplacedWith: "resourcegroup-feasible-magpie", Counter: map[string]uint{
 					"basic-cluster-k4tbpz": uint(1),
 				}},
-				{Canonical: "managed-identities", ReplacedWith: "x-resource-0000000001-x", Counter: map[string]uint{
+				{Canonical: "managed-identities", ReplacedWith: "resource-generous-ostrich", Counter: map[string]uint{
 					"managed-identities": uint(1),
 				}},
-				{Canonical: "ED24FB60AE05A5A5", ReplacedWith: "x-subresource-0000000001-x", Counter: map[string]uint{
+				{Canonical: "ED24FB60AE05A5A5", ReplacedWith: "subresource-touched-monkey", Counter: map[string]uint{
 					"ED24FB60AE05A5A5": uint(1),
 				}},
 			}},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
+			o, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(), 1)
 			require.NoError(t, err)
 			for idx, i := range tc.input {
 				output := o.Contents(i)

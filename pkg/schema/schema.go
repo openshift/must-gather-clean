@@ -305,6 +305,13 @@ type SchemaJsonConfig struct {
 	// first in the process of obfuscating a must-gather, so its content won't be
 	// scanned and replaced.
 	Omit []Omit `json:"omit,omitempty" yaml:"omit,omitempty"`
+
+	// RandSeed is the seed to use for priming randomly generated values. When empty
+	// or zero, the seed is time.Now().UnixNano(), when set it is honored. It is
+	// useful to set for predictable names. It is useful not to set when you want
+	// variance in randomly generated names instead of counters to avoid confusion
+	// between bugs.
+	RandSeed *int `json:"randSeed,omitempty" yaml:"randSeed,omitempty"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

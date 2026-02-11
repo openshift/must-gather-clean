@@ -2,10 +2,12 @@ package obfuscator
 
 import (
 	"fmt"
+	"math/rand"
 	"regexp"
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
 	"k8s.io/klog/v2"
@@ -13,14 +15,6 @@ import (
 )
 
 const (
-	maximumSupportedObfuscationsAzure = 9999999999
-
-	// Azure resource path templates
-	azureSubscriptionTemplate    = "x-subscription-%010d-x"
-	azureResourceGroupTemplate   = "x-resourcegroup-%010d-x"
-	azureResourceNameTemplate    = "x-resource-%010d-x"
-	azureSubresourceNameTemplate = "x-subresource-%010d-x"
-
 	staticAzureSubscriptionReplacement    = "obfuscated-subscription"
 	staticAzureResourceGroupReplacement   = "obfuscated-resourcegroup"
 	staticAzureResourceNameReplacement    = "obfuscated-resource-name"
@@ -43,11 +37,11 @@ type partialRegexReplacer struct {
 	repl    func(string) string
 
 	lock                  sync.RWMutex
-	generator             *generator
+	generator             *petNameReplacementGenerator
 	canonicalReplacements set.Set[string]
 }
 
-func newPartialRegexReplacer(pattern string, generator *generator, replaceFn func(original string, matches []string, replacer *partialRegexReplacer) string) *partialRegexReplacer {
+func newPartialRegexReplacer(pattern string, generator *petNameReplacementGenerator, replaceFn func(original string, matches []string, replacer *partialRegexReplacer) string) *partialRegexReplacer {
 	currRegex := regexp.MustCompile(pattern)
 	ret := &partialRegexReplacer{
 		pattern: pattern,
@@ -144,99 +138,84 @@ func (o *azureResourceObfuscator) replace(s string) string {
 	return patternReplacedString
 }
 
-func must[T any](v T, err error) T {
-	if err != nil {
-		panic(err)
+func NewAzureResourceObfuscator(replacementType schema.ObfuscateReplacementType, tracker ReplacementTracker, seed int64) (ReportingObfuscator, error) {
+	if seed == 0 {
+		seed = time.Now().UnixNano()
 	}
-	return v
-}
 
-func NewAzureResourceObfuscator(replacementType schema.ObfuscateReplacementType, tracker ReplacementTracker) (ReportingObfuscator, error) {
+	if replacementType != schema.ObfuscateReplacementTypeStatic && replacementType != schema.ObfuscateReplacementTypeConsistent {
+		return nil, fmt.Errorf("unsupported replacement type: %s", replacementType)
+	}
+
+	// create a shared petname generator with a fixed seed for reproducibility
+	petNameGen := NewPetNameGenerator("-", rand.New(rand.NewSource(seed)))
+
 	// shared by a couple regexes
-	resourceNameGen := must(newGenerator(azureResourceNameTemplate, staticAzureResourceNameReplacement, maximumSupportedObfuscationsAzure, replacementType))
+	resourceNameGen := newPetNameReplacementGenerator("resource", staticAzureResourceNameReplacement, petNameGen, replacementType)
 
-	orderedPartialRegexReplacers := []*partialRegexReplacer{}
-	orderedPartialRegexReplacers = append(orderedPartialRegexReplacers, newPartialRegexReplacer(
-		azureSubresourcePattern,
-		must(newGenerator(azureSubresourceNameTemplate, staticAzureSubresourceNameReplacement, maximumSupportedObfuscationsAzure, replacementType)),
-		func(original string, matches []string, replacer *partialRegexReplacer) string {
-			if len(matches) < 6 {
-				return original
-			}
+	orderedPartialRegexReplacers := []*partialRegexReplacer{
+		newPartialRegexReplacer(
+			azureSubresourcePattern,
+			newPetNameReplacementGenerator("subresource", staticAzureSubresourceNameReplacement, petNameGen, replacementType),
+			func(original string, matches []string, replacer *partialRegexReplacer) string {
+				if len(matches) < 6 {
+					return original
+				}
 
-			fullReplacementString := ""
-			providerName := matches[1]
-			resourceType := matches[2]
-			resourceName := matches[3]
-			subresourceType := matches[4]
-			subresourceNameReplacement := replacer.generateReplacement(matches[5], matches[5], 1, tracker)
-			fullReplacementString += fmt.Sprintf("/providers/%s/%s/%s/%s/%s", providerName, resourceType, resourceName, subresourceType, subresourceNameReplacement)
+				providerName := matches[1]
+				resourceType := matches[2]
+				resourceName := matches[3]
+				subresourceType := matches[4]
+				subresourceNameReplacement := replacer.generateReplacement(matches[5], matches[5], 1, tracker)
+				return fmt.Sprintf("/providers/%s/%s/%s/%s/%s", providerName, resourceType, resourceName, subresourceType, subresourceNameReplacement)
+			}),
+		newPartialRegexReplacer(
+			azureResourcePattern,
+			resourceNameGen,
+			func(original string, matches []string, replacer *partialRegexReplacer) string {
+				if len(matches) < 4 {
+					return original
+				}
 
-			return fullReplacementString
-		}),
-	)
-	orderedPartialRegexReplacers = append(orderedPartialRegexReplacers, newPartialRegexReplacer(
-		azureResourcePattern,
-		resourceNameGen,
-		func(original string, matches []string, replacer *partialRegexReplacer) string {
-			if len(matches) < 4 {
-				return original
-			}
+				providerName := matches[1]
+				resourceType := matches[2]
+				resourceNameReplacement := replacer.generateReplacement(matches[3], matches[3], 1, tracker)
+				return fmt.Sprintf("/providers/%s/%s/%s", providerName, resourceType, resourceNameReplacement)
+			}),
+		newPartialRegexReplacer(
+			azureResourceGroupPattern,
+			newPetNameReplacementGenerator("resourcegroup", staticAzureResourceGroupReplacement, petNameGen, replacementType),
+			func(original string, matches []string, replacer *partialRegexReplacer) string {
+				if len(matches) < 2 {
+					return original
+				}
 
-			fullReplacementString := ""
-			providerName := matches[1]
-			resourceType := matches[2]
-			resourceNameReplacement := replacer.generateReplacement(matches[3], matches[3], 1, tracker)
-			fullReplacementString += fmt.Sprintf("/providers/%s/%s/%s", providerName, resourceType, resourceNameReplacement)
+				resourceGroupNameReplacement := replacer.generateReplacement(matches[1], matches[1], 1, tracker)
+				return fmt.Sprintf("/resourcegroups/%s", resourceGroupNameReplacement)
+			}),
+		newPartialRegexReplacer(
+			azureSubscriptionPattern,
+			newPetNameReplacementGenerator("subscription", staticAzureSubscriptionReplacement, petNameGen, replacementType),
+			func(original string, matches []string, replacer *partialRegexReplacer) string {
+				if len(matches) < 2 {
+					return original
+				}
 
-			return fullReplacementString
-		}),
-	)
-	orderedPartialRegexReplacers = append(orderedPartialRegexReplacers, newPartialRegexReplacer(
-		azureResourceGroupPattern,
-		must(newGenerator(azureResourceGroupTemplate, staticAzureResourceGroupReplacement, maximumSupportedObfuscationsAzure, replacementType)),
-		func(original string, matches []string, replacer *partialRegexReplacer) string {
-			if len(matches) < 2 {
-				return original
-			}
+				subscriptionReplacement := replacer.generateReplacement(matches[1], matches[1], 1, tracker)
+				return fmt.Sprintf("/subscriptions/%s", subscriptionReplacement)
+			}),
+		newPartialRegexReplacer(
+			azureNodePoolPattern,
+			resourceNameGen,
+			func(original string, matches []string, replacer *partialRegexReplacer) string {
+				if len(matches) < 2 {
+					return original
+				}
 
-			fullReplacementString := ""
-			resourceGroupNameReplacement := replacer.generateReplacement(matches[1], matches[1], 1, tracker)
-			fullReplacementString += fmt.Sprintf("/resourcegroups/%s", resourceGroupNameReplacement)
-
-			return fullReplacementString
-		}),
-	)
-	orderedPartialRegexReplacers = append(orderedPartialRegexReplacers, newPartialRegexReplacer(
-		azureSubscriptionPattern,
-		must(newGenerator(azureSubscriptionTemplate, staticAzureSubscriptionReplacement, maximumSupportedObfuscationsAzure, replacementType)),
-		func(original string, matches []string, replacer *partialRegexReplacer) string {
-			if len(matches) < 2 {
-				return original
-			}
-
-			fullReplacementString := ""
-			resourceGroupNameReplacement := replacer.generateReplacement(matches[1], matches[1], 1, tracker)
-			fullReplacementString += fmt.Sprintf("/subscriptions/%s", resourceGroupNameReplacement)
-
-			return fullReplacementString
-		}),
-	)
-	orderedPartialRegexReplacers = append(orderedPartialRegexReplacers, newPartialRegexReplacer(
-		azureNodePoolPattern,
-		resourceNameGen,
-		func(original string, matches []string, replacer *partialRegexReplacer) string {
-			if len(matches) < 2 {
-				return original
-			}
-
-			fullReplacementString := ""
-			resourceGroupNameReplacement := replacer.generateReplacement(matches[1], matches[1], 1, tracker)
-			fullReplacementString += fmt.Sprintf("Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/%s", resourceGroupNameReplacement)
-
-			return fullReplacementString
-		}),
-	)
+				nodePoolReplacement := replacer.generateReplacement(matches[1], matches[1], 1, tracker)
+				return fmt.Sprintf("Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/%s", nodePoolReplacement)
+			}),
+	}
 
 	return &azureResourceObfuscator{
 		ReplacementTracker:           tracker,
