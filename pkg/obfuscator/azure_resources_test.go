@@ -152,6 +152,31 @@ func TestAzureResourcesObfuscatorContents(t *testing.T) {
 			}},
 		},
 		{
+			name: "double quote terminated resource paths",
+			input: []string{
+				`"resourceId": "/subscriptions/64f0619f-ebc2-4156-9d91-c4c781de7e54/resourceGroups/gpu-nodepools-NC4asT4v3-r79j5l/providers/Microsoft.Resources/deployments/aro-hcp-gpu-nodepool-NC4asT4v3"`,
+				`The Resource "Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/np-gpu-NC4asT4v3" was not found`,
+			},
+			output: []string{
+				`"resourceId": "/subscriptions/x-subscription-0000000001-x/resourcegroups/x-resourcegroup-0000000001-x/providers/Microsoft.Resources/deployments/x-resource-0000000001-x"`,
+				`The Resource "Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/x-resource-0000000002-x" was not found`,
+			},
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "64f0619f-ebc2-4156-9d91-c4c781de7e54", ReplacedWith: "x-subscription-0000000001-x", Counter: map[string]uint{
+					"64f0619f-ebc2-4156-9d91-c4c781de7e54": uint(1),
+				}},
+				{Canonical: "gpu-nodepools-NC4asT4v3-r79j5l", ReplacedWith: "x-resourcegroup-0000000001-x", Counter: map[string]uint{
+					"gpu-nodepools-NC4asT4v3-r79j5l": uint(1),
+				}},
+				{Canonical: "aro-hcp-gpu-nodepool-NC4asT4v3", ReplacedWith: "x-resource-0000000001-x", Counter: map[string]uint{
+					"aro-hcp-gpu-nodepool-NC4asT4v3": uint(1),
+				}},
+				{Canonical: "np-gpu-NC4asT4v3", ReplacedWith: "x-resource-0000000002-x", Counter: map[string]uint{
+					"np-gpu-NC4asT4v3": uint(1),
+				}},
+			}},
+		},
+		{
 			name: "managed identities bug",
 			input: []string{
 				"- id: /subscriptions/64f0619f-ebc2-4156-9d91-c4c781de7e54/resourceGroups/basic-cluster-k4tbpz/providers/Microsoft.Resources/deployments/managed-identities/operations/ED24FB60AE05A5A5",

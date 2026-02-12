@@ -30,11 +30,11 @@ const (
 var (
 	//     /subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/myResourceGroup/providers/Microsoft.Network/virtualNetworks/myVNet/subnets/mySubnet
 	// Azure resource path pattern
-	azureSubscriptionPattern  = `(?i)/subscriptions/([^(/\s')]+)`
-	azureResourceGroupPattern = `(?i)/resource[Gg]roups/([^(/\s')]+)`
-	azureResourcePattern      = `(?i)/providers/([^/]+)/([^/]+)/([^(/\s')]+)`
-	azureSubresourcePattern   = `(?i)` + azureResourcePattern + `/([^/]+)/([^(/\s')]+)`
-	azureNodePoolPattern      = `(?i)Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/([^(/\s')]+)`
+	azureSubscriptionPattern  = `(?i)/subscriptions/([^(/\s'")]+)`
+	azureResourceGroupPattern = `(?i)/resource[Gg]roups/([^(/\s'")]+)`
+	azureResourcePattern      = `(?i)/providers/([^/]+)/([^/]+)/([^(/\s'")]+)`
+	azureSubresourcePattern   = `(?i)` + azureResourcePattern + `/([^/]+)/([^(/\s'")]+)`
+	azureNodePoolPattern      = `(?i)Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/([^(/\s'")]+)`
 )
 
 type partialRegexReplacer struct {
