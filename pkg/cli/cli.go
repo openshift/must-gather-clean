@@ -7,14 +7,13 @@ import (
 
 	"github.com/openshift/must-gather-clean/pkg/cleaner"
 	"github.com/openshift/must-gather-clean/pkg/fsutil"
-	"github.com/openshift/must-gather-clean/pkg/reporting"
-	"k8s.io/klog/v2"
-
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
 	"github.com/openshift/must-gather-clean/pkg/omitter"
+	"github.com/openshift/must-gather-clean/pkg/reporting"
 	"github.com/openshift/must-gather-clean/pkg/schema"
 	"github.com/openshift/must-gather-clean/pkg/traversal"
 	watermarking "github.com/openshift/must-gather-clean/pkg/watermarker"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -175,7 +174,7 @@ func createObfuscatorsFromConfig(config *schema.SchemaJson) (finalObfuscator *ob
 				return nil, nil, err
 			}
 		case schema.ObfuscateTypeAzureResources:
-			k, err = obfuscator.NewAzureResourceObfuscator(o.ReplacementType, tracker)
+			k, err = obfuscator.NewAzureResourceObfuscator(o.ReplacementType, tracker, config.Config.RandSeed)
 			if err != nil {
 				return nil, nil, err
 			}

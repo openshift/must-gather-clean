@@ -19,3 +19,4 @@ pkg/cli/testfiles/aws
 pkg/cli/testfiles/aws.cleaned
 test/files/testrun-*
 
+/.claude/

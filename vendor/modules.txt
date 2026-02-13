@@ -63,6 +63,7 @@ k8s.io/klog/v2/internal/severity
 k8s.io/klog/v2/internal/sloghandler
 # k8s.io/utils v0.0.0-20250820121507-0af2bda4dd1d
 ## explicit; go 1.18
+k8s.io/utils/ptr
 k8s.io/utils/set
 # sigs.k8s.io/yaml v1.4.0
 ## explicit; go 1.12

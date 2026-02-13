@@ -108,6 +108,10 @@
                     "items": {
                         "$ref": "#/Definitions/omit"
                     }
+                },
+                "randSeed": {
+                    "type": "integer",
+                    "description": "RandSeed is the seed to use for priming randomly generated values. When empty or zero, the seed is time.Now().UnixNano(), when set it is honored. It is useful to set for predictable names. It is useful not to set when you want variance in randomly generated names instead of counters to avoid confusion between bugs."
                 }
             },
             "additionalProperties": true
