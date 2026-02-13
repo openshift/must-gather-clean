@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
 	"k8s.io/klog/v2"
@@ -138,9 +137,11 @@ func (o *azureResourceObfuscator) replace(s string) string {
 	return patternReplacedString
 }
 
-func NewAzureResourceObfuscator(replacementType schema.ObfuscateReplacementType, tracker ReplacementTracker, seed int64) (ReportingObfuscator, error) {
-	if seed == 0 {
-		seed = time.Now().UnixNano()
+func NewAzureResourceObfuscator(replacementType schema.ObfuscateReplacementType, tracker ReplacementTracker, desiredSeed *int) (ReportingObfuscator, error) {
+	var randSource RandomSource
+	randSource = cryptoRandSource{}
+	if desiredSeed != nil {
+		randSource = rand.New(rand.NewSource(int64(*desiredSeed)))
 	}
 
 	if replacementType != schema.ObfuscateReplacementTypeStatic && replacementType != schema.ObfuscateReplacementTypeConsistent {
@@ -148,7 +149,7 @@ func NewAzureResourceObfuscator(replacementType schema.ObfuscateReplacementType,
 	}
 
 	// create a shared petname generator with a fixed seed for reproducibility
-	petNameGen := NewPetNameGenerator("-", rand.New(rand.NewSource(seed)))
+	petNameGen := NewPetNameGenerator("-", randSource)
 
 	// shared by a couple regexes
 	resourceNameGen := newPetNameReplacementGenerator("resource", staticAzureResourceNameReplacement, petNameGen, replacementType)

@@ -6,6 +6,7 @@ import (
 	"github.com/openshift/must-gather-clean/pkg/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/utils/ptr"
 )
 
 func TestDoNotReplaceShortStrings(t *testing.T) {
@@ -75,7 +76,7 @@ short_np: Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/resource-touc
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			o, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(), 1)
+			o, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(), ptr.To(1))
 			require.NoError(t, err)
 
 			actualOutput := o.Contents(tt.input)
@@ -201,7 +202,7 @@ func TestAzureResourcesObfuscatorContents(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(), 1)
+			o, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(), ptr.To(1))
 			require.NoError(t, err)
 			for idx, i := range tc.input {
 				output := o.Contents(i)

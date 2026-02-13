@@ -1,8 +1,9 @@
 package obfuscator
 
 import (
+	cryptorand "crypto/rand"
 	_ "embed"
-	"math/rand"
+	"math/big"
 	"strings"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
@@ -53,6 +54,20 @@ var (
 	names string
 )
 
+type RandomSource interface {
+	Intn(n int) int
+}
+
+type cryptoRandSource struct{}
+
+func (cryptoRandSource) Intn(n int) int {
+	ret, err := cryptorand.Int(cryptorand.Reader, big.NewInt(int64(n)))
+	if err != nil {
+		panic(err)
+	}
+	return int(ret.Int64())
+}
+
 type PetNameGenerator struct {
 	separator string
 
@@ -60,10 +75,10 @@ type PetNameGenerator struct {
 	adjectives []string
 	names      []string
 
-	rand *rand.Rand
+	rand RandomSource
 }
 
-func NewPetNameGenerator(separator string, rand *rand.Rand) *PetNameGenerator {
+func NewPetNameGenerator(separator string, rand RandomSource) *PetNameGenerator {
 	return &PetNameGenerator{
 		separator:  separator,
 		adjectives: strings.Split(strings.TrimSpace(adjectives), "\n"),
