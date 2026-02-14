@@ -2,10 +2,12 @@ package traversal
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"path/filepath"
 	"sync"
 
+	"github.com/schollz/progressbar/v3"
 	"k8s.io/klog/v2"
 )
 
@@ -26,11 +28,26 @@ func (w *FileWalker) Traverse() {
 	errorCh := make(chan error, w.workerCount)
 	queue := make(chan workerInput, w.workerCount)
 	w.workers = make([]QueueProcessor, w.workerCount)
+	progressBar := progressbar.NewOptions(
+		w.workerCount,
+		progressbar.OptionSetDescription("Waiting for workers"),
+		progressbar.OptionShowElapsedTimeOnFinish(),
+		progressbar.OptionShowCount(),
+		progressbar.OptionFullWidth(),
+		progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionSetTheme(progressbar.Theme{
+			Saucer:        "[green]=[reset]",
+			SaucerHead:    "[green]>[reset]",
+			SaucerPadding: " ",
+			BarStart:      "[",
+			BarEnd:        "]",
+		}))
 	for i := 0; i < w.workerCount; i++ {
 		w.workers[i] = w.workerFactory(i + 1)
 		wg.Add(1)
 		go func(i int, queue chan workerInput, errorCh chan error) {
 			w.workers[i].ProcessQueue(queue, errorCh)
+			progressBar.Add(1)
 			wg.Done()
 		}(i, queue, errorCh)
 	}
@@ -74,6 +91,9 @@ func (w *FileWalker) Traverse() {
 
 	close(queue)
 	wg.Wait()
+	// need to add an empty line when the bar finishes with non default options
+	progressBar.Finish()
+	fmt.Println()
 
 	// once all the workers have exited close the error channel and wait for the exit goroutine to complete.
 	close(errorCh)

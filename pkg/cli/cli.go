@@ -80,6 +80,7 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 
 	// this pass allows obfuscators that first need to scan the input to determine what needs to be obfuscated to run before
 	// redactor actually happens. The empty input path signals a dry-run.
+	klog.V(0).Info("starting pre obfuscation file scan")
 	prescanCleaner := cleaner.NewFileCleaner(inputPath, "", prescanObfuscator, &omitter.NoopOmitter{})
 	prescanWorkerFactory := func(id int) traversal.QueueProcessor {
 		return traversal.NewWorker(id, prescanCleaner)
@@ -91,12 +92,12 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 		return fmt.Errorf("failed to create omitters via config at %s: %w", configPath, err)
 	}
 	fileCleaner := cleaner.NewFileCleaner(inputPath, outputPath, obfuscator, mro)
-
+	klog.V(0).Info("starting obfuscation process")
 	workerFactory := func(id int) traversal.QueueProcessor {
 		return traversal.NewWorker(id, fileCleaner)
 	}
 	traversal.NewParallelFileWalker(inputPath, workerCount, workerFactory).Traverse()
-
+	klog.V(0).Info("creating report")
 	reporter := reporting.NewSimpleReporter(config)
 	reporter.CollectOmitterReport(mro.Report())
 	reporter.CollectObfuscatorReport(obfuscator.ReportPerObfuscator())
@@ -104,7 +105,7 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 	if reporterErr != nil {
 		return reporterErr
 	}
-
+	klog.V(0).Info("creating watermark")
 	watermarker := watermarking.NewSimpleWaterMarker()
 	return watermarker.WriteWaterMarkFile(outputPath)
 }
