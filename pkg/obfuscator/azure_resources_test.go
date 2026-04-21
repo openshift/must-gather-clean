@@ -200,6 +200,306 @@ func TestAzureResourcesObfuscatorContents(t *testing.T) {
 				}},
 			}},
 		},
+		{
+			name: "common word resource names should not corrupt component names",
+			input: []string{
+				// First line discovers "service" as a resource name via Azure path
+				`/subscriptions/64f0619f-ebc2-4156-9d91-c4c781de7e54/resourceGroups/my-rg-123/providers/Microsoft.ManagedIdentity/userAssignedIdentities/service`,
+				// Second line must NOT have "service" replaced in "containerd.service"
+				`"systemd_unit":"containerd.service"`,
+			},
+			output: []string{
+				`/subscriptions/subscription-feasible-magpie/resourcegroups/resourcegroup-generous-ostrich/providers/Microsoft.ManagedIdentity/userAssignedIdentities/resource-touched-monkey`,
+				// This is the key assertion: "containerd.service" must be preserved
+				`"systemd_unit":"containerd.service"`,
+			},
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "64f0619f-ebc2-4156-9d91-c4c781de7e54", ReplacedWith: "subscription-feasible-magpie", Counter: map[string]uint{
+					"64f0619f-ebc2-4156-9d91-c4c781de7e54": uint(1),
+				}},
+				{Canonical: "my-rg-123", ReplacedWith: "resourcegroup-generous-ostrich", Counter: map[string]uint{
+					"my-rg-123": uint(1),
+				}},
+				{Canonical: "service", ReplacedWith: "resource-touched-monkey", Counter: map[string]uint{
+					"service": uint(1),
+				}},
+			}},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			o, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(), ptr.To(1))
+			require.NoError(t, err)
+			for idx, i := range tc.input {
+				output := o.Contents(i)
+				assert.Equal(t, tc.output[idx], output)
+			}
+			replacementReportsMatch(t, tc.report, o.Report())
+		})
+	}
+}
+
+func TestIsGenericWord(t *testing.T) {
+	for _, tc := range []struct {
+		input    string
+		expected bool
+	}{
+		{"service", true},     // pure lowercase → generic word
+		{"proxy", true},       // pure lowercase → generic word
+		{"network", true},     // pure lowercase → generic word
+		{"GPU", true},         // pure uppercase → generic word
+		{"DNS", true},         // pure uppercase → generic word
+		{"API", true},         // pure uppercase → generic word
+		{"Service", false},    // mixed case → identifier
+		{"MyResource", false}, // mixed case → identifier
+		{"my-service", false}, // has hyphen → identifier
+		{"proxy1", false},     // has digit → identifier
+		{"a-b", false},        // has hyphen → identifier
+		{"", false},           // empty
+		{"node_pool", false},  // has underscore → identifier
+	} {
+		t.Run(tc.input, func(t *testing.T) {
+			assert.Equal(t, tc.expected, isGenericWord(tc.input))
+		})
+	}
+}
+
+func TestAzureResourceEdgeCases(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		input  []string
+		output []string
+		report ReplacementReport
+	}{
+		{
+			name: "capitalized resource name bypasses isGenericWord and gets replaced globally",
+			input: []string{
+				`/subscriptions/aaaa-bbbb/resourceGroups/my-rg-123/providers/Microsoft.Compute/disks/Service`,
+				`component: Service is running`,
+			},
+			output: []string{
+				`/subscriptions/subscription-feasible-magpie/resourcegroups/resourcegroup-generous-ostrich/providers/Microsoft.Compute/disks/resource-touched-monkey`,
+				`component: resource-touched-monkey is running`,
+			},
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "aaaa-bbbb", ReplacedWith: "subscription-feasible-magpie", Counter: map[string]uint{
+					"aaaa-bbbb": 1,
+				}},
+				{Canonical: "my-rg-123", ReplacedWith: "resourcegroup-generous-ostrich", Counter: map[string]uint{
+					"my-rg-123": 1,
+				}},
+				// count=2: once in the ARM path, once in free-text (mixed case bypasses isGenericWord)
+				{Canonical: "Service", ReplacedWith: "resource-touched-monkey", Counter: map[string]uint{
+					"Service": 2,
+				}},
+			}},
+		},
+		{
+			name: "resource name with digit is not a common word and gets replaced",
+			input: []string{
+				`/subscriptions/aaaa-bbbb/resourceGroups/my-rg-123/providers/Microsoft.Compute/disks/proxy1`,
+				`disk proxy1 is attached`,
+			},
+			output: []string{
+				`/subscriptions/subscription-feasible-magpie/resourcegroups/resourcegroup-generous-ostrich/providers/Microsoft.Compute/disks/resource-touched-monkey`,
+				`disk resource-touched-monkey is attached`,
+			},
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "aaaa-bbbb", ReplacedWith: "subscription-feasible-magpie", Counter: map[string]uint{
+					"aaaa-bbbb": 1,
+				}},
+				{Canonical: "my-rg-123", ReplacedWith: "resourcegroup-generous-ostrich", Counter: map[string]uint{
+					"my-rg-123": 1,
+				}},
+				// count=2: once in ARM path, once in free-text (digit makes it non-generic)
+				{Canonical: "proxy1", ReplacedWith: "resource-touched-monkey", Counter: map[string]uint{
+					"proxy1": 2,
+				}},
+			}},
+		},
+		{
+			name: "hyphenated resource name is not a common word and gets replaced",
+			input: []string{
+				`/subscriptions/aaaa-bbbb/resourceGroups/my-rg-123/providers/Microsoft.Compute/disks/my-service`,
+				`disk my-service is attached`,
+			},
+			output: []string{
+				`/subscriptions/subscription-feasible-magpie/resourcegroups/resourcegroup-generous-ostrich/providers/Microsoft.Compute/disks/resource-touched-monkey`,
+				`disk resource-touched-monkey is attached`,
+			},
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "aaaa-bbbb", ReplacedWith: "subscription-feasible-magpie", Counter: map[string]uint{
+					"aaaa-bbbb": 1,
+				}},
+				{Canonical: "my-rg-123", ReplacedWith: "resourcegroup-generous-ostrich", Counter: map[string]uint{
+					"my-rg-123": 1,
+				}},
+				// count=2: once in ARM path, once in free-text (hyphen makes it non-generic)
+				{Canonical: "my-service", ReplacedWith: "resource-touched-monkey", Counter: map[string]uint{
+					"my-service": 2,
+				}},
+			}},
+		},
+		{
+			name: "lowercase common word resource name is skipped in free-text but replaced in ARM path",
+			input: []string{
+				`/subscriptions/aaaa-bbbb/resourceGroups/my-rg-123/providers/Microsoft.Network/virtualNetworks/network`,
+				`checking network connectivity`,
+			},
+			output: []string{
+				`/subscriptions/subscription-feasible-magpie/resourcegroups/resourcegroup-generous-ostrich/providers/Microsoft.Network/virtualNetworks/resource-touched-monkey`,
+				`checking network connectivity`,
+			},
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "aaaa-bbbb", ReplacedWith: "subscription-feasible-magpie", Counter: map[string]uint{
+					"aaaa-bbbb": 1,
+				}},
+				{Canonical: "my-rg-123", ReplacedWith: "resourcegroup-generous-ostrich", Counter: map[string]uint{
+					"my-rg-123": 1,
+				}},
+				// count=1: ARM path only — "network" is a generic word (pure lowercase), skipped in free-text
+				{Canonical: "network", ReplacedWith: "resource-touched-monkey", Counter: map[string]uint{
+					"network": 1,
+				}},
+			}},
+		},
+		{
+			name: "5-char lowercase word (proxy) is common and skipped in free-text",
+			input: []string{
+				`/subscriptions/aaaa-bbbb/resourceGroups/my-rg-123/providers/Microsoft.Network/applicationGateways/proxy`,
+				`kube-proxy is healthy`,
+			},
+			output: []string{
+				`/subscriptions/subscription-feasible-magpie/resourcegroups/resourcegroup-generous-ostrich/providers/Microsoft.Network/applicationGateways/resource-touched-monkey`,
+				`kube-proxy is healthy`,
+			},
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "aaaa-bbbb", ReplacedWith: "subscription-feasible-magpie", Counter: map[string]uint{
+					"aaaa-bbbb": 1,
+				}},
+				{Canonical: "my-rg-123", ReplacedWith: "resourcegroup-generous-ostrich", Counter: map[string]uint{
+					"my-rg-123": 1,
+				}},
+				// count=1: ARM path only — "proxy" is a generic word (pure lowercase), skipped in free-text
+				{Canonical: "proxy", ReplacedWith: "resource-touched-monkey", Counter: map[string]uint{
+					"proxy": 1,
+				}},
+			}},
+		},
+		{
+			name: "mixed-case resource name should not replace inside longer tokens",
+			input: []string{
+				`/subscriptions/aaaa-bbbb/resourceGroups/my-rg-123/providers/Microsoft.Compute/disks/Proxy1`,
+				`MyProxy1Handler started, Proxy1 is ready`,
+			},
+			output: []string{
+				`/subscriptions/subscription-feasible-magpie/resourcegroups/resourcegroup-generous-ostrich/providers/Microsoft.Compute/disks/resource-touched-monkey`,
+				// "Proxy1" as a standalone word is replaced, but NOT inside "MyProxy1Handler"
+				`MyProxy1Handler started, resource-touched-monkey is ready`,
+			},
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "aaaa-bbbb", ReplacedWith: "subscription-feasible-magpie", Counter: map[string]uint{
+					"aaaa-bbbb": 1,
+				}},
+				{Canonical: "my-rg-123", ReplacedWith: "resourcegroup-generous-ostrich", Counter: map[string]uint{
+					"my-rg-123": 1,
+				}},
+				// count=2: once in ARM path, once as standalone word in free-text (NOT inside "MyProxy1Handler")
+				{Canonical: "Proxy1", ReplacedWith: "resource-touched-monkey", Counter: map[string]uint{
+					"Proxy1": 2,
+				}},
+			}},
+		},
+		{
+			name: "all-uppercase resource name (GPU) is generic and skipped in free-text",
+			input: []string{
+				`/subscriptions/aaaa-bbbb/resourceGroups/my-rg-123/providers/Microsoft.Compute/virtualMachineScaleSets/GPU`,
+				`GPU utilization is 80%`,
+			},
+			output: []string{
+				`/subscriptions/subscription-feasible-magpie/resourcegroups/resourcegroup-generous-ostrich/providers/Microsoft.Compute/virtualMachineScaleSets/resource-touched-monkey`,
+				`GPU utilization is 80%`,
+			},
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "aaaa-bbbb", ReplacedWith: "subscription-feasible-magpie", Counter: map[string]uint{
+					"aaaa-bbbb": 1,
+				}},
+				{Canonical: "my-rg-123", ReplacedWith: "resourcegroup-generous-ostrich", Counter: map[string]uint{
+					"my-rg-123": 1,
+				}},
+				// count=1: ARM path only — "GPU" is skipped in free-text (len < 5)
+				{Canonical: "GPU", ReplacedWith: "resource-touched-monkey", Counter: map[string]uint{
+					"GPU": 1,
+				}},
+			}},
+		},
+		{
+			name: "multiple free-text occurrences are counted accurately",
+			input: []string{
+				`/subscriptions/aaaa-bbbb/resourceGroups/my-rg-123/providers/Microsoft.Compute/disks/MyDisk`,
+				`MyDisk failed, retrying MyDisk, still failing on MyDisk`,
+			},
+			output: []string{
+				`/subscriptions/subscription-feasible-magpie/resourcegroups/resourcegroup-generous-ostrich/providers/Microsoft.Compute/disks/resource-touched-monkey`,
+				`resource-touched-monkey failed, retrying resource-touched-monkey, still failing on resource-touched-monkey`,
+			},
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "aaaa-bbbb", ReplacedWith: "subscription-feasible-magpie", Counter: map[string]uint{
+					"aaaa-bbbb": 1,
+				}},
+				{Canonical: "my-rg-123", ReplacedWith: "resourcegroup-generous-ostrich", Counter: map[string]uint{
+					"my-rg-123": 1,
+				}},
+				// count=4: once in ARM path + three standalone occurrences in free-text
+				{Canonical: "MyDisk", ReplacedWith: "resource-touched-monkey", Counter: map[string]uint{
+					"MyDisk": 4,
+				}},
+			}},
+		},
+		{
+			name: "URL-encoded resource names are replaced despite %22 digit adjacency",
+			input: []string{
+				`/subscriptions/aaaa-bbbb/resourceGroups/my-rg-123/providers/Microsoft.RedHatOpenShift/hcpOpenShiftClusters/basic-hcp-cluster`,
+				`%22api.openshift.com%2Fname%22%3A%22basic-hcp-cluster%22`,
+			},
+			output: []string{
+				`/subscriptions/subscription-feasible-magpie/resourcegroups/resourcegroup-generous-ostrich/providers/Microsoft.RedHatOpenShift/hcpOpenShiftClusters/resource-touched-monkey`,
+				`%22api.openshift.com%2Fname%22%3A%22resource-touched-monkey%22`,
+			},
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "aaaa-bbbb", ReplacedWith: "subscription-feasible-magpie", Counter: map[string]uint{
+					"aaaa-bbbb": 1,
+				}},
+				{Canonical: "my-rg-123", ReplacedWith: "resourcegroup-generous-ostrich", Counter: map[string]uint{
+					"my-rg-123": 1,
+				}},
+				// count=2: once in ARM path, once in URL-encoded free-text
+				{Canonical: "basic-hcp-cluster", ReplacedWith: "resource-touched-monkey", Counter: map[string]uint{
+					"basic-hcp-cluster": 2,
+				}},
+			}},
+		},
+		{
+			name: "underscore-prefixed subscription ID is replaced",
+			input: []string{
+				`/subscriptions/aaaa-bbbb/resourceGroups/my-rg-123/providers/Microsoft.Compute/disks/MyDisk`,
+				`"kubernetes.azure.com/managedby":"sub_aaaa-bbbb"`,
+			},
+			output: []string{
+				`/subscriptions/subscription-feasible-magpie/resourcegroups/resourcegroup-generous-ostrich/providers/Microsoft.Compute/disks/resource-touched-monkey`,
+				`"kubernetes.azure.com/managedby":"sub_subscription-feasible-magpie"`,
+			},
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "aaaa-bbbb", ReplacedWith: "subscription-feasible-magpie", Counter: map[string]uint{
+					"aaaa-bbbb": 2,
+				}},
+				{Canonical: "my-rg-123", ReplacedWith: "resourcegroup-generous-ostrich", Counter: map[string]uint{
+					"my-rg-123": 1,
+				}},
+				{Canonical: "MyDisk", ReplacedWith: "resource-touched-monkey", Counter: map[string]uint{
+					"MyDisk": 1,
+				}},
+			}},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			o, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(), ptr.To(1))

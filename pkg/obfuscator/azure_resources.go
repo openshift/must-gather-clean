@@ -9,7 +9,6 @@ import (
 	"sync"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
-	"k8s.io/klog/v2"
 	"k8s.io/utils/set"
 )
 
@@ -19,6 +18,66 @@ const (
 	staticAzureResourceNameReplacement    = "obfuscated-resource-name"
 	staticAzureSubresourceNameReplacement = "obfuscated-subresource-name"
 )
+
+func isLetter(b byte) bool {
+	return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z')
+}
+
+// replaceNotInsideWord is like strings.ReplaceAll but skips matches embedded
+// inside a larger alphabetic token (e.g. "Proxy1" inside "MyProxy1Handler").
+func replaceNotInsideWord(s, old, repl string) (uint, string) {
+	if !strings.Contains(s, old) {
+		return 0, s
+	}
+	var count uint
+	var result strings.Builder
+	result.Grow(len(s))
+	i := 0
+	for {
+		idx := strings.Index(s[i:], old)
+		if idx == -1 {
+			result.WriteString(s[i:])
+			break
+		}
+		absIdx := i + idx
+		endIdx := absIdx + len(old)
+
+		leftIsLetter := absIdx > 0 && isLetter(s[absIdx-1])
+		rightIsLetter := endIdx < len(s) && isLetter(s[endIdx])
+
+		if leftIsLetter || rightIsLetter {
+			result.WriteString(s[i:endIdx])
+			i = endIdx
+		} else {
+			result.WriteString(s[i:absIdx])
+			result.WriteString(repl)
+			count++
+			i = endIdx
+		}
+	}
+	return count, result.String()
+}
+
+// isGenericWord returns true for single-case alphabetic strings like "service" or "GPU"
+// that are too common to safely replace in free text.
+func isGenericWord(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+	hasUpper := false
+	hasLower := false
+	for _, c := range s {
+		switch {
+		case c >= 'a' && c <= 'z':
+			hasLower = true
+		case c >= 'A' && c <= 'Z':
+			hasUpper = true
+		default:
+			return false
+		}
+	}
+	return !(hasUpper && hasLower)
+}
 
 var (
 	//     /subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/myResourceGroup/providers/Microsoft.Network/virtualNetworks/myVNet/subnets/mySubnet
@@ -105,9 +164,13 @@ func (o *azureResourceObfuscator) replace(s string) string {
 
 		for _, canonicalStringToReplace := range canonicalReplacements {
 			if strings.Contains(patternReplacedString, canonicalStringToReplace) {
+				// Skip strings shorter than 5 characters to avoid false-positive replacements
+				// on trivial values like "0", "vm", or "rg" that appear frequently in
+				// unrelated contexts.
 				if len(canonicalStringToReplace) < 5 {
-					klog.Warningf("Azure resource obfuscator will skip '%s' because it's too short", canonicalStringToReplace)
-					// we don't want to replace the canonical string if it's too short, because it's probably a trivial string like "0"
+					continue
+				}
+				if isGenericWord(canonicalStringToReplace) {
 					continue
 				}
 				canonicalToReplacer[canonicalStringToReplace] = currGenerator
@@ -127,11 +190,16 @@ func (o *azureResourceObfuscator) replace(s string) string {
 		return canonicalStringsList[i] < canonicalStringsList[j]
 	})
 
-	// now do the replace
+	// Replace canonicals in free text, skipping matches embedded inside larger words.
 	for _, canonicalStringToReplace := range canonicalStringsList {
+		// Count matches first (replace-with-self is a counting no-op)
+		count, _ := replaceNotInsideWord(patternReplacedString, canonicalStringToReplace, canonicalStringToReplace)
+		if count == 0 {
+			continue
+		}
 		currGenerator := canonicalToReplacer[canonicalStringToReplace]
-		replacementString := currGenerator.generator.generateReplacement(canonicalStringToReplace, canonicalStringToReplace, 1, o.ReplacementTracker)
-		patternReplacedString = strings.ReplaceAll(patternReplacedString, canonicalStringToReplace, replacementString)
+		replacementString := currGenerator.generator.generateReplacement(canonicalStringToReplace, canonicalStringToReplace, count, o.ReplacementTracker)
+		_, patternReplacedString = replaceNotInsideWord(patternReplacedString, canonicalStringToReplace, replacementString)
 	}
 
 	return patternReplacedString
