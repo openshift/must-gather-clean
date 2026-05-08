@@ -26,12 +26,24 @@ var (
 	ipv6re      = `(([a-f0-9]{0,4}[:]){1,8}([0-9a-fA-F]{1,4}|::)+)`
 	ipv6Pattern = regexp.MustCompile(ipv6re)
 	ipv4Pattern = regexp.MustCompile(ipv4re)
+	// 0.0.0.0 is not listed here because the IPv4 regex requires first octets
+	// to start with [1-9], so it can never match.
 	excludedIPs = map[string]struct{}{
-		"127.0.0.1": {},
-		"0.0.0.0":   {},
-		"::1":       {},
+		"::1": {},
 	}
+	loopbackCIDR *net.IPNet
 )
+
+func init() {
+	// loopbackCIDR covers the entire 127.0.0.0/8 range — all loopback addresses
+	// (not just 127.0.0.1) are excluded because they are non-routable and never
+	// contain sensitive information.
+	var err error
+	_, loopbackCIDR, err = net.ParseCIDR("127.0.0.0/8")
+	if err != nil {
+		panic("failed to parse loopback CIDR: " + err.Error())
+	}
+}
 
 type ipObfuscator struct {
 	ReplacementTracker
@@ -55,18 +67,37 @@ func (o *ipObfuscator) replace(s string) string {
 	output := s
 
 	for _, r := range o.replacements {
-		ipMatches := r.pattern.FindAllString(output, -1)
-		for _, m := range ipMatches {
-			// if the match is in the exclude-list then do not replace.
-			if _, ok := excludedIPs[m]; ok {
+		// Collect matches with boundary context before modifying the string.
+		type ipMatch struct {
+			value         string
+			followedByLetter bool
+		}
+		var matches []ipMatch
+		for _, loc := range r.pattern.FindAllStringIndex(output, -1) {
+			m := output[loc[0]:loc[1]]
+			followed := loc[1] < len(output) && isLetter(output[loc[1]])
+			matches = append(matches, ipMatch{value: m, followedByLetter: followed})
+		}
+
+		for _, match := range matches {
+			if _, ok := excludedIPs[match.value]; ok {
 				continue
 			}
 
-			cleaned := strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(m, "_", "."), "-", "."))
+			// For hyphenated/underscored IP forms (e.g. 10-0-187-218), skip matches
+			// where the next character is a letter — that indicates a version suffix
+			// in a pod name (e.g. 1-26-8-4dxrb) rather than a real IP address.
+			if strings.ContainsAny(match.value, "-_") && match.followedByLetter {
+				continue
+			}
+
+			cleaned := strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(match.value, "_", "."), "-", "."))
 			if ip := net.ParseIP(cleaned); ip != nil {
-				replacement := r.generator.generateReplacement(cleaned, m, 1, o.ReplacementTracker)
-				// TODO(thomas): should just replace that one matching occurrence instead of all
-				output = strings.ReplaceAll(output, m, replacement)
+				if loopbackCIDR.Contains(ip) {
+					continue
+				}
+				replacement := r.generator.generateReplacement(cleaned, match.value, 1, o.ReplacementTracker)
+				output = strings.ReplaceAll(output, match.value, replacement)
 			}
 		}
 	}

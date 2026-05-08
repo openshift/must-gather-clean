@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/openshift/must-gather-clean/pkg/kube"
+	"github.com/openshift/must-gather-clean/pkg/obfuscator"
 	"github.com/openshift/must-gather-clean/pkg/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -199,6 +200,109 @@ config:
 	require.NoError(t, err)
 
 	assert.Equal(t, "some IP 192.167.122.2 that should not to be obfuscated\nand some mac x-mac-0000000001-x\n", string(bytes))
+}
+
+// newSeedableMultiObfuscator builds a MultiObfuscator containing a single
+// AzureResourceObfuscator so we can observe what seedObfuscatorsFromInputDir seeds.
+func newSeedableMultiObfuscator(t *testing.T) *obfuscator.MultiObfuscator {
+	t.Helper()
+	seed := 42
+	tracker := obfuscator.NewSimpleTracker()
+	azureObf, err := obfuscator.NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, tracker, &seed)
+	require.NoError(t, err)
+	return obfuscator.NewMultiObfuscator([]obfuscator.ReportingObfuscator{azureObf})
+}
+
+// writeFiles creates empty files under dir/subdir for each name.
+func writeFiles(t *testing.T, dir, subdir string, names []string) {
+	t.Helper()
+	require.NoError(t, os.MkdirAll(filepath.Join(dir, subdir), 0755))
+	for _, name := range names {
+		require.NoError(t, os.WriteFile(filepath.Join(dir, subdir, name), []byte{}, 0644))
+	}
+}
+
+// TestSeedObfuscatorsFromInputDir_UsesPreferredDirs verifies that when a preferred
+// seed directory ("service" or "cluster") contains valid cluster-named files, its
+// cluster prefix is seeded and the fallback directory is not used.
+func TestSeedObfuscatorsFromInputDir_UsesPreferredDirs(t *testing.T) {
+	dir := t.TempDir()
+
+	// Preferred "service" dir: files yield prefix "dev-qm7v3npl-svc".
+	writeFiles(t, dir, "service", []string{
+		"dev-qm7v3npl-svc-default-pod.jsonl",
+		"dev-qm7v3npl-svc-kube-system-worker.jsonl",
+	})
+	// Fallback dir: different cluster ID — must NOT be seeded.
+	writeFiles(t, dir, "other", []string{
+		"stg-xyz9def2-svc-default-pod.jsonl",
+		"stg-xyz9def2-svc-kube-system-worker.jsonl",
+	})
+
+	mo := newSeedableMultiObfuscator(t)
+	seedObfuscatorsFromInputDir(dir, mo)
+
+	// "dev-qm7v3npl-svc" was seeded from the preferred dir and must be replaced.
+	out := mo.Contents("log line with dev-qm7v3npl-svc in it")
+	assert.NotContains(t, out, "dev-qm7v3npl-svc", "preferred-dir prefix should be obfuscated")
+
+	// The fallback dir's cluster token must NOT have been seeded.
+	out2 := mo.Contents("log line with stg-xyz9def2-svc in it")
+	assert.Contains(t, out2, "xyz9def2", "fallback dir should not be used when preferred dir yields a prefix")
+}
+
+// TestSeedObfuscatorsFromInputDir_FallsBackToOtherDirs verifies that when the
+// preferred seed directories yield no valid cluster prefix, the seeder falls back
+// to all other subdirectories in the input path.
+func TestSeedObfuscatorsFromInputDir_FallsBackToOtherDirs(t *testing.T) {
+	dir := t.TempDir()
+
+	// Preferred "service" dir exists but contains no cluster-named files.
+	require.NoError(t, os.MkdirAll(filepath.Join(dir, "service"), 0755))
+
+	// Fallback dir has valid cluster-named files yielding prefix "stg-xyz9def2-svc".
+	writeFiles(t, dir, "fallback", []string{
+		"stg-xyz9def2-svc-default-pod.jsonl",
+		"stg-xyz9def2-svc-kube-system-worker.jsonl",
+	})
+
+	mo := newSeedableMultiObfuscator(t)
+	seedObfuscatorsFromInputDir(dir, mo)
+
+	// "stg-xyz9def2-svc" was seeded from the fallback dir and must be replaced.
+	out := mo.Contents("log line with stg-xyz9def2-svc in it")
+	assert.NotContains(t, out, "stg-xyz9def2-svc", "fallback-dir prefix should be obfuscated when preferred dirs yield nothing")
+	assert.NotEqual(t, "log line with stg-xyz9def2-svc in it", out, "output must differ from input — replacement must have occurred")
+}
+
+// TestSeedObfuscatorsFromInputDir_SeedsBothServiceAndMgmt verifies that when both
+// a "service" and "mgmt" preferred directory contain cluster-named files, BOTH
+// prefixes are seeded independently — the mgmt cluster must not be dropped just
+// because the service cluster was found first.
+func TestSeedObfuscatorsFromInputDir_SeedsBothServiceAndMgmt(t *testing.T) {
+	dir := t.TempDir()
+
+	// "service" dir: staging service cluster (tst-northeu-svc-1-*)
+	writeFiles(t, dir, "service", []string{
+		"tst-northeu-svc-1-default-pod.jsonl",
+		"tst-northeu-svc-1-kube-system-worker.jsonl",
+	})
+	// "mgmt" dir: management cluster with entirely different naming scheme
+	writeFiles(t, dir, "mgmt", []string{
+		"hcp-underlay-cd-mgmt-1-default-pod.jsonl",
+		"hcp-underlay-cd-mgmt-1-kube-system-worker.jsonl",
+	})
+
+	mo := newSeedableMultiObfuscator(t)
+	seedObfuscatorsFromInputDir(dir, mo)
+
+	// Service cluster prefix must be obfuscated.
+	out1 := mo.Contents("log line with tst-northeu-svc-1 in it")
+	assert.NotContains(t, out1, "tst-northeu-svc-1", "service cluster prefix must be obfuscated")
+
+	// Management cluster prefix must ALSO be obfuscated.
+	out2 := mo.Contents("log line with hcp-underlay-cd-mgmt-1 in it")
+	assert.NotContains(t, out2, "hcp-underlay-cd-mgmt-1", "management cluster prefix must be obfuscated")
 }
 
 func TestWaterMarkerNotCreatedOnFail(t *testing.T) {

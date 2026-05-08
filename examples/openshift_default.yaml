@@ -12,9 +12,16 @@ config:
       domainNames:
         - "rhcloud.com"
         - "dev.rhcloud.com"
-    - type: AzureResources
+    - type: Domain
       replacementType: Consistent
       target: All
+      domainNames:
+        - "vault.azure.net"
+        - "azurecr.io"
+        - "blob.core.windows.net"
+    - type: AzureResources
+      replacementType: Consistent
+      target: FileContents
   omit:
     - type: Kubernetes
       kubernetesResource:
