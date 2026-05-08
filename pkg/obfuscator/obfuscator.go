@@ -13,3 +13,11 @@ type ReportingObfuscator interface {
 	// Report returns a map of words and their Replacements
 	Report() ReplacementReport
 }
+
+// SeedableObfuscator can accept pre-known sensitive identifiers that were
+// not discovered from ARM paths.
+type SeedableObfuscator interface {
+	ReportingObfuscator
+	SeedCanonical(canonical string)
+	SetClusterToken(token string)
+}

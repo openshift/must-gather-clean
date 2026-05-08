@@ -4,7 +4,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/openshift/must-gather-clean/pkg/schema"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"k8s.io/utils/ptr"
 )
 
 type splitObfuscator struct {
@@ -102,4 +105,39 @@ func TestMultiObfuscationReportMulti(t *testing.T) {
 		{"this must be split thrice": "must be split thrice"},
 		{"must be split thrice": "be split thrice"},
 		{"be split thrice": "split thrice"}}, reportsAsMap)
+}
+
+func TestSeedableObfuscators_DirectSeedable(t *testing.T) {
+	azureObs, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(), ptr.To(1))
+	require.NoError(t, err)
+	mo := NewMultiObfuscator([]ReportingObfuscator{azureObs})
+	seedable := mo.SeedableObfuscators()
+	require.Len(t, seedable, 1)
+}
+
+func TestSeedableObfuscators_SingleWrapped(t *testing.T) {
+	azureObs, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(), ptr.To(1))
+	require.NoError(t, err)
+	wrapped := NewTargetObfuscator(schema.ObfuscateTargetFileContents, azureObs)
+	mo := NewMultiObfuscator([]ReportingObfuscator{wrapped})
+	seedable := mo.SeedableObfuscators()
+	require.Len(t, seedable, 1)
+}
+
+func TestSeedableObfuscators_DoubleWrapped(t *testing.T) {
+	azureObs, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(), ptr.To(1))
+	require.NoError(t, err)
+	wrapped := NewTargetObfuscator(schema.ObfuscateTargetFileContents, azureObs)
+	doubleWrapped := NewTargetObfuscator(schema.ObfuscateTargetAll, wrapped)
+	mo := NewMultiObfuscator([]ReportingObfuscator{doubleWrapped})
+	seedable := mo.SeedableObfuscators()
+	require.Len(t, seedable, 1)
+}
+
+func TestSeedableObfuscators_NonSeedableSkipped(t *testing.T) {
+	mo := NewMultiObfuscator([]ReportingObfuscator{
+		&splitObfuscator{tracker: NewSimpleTracker()},
+	})
+	seedable := mo.SeedableObfuscators()
+	require.Len(t, seedable, 0)
 }

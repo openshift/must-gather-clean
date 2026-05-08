@@ -124,6 +124,7 @@ The following obfuscation types are supported:
 * [Domain name](#domain-name-obfuscation)
 * [Keywords](#keywords)
 * [Regex](#regex)
+* [Azure Resources](#azure-resources-obfuscation)
 
 ### MAC address obfuscation
 
@@ -274,6 +275,40 @@ The resulting filename would literally be: `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 This however, is much more useful in the second example where we want to obfuscate that we were using TLSv1.2 as the min version - which would also be replaced as `xxxxxxxxxxxxxxxxxxxxxxx`.
 
 There is currently no support for consistent replacement as in the built-in types, there is a feature upcoming for capture groups and individual replacements thereof.
+
+### Azure Resources obfuscation
+
+The `AzureResources` type detects and obfuscates Azure-specific identifiers that commonly appear in must-gathers from Azure-hosted OpenShift clusters (e.g. ARO, ARO-HCP). It handles:
+
+* **ARM resource paths** — subscription IDs, resource group names, and resource names inside paths like `/subscriptions/{id}/resourceGroups/{name}/providers/...`
+* **Azure identity UUIDs** — `clientId`, `principalId`, `tenantId`, `objectId`, and `appId` values in JSON
+* **Kubernetes Azure labels** — UUIDs in `kubernetes.azure.com/*=UUID` node labels
+
+```
+config:
+  obfuscate:
+  - type: AzureResources
+    replacementType: Consistent
+    target: FileContents
+```
+
+Replacement uses consistent pet names (e.g. `subscription-artistic-walleye`, `resourcegroup-calm-reptile`, `identity-real-walrus`) so that the same identifier always maps to the same replacement across all files.
+
+**Important:** Use `target: FileContents` rather than `target: All` to avoid renaming infrastructure directories like `service/` or `cluster/` that may collide with Azure resource names. To obfuscate Azure domain names (Key Vaults, container registries), use the `Domain` obfuscator:
+
+```
+config:
+  obfuscate:
+  - type: Domain
+    replacementType: Consistent
+    target: All
+    domainNames:
+      - "vault.azure.net"
+      - "azurecr.io"
+  - type: AzureResources
+    replacementType: Consistent
+    target: FileContents
+```
 
 
 #### Chaining obfuscators and side effects

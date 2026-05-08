@@ -126,6 +126,18 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			report: map[string]string{},
 		},
 		{
+			name:   "version in pod name not treated as IP",
+			input:  "pod asm-istio-base-crd-installer-1-26-8-4dxrb is running",
+			output: "pod asm-istio-base-crd-installer-1-26-8-4dxrb is running",
+			report: map[string]string{},
+		},
+		{
+			name:   "real hyphenated IP still replaced",
+			input:  "etcd-ip-10-0-187-218.ec2.internal",
+			output: "etcd-ip-xxx.xxx.xxx.xxx.ec2.internal",
+			report: map[string]string{"10-0-187-218": obfuscatedStaticIPv4},
+		},
+		{
 			name:   "excluded ipv4 address",
 			input:  "Listening on 0.0.0.0:8080",
 			output: "Listening on 0.0.0.0:8080",
@@ -144,6 +156,24 @@ func TestIPObfuscatorStatic(t *testing.T) {
 			report: map[string]string{
 				"172.30.0.10": obfuscatedStaticIPv4,
 			},
+		},
+		{
+			name:   "loopback 127.0.0.6 is excluded",
+			input:  `"request_remote_ip":"127.0.0.6:33353"`,
+			output: `"request_remote_ip":"127.0.0.6:33353"`,
+			report: map[string]string{},
+		},
+		{
+			name:   "loopback 127.0.0.2 is excluded",
+			input:  `connected to 127.0.0.2:8080`,
+			output: `connected to 127.0.0.2:8080`,
+			report: map[string]string{},
+		},
+		{
+			name:   "loopback 127.255.255.255 is excluded",
+			input:  `bound to 127.255.255.255`,
+			output: `bound to 127.255.255.255`,
+			report: map[string]string{},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
