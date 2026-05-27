@@ -1,7 +1,11 @@
 package cleaner
 
 import (
+	"archive/tar"
+	"bytes"
+	"compress/gzip"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -312,6 +316,127 @@ metadata:
 		})
 	}
 
+}
+
+func createTarGz(t *testing.T, files map[string]string) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	gzw := gzip.NewWriter(&buf)
+	tw := tar.NewWriter(gzw)
+	for name, content := range files {
+		require.NoError(t, tw.WriteHeader(&tar.Header{
+			Name:     name,
+			Size:     int64(len(content)),
+			Mode:     0644,
+			Typeflag: tar.TypeReg,
+		}))
+		_, err := tw.Write([]byte(content))
+		require.NoError(t, err)
+	}
+	require.NoError(t, tw.Close())
+	require.NoError(t, gzw.Close())
+	return buf.Bytes()
+}
+
+func readTarGz(t *testing.T, data []byte) map[string]string {
+	t.Helper()
+	gzr, err := gzip.NewReader(bytes.NewReader(data))
+	require.NoError(t, err)
+	tr := tar.NewReader(gzr)
+	files := make(map[string]string)
+	for {
+		header, err := tr.Next()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		require.NoError(t, err)
+		if header.Typeflag == tar.TypeReg {
+			content, err := io.ReadAll(tr)
+			require.NoError(t, err)
+			files[header.Name] = string(content)
+		}
+	}
+	return files
+}
+
+func TestObfuscateTarGzFile(t *testing.T) {
+	tmpInputDir, err := os.MkdirTemp("", "tar-test-*")
+	require.NoError(t, err)
+	defer func() { _ = os.RemoveAll(tmpInputDir) }()
+
+	tmpOutputDir, err := os.MkdirTemp("", "tar-test-*")
+	require.NoError(t, err)
+	defer func() { _ = os.RemoveAll(tmpOutputDir) }()
+
+	tarData := createTarGz(t, map[string]string{
+		"log.txt": "connection from 192.168.1.1 established\n",
+	})
+	require.NoError(t, os.WriteFile(filepath.Join(tmpInputDir, "archive.tar.gz"), tarData, 0644))
+
+	fco := &FileContentObfuscator{
+		ContentObfuscator: ContentObfuscator{Obfuscator: noErrorIpObfuscator(t)},
+		inputFolder:       tmpInputDir,
+		outputFolder:      tmpOutputDir,
+	}
+
+	err = fco.ObfuscateFile("archive.tar.gz", "archive.tar.gz")
+	require.NoError(t, err)
+
+	outputData, err := os.ReadFile(filepath.Join(tmpOutputDir, "archive.tar.gz"))
+	require.NoError(t, err)
+
+	result := readTarGz(t, outputData)
+	assert.Equal(t, "connection from xxx.xxx.xxx.xxx established\n", result["log.txt"])
+}
+
+func TestObfuscateTgzFile(t *testing.T) {
+	tmpInputDir, err := os.MkdirTemp("", "tar-test-*")
+	require.NoError(t, err)
+	defer func() { _ = os.RemoveAll(tmpInputDir) }()
+
+	tmpOutputDir, err := os.MkdirTemp("", "tar-test-*")
+	require.NoError(t, err)
+	defer func() { _ = os.RemoveAll(tmpOutputDir) }()
+
+	tarData := createTarGz(t, map[string]string{
+		"data.json": `{"ip": "10.0.0.1"}` + "\n",
+	})
+	require.NoError(t, os.WriteFile(filepath.Join(tmpInputDir, "bundle.tgz"), tarData, 0644))
+
+	fco := &FileContentObfuscator{
+		ContentObfuscator: ContentObfuscator{Obfuscator: noErrorIpObfuscator(t)},
+		inputFolder:       tmpInputDir,
+		outputFolder:      tmpOutputDir,
+	}
+
+	err = fco.ObfuscateFile("bundle.tgz", "bundle.tgz")
+	require.NoError(t, err)
+
+	outputData, err := os.ReadFile(filepath.Join(tmpOutputDir, "bundle.tgz"))
+	require.NoError(t, err)
+
+	result := readTarGz(t, outputData)
+	assert.Equal(t, `{"ip": "xxx.xxx.xxx.xxx"}`+"\n", result["data.json"])
+}
+
+func TestObfuscateTarGzReportOnly(t *testing.T) {
+	tmpInputDir, err := os.MkdirTemp("", "tar-test-*")
+	require.NoError(t, err)
+	defer func() { _ = os.RemoveAll(tmpInputDir) }()
+
+	tarData := createTarGz(t, map[string]string{
+		"log.txt": "connection from 192.168.1.1 established\n",
+	})
+	require.NoError(t, os.WriteFile(filepath.Join(tmpInputDir, "archive.tar.gz"), tarData, 0644))
+
+	fco := &FileContentObfuscator{
+		ContentObfuscator: ContentObfuscator{Obfuscator: noErrorIpObfuscator(t)},
+		inputFolder:       tmpInputDir,
+		outputFolder:      "",
+	}
+
+	err = fco.ObfuscateFile("archive.tar.gz", "archive.tar.gz")
+	require.NoError(t, err)
 }
 
 func newFilePatternOmitter(t *testing.T, pattern string) omitter.FileOmitter {
