@@ -33,23 +33,19 @@ func (d *domainObfuscator) Contents(s string) string {
 func (d *domainObfuscator) replaceDomains(input string) string {
 	output := input
 	for _, p := range d.domainPatterns {
-		matches := p.FindAllStringSubmatch(output, -1)
-		for _, m := range matches {
-			if len(m) != 3 {
-				continue
+		output = p.ReplaceAllStringFunc(output, func(match string) string {
+			groups := p.FindStringSubmatch(match)
+			if len(groups) != 3 {
+				return match
 			}
-			baseDomain := m[2]
-			subDomain := m[1]
-			obfuscatedBaseDomain := d.obfsGenerator.generateReplacement(baseDomain, m[0], 1, d.ReplacementTracker)
-			var replacement string
+			baseDomain := groups[2]
+			subDomain := groups[1]
+			obfuscatedBaseDomain := d.obfsGenerator.generateReplacement(baseDomain, match, 1, d.ReplacementTracker)
 			if subDomain != "" {
-				replacement = fmt.Sprintf("%s%s", subDomain, obfuscatedBaseDomain)
-			} else {
-				replacement = obfuscatedBaseDomain
+				return fmt.Sprintf("%s%s", subDomain, obfuscatedBaseDomain)
 			}
-			// TODO(thomas): should just replace that one matching occurrence instead of all
-			output = strings.ReplaceAll(output, m[0], replacement)
-		}
+			return obfuscatedBaseDomain
+		})
 	}
 	return output
 }

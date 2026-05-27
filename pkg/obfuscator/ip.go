@@ -53,22 +53,17 @@ func (o *ipObfuscator) Contents(s string) string {
 
 func (o *ipObfuscator) replace(s string) string {
 	output := s
-
 	for _, r := range o.replacements {
-		ipMatches := r.pattern.FindAllString(output, -1)
-		for _, m := range ipMatches {
-			// if the match is in the exclude-list then do not replace.
+		output = r.pattern.ReplaceAllStringFunc(output, func(m string) string {
 			if _, ok := excludedIPs[m]; ok {
-				continue
+				return m
 			}
-
 			cleaned := strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(m, "_", "."), "-", "."))
 			if ip := net.ParseIP(cleaned); ip != nil {
-				replacement := r.generator.generateReplacement(cleaned, m, 1, o.ReplacementTracker)
-				// TODO(thomas): should just replace that one matching occurrence instead of all
-				output = strings.ReplaceAll(output, m, replacement)
+				return r.generator.generateReplacement(cleaned, m, 1, o.ReplacementTracker)
 			}
-		}
+			return m
+		})
 	}
 	return output
 }
