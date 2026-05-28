@@ -20,16 +20,13 @@ func (r *regexObfuscator) Contents(s string) string {
 }
 
 func (r *regexObfuscator) replace(input string) string {
-	output := input
-	matches := r.pattern.FindAllString(input, -1)
-	for _, m := range matches {
+	return r.pattern.ReplaceAllStringFunc(input, func(m string) string {
 		replacement := strings.Repeat("x", len(m))
 		r.GenerateIfAbsent(m, m, 1, func() string {
 			return replacement
 		})
-		output = strings.ReplaceAll(output, m, replacement)
-	}
-	return output
+		return replacement
+	})
 }
 
 func NewRegexObfuscator(pattern string, tracker ReplacementTracker) (ReportingObfuscator, error) {
