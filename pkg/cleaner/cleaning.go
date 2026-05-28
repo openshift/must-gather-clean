@@ -142,23 +142,8 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 		}
 	}
 
-	// tar archives need entry-level processing instead of treating the whole binary stream as text
-	if strings.HasSuffix(readPath, ".tar.gz") || strings.HasSuffix(readPath, ".tgz") {
-		err = c.obfuscateTarGz(inputOsFile, outputOsFile, readPath, reportOnly)
-		if err != nil {
-			return fmt.Errorf("failed to obfuscate tar archive '%s': %w", readPath, err)
-		}
-		if err = inputOsFile.Close(); err != nil {
-			return fmt.Errorf("failed to close input file '%s': %w", readPath, err)
-		}
-		if err = outputOsFile.Close(); err != nil {
-			return fmt.Errorf("failed to close output file '%s': %w", writePath, err)
-		}
-		return nil
-	}
-
-	// must-gathers can include gunzipped log files nowadays, handling this special case here once
-	if strings.HasSuffix(readPath, ".gz") {
+	// must-gathers can include gzipped files, handling decompression/recompression here
+	if strings.HasSuffix(readPath, ".gz") || strings.HasSuffix(readPath, ".tgz") {
 		inputOsFile, err = gzip.NewReader(inputOsFile)
 		if err != nil {
 			return fmt.Errorf("failed to create a gzip reader when opening '%s': %w", readPath, err)
@@ -169,7 +154,12 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 		}
 	}
 
-	err = c.ObfuscateReader(inputOsFile, outputOsFile)
+	// tar archives need entry-level processing instead of treating the whole binary stream as text
+	if strings.HasSuffix(readPath, ".tar.gz") || strings.HasSuffix(readPath, ".tgz") {
+		err = c.obfuscateTar(inputOsFile, outputOsFile)
+	} else {
+		err = c.ObfuscateReader(inputOsFile, outputOsFile)
+	}
 	if err != nil {
 		return fmt.Errorf("failed to obfuscate input file '%s': %w", readPath, err)
 	}
@@ -206,21 +196,10 @@ func (c *FileContentObfuscator) createNonConflictingFileUnderLock(outputFilePath
 	return fsutil.CreateNonConflictingFile(outputFilePath, inputFileInfo)
 }
 
-func (c *ContentObfuscator) obfuscateTarGz(input io.Reader, output io.Writer, readPath string, reportOnly bool) error {
-	gzReader, err := gzip.NewReader(input)
-	if err != nil {
-		return fmt.Errorf("failed to create a gzip reader for '%s': %w", readPath, err)
-	}
-	defer gzReader.Close()
-
-	tarReader := tar.NewReader(gzReader)
-
-	var tarWriter *tar.Writer
-	var gzWriter *gzip.Writer
-	if !reportOnly {
-		gzWriter = gzip.NewWriter(output)
-		tarWriter = tar.NewWriter(gzWriter)
-	}
+func (c *ContentObfuscator) obfuscateTar(input io.Reader, output io.Writer) (err error) {
+	tarReader := tar.NewReader(input)
+	tarWriter := tar.NewWriter(output)
+	defer func() { err = errors.Join(err, tarWriter.Close()) }()
 
 	for {
 		header, err := tarReader.Next()
@@ -228,28 +207,19 @@ func (c *ContentObfuscator) obfuscateTarGz(input io.Reader, output io.Writer, re
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("failed to read tar entry in '%s': %w", readPath, err)
+			return fmt.Errorf("failed to read tar entry '%w'", err)
 		}
 
 		if header.Typeflag != tar.TypeReg {
-			if tarWriter != nil {
-				if err := tarWriter.WriteHeader(header); err != nil {
-					return err
-				}
-			}
-			continue
-		}
-
-		if reportOnly {
-			if err := c.ObfuscateReader(tarReader, io.Discard); err != nil {
-				return fmt.Errorf("failed to obfuscate tar entry '%s' in '%s': %w", header.Name, readPath, err)
+			if err := tarWriter.WriteHeader(header); err != nil {
+				return err
 			}
 			continue
 		}
 
 		var obfuscated bytes.Buffer
 		if err := c.ObfuscateReader(tarReader, &obfuscated); err != nil {
-			return fmt.Errorf("failed to obfuscate tar entry '%s' in '%s': %w", header.Name, readPath, err)
+			return fmt.Errorf("failed to obfuscate tar entry '%s': %w", header.Name, err)
 		}
 
 		header.Size = int64(obfuscated.Len())
@@ -257,15 +227,6 @@ func (c *ContentObfuscator) obfuscateTarGz(input io.Reader, output io.Writer, re
 			return err
 		}
 		if _, err := io.Copy(tarWriter, &obfuscated); err != nil {
-			return err
-		}
-	}
-
-	if tarWriter != nil {
-		if err := tarWriter.Close(); err != nil {
-			return err
-		}
-		if err := gzWriter.Close(); err != nil {
 			return err
 		}
 	}
