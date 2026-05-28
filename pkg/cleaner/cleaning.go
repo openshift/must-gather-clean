@@ -2,7 +2,9 @@
 package cleaner
 
 import (
+	"archive/tar"
 	"bufio"
+	"bytes"
 	"compress/gzip"
 	"errors"
 	"fmt"
@@ -140,7 +142,7 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 		}
 	}
 
-	// must-gathers can include gunzipped log files nowadays, handling this special case here once
+	// must-gathers can include gzipped files, handling decompression/recompression here
 	if strings.HasSuffix(readPath, ".gz") || strings.HasSuffix(readPath, ".tgz") {
 		inputOsFile, err = gzip.NewReader(inputOsFile)
 		if err != nil {
@@ -152,7 +154,12 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 		}
 	}
 
-	err = c.ObfuscateReader(inputOsFile, outputOsFile)
+	// tar archives need entry-level processing instead of treating the whole binary stream as text
+	if strings.HasSuffix(readPath, ".tar.gz") || strings.HasSuffix(readPath, ".tgz") {
+		err = c.obfuscateTar(inputOsFile, outputOsFile)
+	} else {
+		err = c.ObfuscateReader(inputOsFile, outputOsFile)
+	}
 	if err != nil {
 		return fmt.Errorf("failed to obfuscate input file '%s': %w", readPath, err)
 	}
@@ -187,6 +194,44 @@ func (c *FileContentObfuscator) createNonConflictingFileUnderLock(outputFilePath
 	defer c.pathCollisionMutex.Unlock()
 
 	return fsutil.CreateNonConflictingFile(outputFilePath, inputFileInfo)
+}
+
+func (c *ContentObfuscator) obfuscateTar(input io.Reader, output io.Writer) (err error) {
+	tarReader := tar.NewReader(input)
+	tarWriter := tar.NewWriter(output)
+	defer func() { err = errors.Join(err, tarWriter.Close()) }()
+
+	for {
+		header, err := tarReader.Next()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("failed to read tar entry '%w'", err)
+		}
+
+		if header.Typeflag != tar.TypeReg {
+			if err := tarWriter.WriteHeader(header); err != nil {
+				return err
+			}
+			continue
+		}
+
+		var obfuscated bytes.Buffer
+		if err := c.ObfuscateReader(tarReader, &obfuscated); err != nil {
+			return fmt.Errorf("failed to obfuscate tar entry '%s': %w", header.Name, err)
+		}
+
+		header.Size = int64(obfuscated.Len())
+		if err := tarWriter.WriteHeader(header); err != nil {
+			return err
+		}
+		if _, err := io.Copy(tarWriter, &obfuscated); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (c *ContentObfuscator) ObfuscateReader(inputReader io.Reader, outputWriter io.Writer) error {
