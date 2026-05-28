@@ -67,6 +67,25 @@ func TestDomainObfuscatorContents(t *testing.T) {
 				}}},
 		},
 		{
+			name:    "multiple matches per line",
+			domains: []string{"redhat.com", "openshift.com"},
+			input: []string{
+				"connect to api.openshift.com and sso.redhat.com and console.openshift.com",
+			},
+			output: []string{
+				"connect to api.domain0000000001 and sso.domain0000000002 and console.domain0000000001",
+			},
+			report: ReplacementReport{[]Replacement{
+				{Canonical: "openshift.com", ReplacedWith: "domain0000000001", Counter: map[string]uint{
+					"api.openshift.com":     uint(1),
+					"console.openshift.com": uint(1),
+				}},
+				{Canonical: "redhat.com", ReplacedWith: "domain0000000002", Counter: map[string]uint{
+					"sso.redhat.com": uint(1),
+				}},
+			}},
+		},
+		{
 			name:    "multi-level subdomains",
 			domains: []string{"test.com", "test.info", "test.org"},
 			input: []string{
