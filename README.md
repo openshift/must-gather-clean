@@ -40,7 +40,7 @@ $ must-gather-clean version
 
 ## Installing from source
 
-Building this tool requires [Golang 1.21](https://golang.org/dl/) or later and GNU `make`.
+Building this tool requires [Golang 1.23](https://golang.org/dl/) or later and GNU `make`.
 
 1. Clone the repository
 ```sh

@@ -1,6 +1,6 @@
 #### Building
 
-Ensure your version of go is up-to-date, check that you're running at least 1.16 with the command:
+Ensure your version of go is up-to-date, check that you're running at least 1.23 with the command:
 ```sh
 $ go version
 ```
