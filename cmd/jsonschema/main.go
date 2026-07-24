@@ -62,6 +62,8 @@ var rootCmd = &cobra.Command{
 			SchemaMappings:     []generator.SchemaMapping{},
 			ResolveExtensions:  resolveExtensions,
 			YAMLExtensions:     yamlExtensions,
+			Tags:               []string{"json", "yaml"},
+			DisableOmitZero:    true,
 		}
 		for _, id := range allKeys(schemaPackageMap, schemaOutputMap, schemaRootTypeMap) {
 			mapping := generator.SchemaMapping{SchemaID: id}
@@ -91,7 +93,12 @@ var rootCmd = &cobra.Command{
 			}
 		}
 
-		for fileName, source := range generator.Sources() {
+		sources, err := generator.Sources()
+		if err != nil {
+			abortWithErr(err)
+		}
+
+		for fileName, source := range sources {
 			if fileName != "-" {
 				verboseLog("Writing %s", fileName)
 			}
