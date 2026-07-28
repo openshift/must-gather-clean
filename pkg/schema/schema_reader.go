@@ -53,6 +53,10 @@ func ReadConfigFromPath(path string) (*SchemaJson, error) {
 		return nil, wrapError(err)
 	}
 
+	if len(schema.Config.Obfuscate) == 0 && len(schema.Config.Omit) == 0 {
+		return nil, wrapError(fmt.Errorf("config is empty, at least one obfuscate or omit entry is required"))
+	}
+
 	return schema, nil
 }
 

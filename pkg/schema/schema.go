@@ -2,8 +2,8 @@
 
 package schema
 
-import "fmt"
 import "encoding/json"
+import "fmt"
 import "reflect"
 
 type Obfuscate struct {
@@ -57,6 +57,27 @@ type ObfuscateExactReplacementsElem struct {
 	Replacement string `json:"replacement" yaml:"replacement"`
 }
 
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ObfuscateExactReplacementsElem) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["original"]; raw != nil && !ok {
+		return fmt.Errorf("field original in ObfuscateExactReplacementsElem: required")
+	}
+	if _, ok := raw["replacement"]; raw != nil && !ok {
+		return fmt.Errorf("field replacement in ObfuscateExactReplacementsElem: required")
+	}
+	type Plain ObfuscateExactReplacementsElem
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	*j = ObfuscateExactReplacementsElem(plain)
+	return nil
+}
+
 // on replacement 'Keywords', this will override a given input string with another
 // output string. On duplicate keys it will use the last defined value as
 // replacement. The input values are matched in a case-sensitive fashion and only
@@ -68,11 +89,62 @@ type ObfuscateReplacementType string
 const ObfuscateReplacementTypeConsistent ObfuscateReplacementType = "Consistent"
 const ObfuscateReplacementTypeStatic ObfuscateReplacementType = "Static"
 
+var enumValues_ObfuscateReplacementType = []interface{}{
+	"Consistent",
+	"Static",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ObfuscateReplacementType) UnmarshalJSON(value []byte) error {
+	var v string
+	if err := json.Unmarshal(value, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_ObfuscateReplacementType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateReplacementType, v)
+	}
+	*j = ObfuscateReplacementType(v)
+	return nil
+}
+
 type ObfuscateTarget string
 
 const ObfuscateTargetAll ObfuscateTarget = "All"
 const ObfuscateTargetFileContents ObfuscateTarget = "FileContents"
 const ObfuscateTargetFilePath ObfuscateTarget = "FilePath"
+
+var enumValues_ObfuscateTarget = []interface{}{
+	"FilePath",
+	"FileContents",
+	"All",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ObfuscateTarget) UnmarshalJSON(value []byte) error {
+	var v string
+	if err := json.Unmarshal(value, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_ObfuscateTarget {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateTarget, v)
+	}
+	*j = ObfuscateTarget(v)
+	return nil
+}
 
 type ObfuscateType string
 
@@ -83,6 +155,60 @@ const ObfuscateTypeIP ObfuscateType = "IP"
 const ObfuscateTypeKeywords ObfuscateType = "Keywords"
 const ObfuscateTypeMAC ObfuscateType = "MAC"
 const ObfuscateTypeRegex ObfuscateType = "Regex"
+
+var enumValues_ObfuscateType = []interface{}{
+	"AzureResources",
+	"Domain",
+	"Exact",
+	"IP",
+	"Keywords",
+	"MAC",
+	"Regex",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ObfuscateType) UnmarshalJSON(value []byte) error {
+	var v string
+	if err := json.Unmarshal(value, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_ObfuscateType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateType, v)
+	}
+	*j = ObfuscateType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Obfuscate) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["type"]; raw != nil && !ok {
+		return fmt.Errorf("field type in Obfuscate: required")
+	}
+	type Plain Obfuscate
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["replacementType"]; !ok || v == nil {
+		plain.ReplacementType = "Static"
+	}
+	if v, ok := raw["target"]; !ok || v == nil {
+		plain.Target = "FileContents"
+	}
+	*j = Obfuscate(plain)
+	return nil
+}
 
 type Omit struct {
 	// KubernetesResource corresponds to the JSON schema field "kubernetesResource".
@@ -113,10 +239,20 @@ type OmitKubernetesResource struct {
 
 type OmitType string
 
+const OmitTypeFile OmitType = "File"
+const OmitTypeKubernetes OmitType = "Kubernetes"
+const OmitTypeSymbolicLink OmitType = "SymbolicLink"
+
+var enumValues_OmitType = []interface{}{
+	"Kubernetes",
+	"File",
+	"SymbolicLink",
+}
+
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *OmitType) UnmarshalJSON(b []byte) error {
+func (j *OmitType) UnmarshalJSON(value []byte) error {
 	var v string
-	if err := json.Unmarshal(b, &v); err != nil {
+	if err := json.Unmarshal(value, &v); err != nil {
 		return err
 	}
 	var ok bool
@@ -133,157 +269,32 @@ func (j *OmitType) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-var enumValues_ObfuscateType = []interface{}{
-	"AzureResources",
-	"Domain",
-	"Exact",
-	"IP",
-	"Keywords",
-	"MAC",
-	"Regex",
-}
-
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *ObfuscateTarget) UnmarshalJSON(b []byte) error {
-	var v string
-	if err := json.Unmarshal(b, &v); err != nil {
-		return err
-	}
-	var ok bool
-	for _, expected := range enumValues_ObfuscateTarget {
-		if reflect.DeepEqual(v, expected) {
-			ok = true
-			break
-		}
-	}
-	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateTarget, v)
-	}
-	*j = ObfuscateTarget(v)
-	return nil
-}
-
-var enumValues_ObfuscateTarget = []interface{}{
-	"FilePath",
-	"FileContents",
-	"All",
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *Obfuscate) UnmarshalJSON(b []byte) error {
+func (j *Omit) UnmarshalJSON(value []byte) error {
 	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
+	if err := json.Unmarshal(value, &raw); err != nil {
 		return err
 	}
-	if v, ok := raw["type"]; !ok || v == nil {
-		return fmt.Errorf("field type: required")
-	}
-	type Plain Obfuscate
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	if v, ok := raw["replacementType"]; !ok || v == nil {
-		plain.ReplacementType = "Static"
-	}
-	if v, ok := raw["target"]; !ok || v == nil {
-		plain.Target = "FileContents"
-	}
-	*j = Obfuscate(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *ObfuscateReplacementType) UnmarshalJSON(b []byte) error {
-	var v string
-	if err := json.Unmarshal(b, &v); err != nil {
-		return err
-	}
-	var ok bool
-	for _, expected := range enumValues_ObfuscateReplacementType {
-		if reflect.DeepEqual(v, expected) {
-			ok = true
-			break
-		}
-	}
-	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateReplacementType, v)
-	}
-	*j = ObfuscateReplacementType(v)
-	return nil
-}
-
-var enumValues_ObfuscateReplacementType = []interface{}{
-	"Consistent",
-	"Static",
-}
-var enumValues_OmitType = []interface{}{
-	"Kubernetes",
-	"File",
-	"SymbolicLink",
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *ObfuscateType) UnmarshalJSON(b []byte) error {
-	var v string
-	if err := json.Unmarshal(b, &v); err != nil {
-		return err
-	}
-	var ok bool
-	for _, expected := range enumValues_ObfuscateType {
-		if reflect.DeepEqual(v, expected) {
-			ok = true
-			break
-		}
-	}
-	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ObfuscateType, v)
-	}
-	*j = ObfuscateType(v)
-	return nil
-}
-
-const OmitTypeKubernetes OmitType = "Kubernetes"
-const OmitTypeFile OmitType = "File"
-const OmitTypeSymbolicLink OmitType = "SymbolicLink"
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *ObfuscateExactReplacementsElem) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["original"]; !ok || v == nil {
-		return fmt.Errorf("field original: required")
-	}
-	if v, ok := raw["replacement"]; !ok || v == nil {
-		return fmt.Errorf("field replacement: required")
-	}
-	type Plain ObfuscateExactReplacementsElem
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = ObfuscateExactReplacementsElem(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *Omit) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["type"]; !ok || v == nil {
-		return fmt.Errorf("field type: required")
+	if _, ok := raw["type"]; raw != nil && !ok {
+		return fmt.Errorf("field type in Omit: required")
 	}
 	type Plain Omit
 	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
+	if err := json.Unmarshal(value, &plain); err != nil {
 		return err
 	}
 	*j = Omit(plain)
 	return nil
+}
+
+// This configuration defines the behaviour of the must-gather-clean CLI. The CLI
+// helps to obfuscate and omit output from OpenShift debug information
+// ('must-gathers'). You can find more information in our GitHub repository at
+// https://github.com/openshift/must-gather-clean.
+type SchemaJson struct {
+	// There are two main sections, "omit" which defines the omission behaviour and
+	// "obfuscate" which defines the obfuscation behaviour.
+	Config SchemaJsonConfig `json:"config" yaml:"config"`
 }
 
 // There are two main sections, "omit" which defines the omission behaviour and
@@ -315,45 +326,31 @@ type SchemaJsonConfig struct {
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *SchemaJsonConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
+func (j *SchemaJsonConfig) UnmarshalJSON(value []byte) error {
 	type Plain SchemaJsonConfig
 	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
+	if err := json.Unmarshal(value, &plain); err != nil {
 		return err
 	}
-	if len(plain.Obfuscate) < 1 {
+	if plain.Obfuscate != nil && len(plain.Obfuscate) < 1 {
 		return fmt.Errorf("field %s length: must be >= %d", "obfuscate", 1)
 	}
 	*j = SchemaJsonConfig(plain)
 	return nil
 }
 
-// This configuration defines the behaviour of the must-gather-clean CLI. The CLI
-// helps to obfuscate and omit output from OpenShift debug information
-// ('must-gathers'). You can find more information in our GitHub repository at
-// https://github.com/openshift/must-gather-clean.
-type SchemaJson struct {
-	// There are two main sections, "omit" which defines the omission behaviour and
-	// "obfuscate" which defines the obfuscation behaviour.
-	Config SchemaJsonConfig `json:"config" yaml:"config"`
-}
-
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *SchemaJson) UnmarshalJSON(b []byte) error {
+func (j *SchemaJson) UnmarshalJSON(value []byte) error {
 	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
+	if err := json.Unmarshal(value, &raw); err != nil {
 		return err
 	}
-	if v, ok := raw["config"]; !ok || v == nil {
-		return fmt.Errorf("field config: required")
+	if _, ok := raw["config"]; raw != nil && !ok {
+		return fmt.Errorf("field config in SchemaJson: required")
 	}
 	type Plain SchemaJson
 	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
+	if err := json.Unmarshal(value, &plain); err != nil {
 		return err
 	}
 	*j = SchemaJson(plain)

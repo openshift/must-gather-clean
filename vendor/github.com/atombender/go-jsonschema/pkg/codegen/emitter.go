@@ -9,12 +9,12 @@ import (
 
 type Emitter struct {
 	sb            strings.Builder
-	maxLineLength uint
+	maxLineLength int32
 	start         bool
-	indent        uint
+	indent        int32
 }
 
-func NewEmitter(maxLineLength uint) *Emitter {
+func NewEmitter(maxLineLength int32) *Emitter {
 	return &Emitter{
 		maxLineLength: maxLineLength,
 		start:         true,
@@ -29,31 +29,47 @@ func (e *Emitter) Bytes() []byte {
 	return []byte(e.sb.String())
 }
 
-func (e *Emitter) Indent(n int) {
-	if int(e.indent)+n < 0 {
+func (e *Emitter) Indent(n int32) {
+	if e.indent+n < 0 {
 		panic("unexpected unbalanced indentation")
 	}
-	e.indent += uint(n)
+
+	e.indent += n
 }
 
 func (e *Emitter) Comment(s string) {
 	if s != "" {
-		limit := e.maxLineLength - uint(e.indent)
-		lines := strings.Split(wordwrap.WrapString(s, limit), "\n")
-		for _, line := range lines {
-			e.Println("// %s", line)
+		limit := max(0, e.maxLineLength-e.indent)
+
+		lines := strings.SplitSeq(wordwrap.WrapString(s, uint(limit)), "\n")
+
+		for line := range lines {
+			e.Printlnf("// %s", line)
 		}
 	}
 }
 
-func (e *Emitter) Print(format string, args ...interface{}) {
+func (e *Emitter) Commentf(s string, args ...any) {
+	s = fmt.Sprintf(s, args...)
+	if s != "" {
+		limit := max(0, e.maxLineLength-e.indent)
+
+		lines := strings.SplitSeq(wordwrap.WrapString(s, uint(limit)), "\n")
+
+		for line := range lines {
+			e.Printlnf("// %s", line)
+		}
+	}
+}
+
+func (e *Emitter) Printf(format string, args ...any) {
 	e.checkIndent()
 	fmt.Fprintf(&e.sb, format, args...)
 	e.start = false
 }
 
-func (e *Emitter) Println(format string, args ...interface{}) {
-	e.Print(format, args...)
+func (e *Emitter) Printlnf(format string, args ...any) {
+	e.Printf(format, args...)
 	e.Newline()
 }
 
@@ -64,13 +80,14 @@ func (e *Emitter) Newline() {
 
 func (e *Emitter) checkIndent() {
 	if e.start {
-		for i := uint(0); i < e.indent; i++ {
+		for range e.indent {
 			e.sb.WriteRune('\t')
 		}
+
 		e.start = false
 	}
 }
 
-func (e *Emitter) MaxLineLength() uint {
+func (e *Emitter) MaxLineLength() int32 {
 	return e.maxLineLength
 }
