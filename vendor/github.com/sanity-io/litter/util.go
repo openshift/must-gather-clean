@@ -1,6 +1,8 @@
 package litter
 
-import "reflect"
+import (
+	"reflect"
+)
 
 // deInterface returns values inside of non-nil interfaces when possible.
 // This is useful for data types like structs, arrays, slices, and maps which
@@ -18,4 +20,9 @@ func isPointerValue(v reflect.Value) bool {
 		return true
 	}
 	return false
+}
+
+func isZeroValue(v reflect.Value) bool {
+	return (isPointerValue(v) && v.IsNil()) ||
+		(v.IsValid() && v.CanInterface() && reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface()))
 }
