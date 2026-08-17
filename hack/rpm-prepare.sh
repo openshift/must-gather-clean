@@ -13,8 +13,8 @@ export MGC_RPM_VERSION=${MGC_VERSION//-}
 
 # Golang version variables, if you are bumping this, please contact redhat maintainers to ensure that internal
 # build systems can handle these versions
-export GOLANG_VERSION=${GOLANG_VERSION:-1.25}
-export GOLANG_VERSION_NODOT=${GOLANG_VERSION_NODOT:-125}
+export GOLANG_VERSION=${GOLANG_VERSION:-1.26}
+export GOLANG_VERSION_NODOT=${GOLANG_VERSION_NODOT:-126}
 
 # Print env for verification
 echo "Printing envs for verification"

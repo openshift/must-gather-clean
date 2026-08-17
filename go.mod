@@ -1,6 +1,6 @@
 module github.com/openshift/must-gather-clean
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/atombender/go-jsonschema v0.23.1
