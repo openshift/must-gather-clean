@@ -3,7 +3,9 @@ package cli
 import (
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/openshift/must-gather-clean/pkg/cleaner"
 	"github.com/openshift/must-gather-clean/pkg/fsutil"
@@ -14,11 +16,54 @@ import (
 	"github.com/openshift/must-gather-clean/pkg/traversal"
 	watermarking "github.com/openshift/must-gather-clean/pkg/watermarker"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/yaml"
 )
 
 const (
 	reportFileName = "report.yaml"
 )
+
+// detectPlatform reads the infrastructure.yaml from must-gather to detect the platform type
+func detectPlatform(inputPath string) string {
+	// Search for infrastructure.yaml - must-gather structure has subdirectories
+	pattern := filepath.Join(inputPath, "*/cluster-scoped-resources/config.openshift.io/infrastructures/cluster.yaml")
+	matches, err := filepath.Glob(pattern)
+	if err != nil || len(matches) == 0 {
+		// Try direct path as fallback
+		infraPath := filepath.Join(inputPath, "cluster-scoped-resources", "config.openshift.io", "infrastructures", "cluster.yaml")
+		matches = []string{infraPath}
+	}
+
+	var data []byte
+	for _, infraPath := range matches {
+		data, err = os.ReadFile(infraPath)
+		if err == nil {
+			break
+		}
+	}
+
+	if data == nil {
+		klog.V(2).Info("Could not find infrastructure.yaml in must-gather (will run Azure obfuscation)")
+		return ""
+	}
+
+	// Parse YAML
+	var infra struct {
+		Status struct {
+			Platform string `json:"platform"`
+		} `json:"status"`
+	}
+
+	err = yaml.Unmarshal(data, &infra)
+	if err != nil {
+		klog.V(2).Infof("Could not parse infrastructure YAML: %v (will run Azure obfuscation)", err)
+		return ""
+	}
+
+	platform := strings.ToLower(infra.Status.Platform)
+	klog.Infof("Detected platform: %s", infra.Status.Platform)
+	return platform
+}
 
 func RunPipe(configPath string, stdin io.Reader, stdout io.Writer) error {
 	var multiObfuscator *obfuscator.MultiObfuscator
@@ -28,7 +73,8 @@ func RunPipe(configPath string, stdin io.Reader, stdout io.Writer) error {
 			return fmt.Errorf("failed to read config at %s: %w", configPath, err)
 		}
 		// we cannot logically prescan because the end of input isn't clear
-		multiObfuscator, _, err = createObfuscatorsFromConfig(config)
+		// For pipe mode, we cannot auto-detect platform, so we include all obfuscators
+		multiObfuscator, _, err = createObfuscatorsFromConfig(config, false)
 		if err != nil {
 			return fmt.Errorf("failed to create obfuscators via config at %s: %w", configPath, err)
 		}
@@ -58,7 +104,7 @@ func RunPipe(configPath string, stdin io.Reader, stdout io.Writer) error {
 	return nil
 }
 
-func Run(configPath string, inputPath string, outputPath string, deleteOutputFolder bool, reportingFolder string, workerCount int) error {
+func Run(configPath string, inputPath string, outputPath string, deleteOutputFolder bool, reportingFolder string, workerCount int, skipAzure bool) error {
 	if workerCount < 1 {
 		return fmt.Errorf("invalid number of workers specified %d", workerCount)
 	}
@@ -73,18 +119,36 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 		return fmt.Errorf("failed to read config at %s: %w", configPath, err)
 	}
 
-	obfuscator, prescanObfuscator, err := createObfuscatorsFromConfig(config)
+	// Auto-detect platform if skipAzure not explicitly set
+	if !skipAzure {
+		platform := detectPlatform(inputPath)
+		// Only run Azure obfuscation for Azure clusters
+		if platform != "" && platform != "azure" {
+			klog.Infof("Platform %s detected, skipping Azure resource obfuscation prescan", platform)
+			skipAzure = true
+		}
+	} else {
+		klog.Info("--skip-azure flag set, skipping Azure resource obfuscation prescan")
+	}
+
+	obfuscator, prescanObfuscator, err := createObfuscatorsFromConfig(config, skipAzure)
 	if err != nil {
 		return fmt.Errorf("failed to create obfuscators via config at %s: %w", configPath, err)
 	}
 
-	// this pass allows obfuscators that first need to scan the input to determine what needs to be obfuscated to run before
-	// redactor actually happens. The empty input path signals a dry-run.
-	prescanCleaner := cleaner.NewFileCleaner(inputPath, "", prescanObfuscator, &omitter.NoopOmitter{})
-	prescanWorkerFactory := func(id int) traversal.QueueProcessor {
-		return traversal.NewWorker(id, prescanCleaner)
+	// Only run prescan if not skipping Azure (currently only Azure requires prescan)
+	if !skipAzure {
+		// this pass allows obfuscators that first need to scan the input to determine what needs to be obfuscated to run before
+		// redactor actually happens. The empty input path signals a dry-run.
+		klog.Info("Running prescan phase for Azure resource obfuscation")
+		prescanCleaner := cleaner.NewFileCleaner(inputPath, "", prescanObfuscator, &omitter.NoopOmitter{})
+		prescanWorkerFactory := func(id int) traversal.QueueProcessor {
+			return traversal.NewWorker(id, prescanCleaner)
+		}
+		traversal.NewParallelFileWalker(inputPath, workerCount, prescanWorkerFactory).Traverse()
+	} else {
+		klog.Info("Skipping prescan phase entirely (no Azure obfuscation needed)")
 	}
-	traversal.NewParallelFileWalker(inputPath, workerCount, prescanWorkerFactory).Traverse()
 
 	mro, err := createOmittersFromConfig(config, inputPath)
 	if err != nil {
@@ -146,7 +210,7 @@ func createOmittersFromConfig(config *schema.SchemaJson, inputPath string) (omit
 //	file/B (exact name unknown) may contain strings like /subscription/ID, where ID needs to be redacted in all files,
 //	but file/A contains only ID.  We won't recognize ID as needing redaction until we read file/B.  This means we need to first
 //	scan all files, then redact.
-func createObfuscatorsFromConfig(config *schema.SchemaJson) (finalObfuscator *obfuscator.MultiObfuscator, prescanObfuscator *obfuscator.MultiObfuscator, finalErr error) {
+func createObfuscatorsFromConfig(config *schema.SchemaJson, skipAzure bool) (finalObfuscator *obfuscator.MultiObfuscator, prescanObfuscator *obfuscator.MultiObfuscator, finalErr error) {
 	var obfuscators []obfuscator.ReportingObfuscator
 	var prescanObfuscators []obfuscator.ReportingObfuscator
 	for _, o := range config.Config.Obfuscate {
@@ -174,11 +238,18 @@ func createObfuscatorsFromConfig(config *schema.SchemaJson) (finalObfuscator *ob
 				return nil, nil, err
 			}
 		case schema.ObfuscateTypeAzureResources:
-			k, err = obfuscator.NewAzureResourceObfuscator(o.ReplacementType, tracker, config.Config.RandSeed)
-			if err != nil {
-				return nil, nil, err
+			if skipAzure {
+				// Use no-op obfuscator for non-Azure platforms
+				klog.Info("Using no-op Azure obfuscator (non-Azure platform detected)")
+				k = &obfuscator.NoopObfuscator{Replacements: make(map[string]string)}
+			} else {
+				// Create real Azure obfuscator for Azure platforms
+				k, err = obfuscator.NewAzureResourceObfuscator(o.ReplacementType, tracker, config.Config.RandSeed)
+				if err != nil {
+					return nil, nil, err
+				}
+				prescanObfuscators = append(prescanObfuscators, k)
 			}
-			prescanObfuscators = append(prescanObfuscators, k)
 		case schema.ObfuscateTypeExact:
 			k = obfuscator.NewExactReplacementObfuscator(o.ExactReplacements, tracker)
 		case schema.ObfuscateTypeIP:
