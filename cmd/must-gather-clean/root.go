@@ -18,6 +18,7 @@ var (
 	OutputFolder       string
 	ReportingFolder    string
 	WorkerCount        int
+	SkipAzure          bool
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -34,7 +35,7 @@ var rootCmd = &cobra.Command{
 				klog.Exitf("%v\n", err)
 			}
 		} else {
-			err := cli.Run(ConfigFile, InputFolder, OutputFolder, DeleteOutputFolder, ReportingFolder, WorkerCount)
+			err := cli.Run(ConfigFile, InputFolder, OutputFolder, DeleteOutputFolder, ReportingFolder, WorkerCount, SkipAzure)
 			if err != nil {
 				klog.Exitf("%v\n", err)
 			}
@@ -50,6 +51,7 @@ func initFlags() {
 	flags.BoolVarP(&DeleteOutputFolder, "overwrite", "d", false, "If the output directory exists, setting this flag will delete the folder and all its contents before cleaning.")
 	flags.IntVarP(&WorkerCount, "worker-count", "w", runtime.NumCPU(), "The number of workers for processing")
 	flags.StringVarP(&ReportingFolder, "report", "r", ".", "The directory of the reporting output folder, default is the current working directory")
+	flags.BoolVar(&SkipAzure, "skip-azure", false, "Skip Azure resource obfuscation (auto-detects platform from infrastructure.yaml if not set)")
 
 	if !PipeModeEnabled {
 		_ = rootCmd.MarkFlagRequired("config")

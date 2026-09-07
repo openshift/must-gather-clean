@@ -13,14 +13,14 @@ import (
 )
 
 func TestRunFailsOnNegativeAndZeroWorkers(t *testing.T) {
-	err := Run("", "", "", false, "", 0)
+	err := Run("", "", "", false, "", 0, false)
 	assert.Equal(t, fmt.Errorf("invalid number of workers specified %d", 0), err)
-	err = Run("", "", "", false, "", -2)
+	err = Run("", "", "", false, "", -2, false)
 	assert.Equal(t, fmt.Errorf("invalid number of workers specified %d", -2), err)
 }
 
 func TestRunFailsOnNotExistingInputPath(t *testing.T) {
-	err := Run("", "", "", false, "", 1)
+	err := Run("", "", "", false, "", 1, false)
 	assert.Equal(t, "input folder does not exist: stat : no such file or directory", err.Error())
 }
 
@@ -31,7 +31,7 @@ func TestFailConfigReading(t *testing.T) {
 		_ = os.RemoveAll(testDir)
 	}()
 
-	err = Run("some.yaml", "", testDir, false, "", 1)
+	err = Run("some.yaml", "", testDir, false, "", 1, false)
 	assert.ErrorIs(t, err, os.ErrNotExist)
 }
 
@@ -71,7 +71,7 @@ func TestCreateObfuscatorFromFullConfig(t *testing.T) {
 		Omit: nil,
 	}}
 
-	mfo, _, err := createObfuscatorsFromConfig(config)
+	mfo, _, err := createObfuscatorsFromConfig(config, false)
 	require.NoError(t, err)
 	assert.Equal(t, "something else", mfo.Contents("something"))
 }
@@ -208,7 +208,7 @@ func TestWaterMarkerNotCreatedOnFail(t *testing.T) {
 		_ = os.RemoveAll(testDir)
 	}()
 
-	err = Run("some.yaml", "", testDir, false, "", 1)
+	err = Run("some.yaml", "", testDir, false, "", 1, false)
 	assert.ErrorIs(t, err, os.ErrNotExist)
 	require.NoFileExists(t, filepath.Join(testDir, "watermark.txt"))
 }
