@@ -17,6 +17,7 @@ import (
 
 	"github.com/openshift/must-gather-clean/pkg/obfuscator"
 	"github.com/openshift/must-gather-clean/pkg/reporting"
+	"github.com/openshift/must-gather-clean/pkg/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
@@ -78,7 +79,7 @@ func verifyObfuscation(t *testing.T, dir string, report *reporting.Report) {
 	// report should already be verified by verifyReport before to ensure it does contain correct information
 	generatedMap := map[string]string{}
 	for i, replacementGroup := range report.Replacements {
-		azureResources := i < len(report.Config.Obfuscate) && report.Config.Obfuscate[i].Type == "AzureResources"
+		azureResources := i < len(report.Config.Obfuscate) && report.Config.Obfuscate[i].Type == schema.ObfuscateTypeAzureResources
 		for _, replacement := range replacementGroup {
 			for _, occurrence := range replacement.Occurrences {
 				// Azure resource names shorter than five characters are intentionally skipped.
@@ -132,7 +133,7 @@ func verifyReplacements(t *testing.T, inputDir string, truthReport *reporting.Re
 	for i := range tr {
 		// Azure resource counts vary with file processing order because discovered
 		// canonical values are also replaced in later lines across parallel workers.
-		compareCounts := truthReport.Config.Obfuscate[i].Type != "AzureResources"
+		compareCounts := truthReport.Config.Obfuscate[i].Type != schema.ObfuscateTypeAzureResources
 		replacementReportsMatch(t, tr[i], gr[i], compareCounts)
 	}
 }
