@@ -1499,27 +1499,12 @@ replacements:
         replacedWith: x-resource-0000000006-x
         occurrences:
             - original: ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus22-vthrm
-              count: 1804
+              count: 1930
       - canonical: ci-ln-k7vx6h2-002ac-w7gjh-master-2
         replacedWith: x-resource-0000000007-x
         occurrences:
             - original: ci-ln-k7vx6h2-002ac-w7gjh-master-2
-              count: 24174
-      - canonical: ci-ln-k7vx6h2-002ac.ci.azure.devcluster.openshift.com"}}
-        replacedWith: x-resource-0000000010-x
-        occurrences:
-            - original: ci-ln-k7vx6h2-002ac.ci.azure.devcluster.openshift.com"}}
-              count: 8
-      - canonical: ci-ln-k7vx6h2-002ac-w7gjh-master-1"
-        replacedWith: x-resource-0000000016-x
-        occurrences:
-            - original: ci-ln-k7vx6h2-002ac-w7gjh-master-1"
-              count: 1598
-      - canonical: ci-ln-k7vx6h2-002ac-w7gjh-master-2"
-        replacedWith: x-resource-0000000017-x
-        occurrences:
-            - original: ci-ln-k7vx6h2-002ac-w7gjh-master-2"
-              count: 1756
+              count: 24459
       - canonical: ci-ln-k7vx6h2-002ac-w7gjh-rg
         replacedWith: x-resourcegroup-0000000001-x
         occurrences:
@@ -1534,27 +1519,17 @@ replacements:
         replacedWith: x-resource-0000000003-x
         occurrences:
             - original: ci-ln-k7vx6h2-002ac-w7gjh-master-0
-              count: 23051
+              count: 23327
       - canonical: ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus21-gqtkz
         replacedWith: x-resource-0000000008-x
         occurrences:
             - original: ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus21-gqtkz
-              count: 2301
+              count: 2444
       - canonical: projectrequestlimits-v0-0-1-sub.yaml
         replacedWith: x-subscription-0000000003-x
         occurrences:
             - original: projectrequestlimits-v0-0-1-sub.yaml
               count: 2
-      - canonical: ci-ln-k7vx6h2-002ac-w7gjh-master-0"
-        replacedWith: x-resource-0000000015-x
-        occurrences:
-            - original: ci-ln-k7vx6h2-002ac-w7gjh-master-0"
-              count: 1578
-      - canonical: ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus22-vthrm"
-        replacedWith: x-resource-0000000019-x
-        occurrences:
-            - original: ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus22-vthrm"
-              count: 611
       - canonical: d38f1e38-4bed-438e-b227-833f997adf6a
         replacedWith: x-subscription-0000000001-x
         occurrences:
@@ -1564,62 +1539,37 @@ replacements:
         replacedWith: x-resource-0000000002-x
         occurrences:
             - original: ci.azure.devcluster.openshift.com
-              count: 1936
+              count: 1945
       - canonical: ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus23-d49js
         replacedWith: x-resource-0000000005-x
         occurrences:
             - original: ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus23-d49js
-              count: 1877
+              count: 2015
       - canonical: ci-ln-k7vx6h2-002ac-w7gjh-ab5705cd25ad44c63bbb4b60bfc52de4.
         replacedWith: x-resource-0000000009-x
         occurrences:
             - original: ci-ln-k7vx6h2-002ac-w7gjh-ab5705cd25ad44c63bbb4b60bfc52de4.
               count: 6
-      - canonical: ci.azure.devcluster.openshift.com"}}
-        replacedWith: x-resource-0000000011-x
-        occurrences:
-            - original: ci.azure.devcluster.openshift.com"}}
-              count: 8
-      - canonical: ci.azure.devcluster.openshift.com"},"conditions":[{"type":"Failed","status":"False","lastTransitionTime":"2021-09-13T15:02:47Z","reason":"ProviderSuccess","message":"The
-        replacedWith: x-resource-0000000013-x
-        occurrences:
-            - original: ci.azure.devcluster.openshift.com"},"conditions":[{"type":"Failed","status":"False","lastTransitionTime":"2021-09-13T15:02:47Z","reason":"ProviderSuccess","message":"The
-              count: 2
       - canonical: ci-ln-k7vx6h2-002ac-w7gjh
         replacedWith: x-resource-0000000014-x
         occurrences:
             - original: ci-ln-k7vx6h2-002ac-w7gjh
-              count: 42613
-      - canonical: ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus23-d49js"
-        replacedWith: x-resource-0000000020-x
-        occurrences:
-            - original: ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus23-d49js"
-              count: 652
+              count: 44368
       - canonical: ci-ln-k7vx6h2-002ac.ci.azure.devcluster.openshift.com
         replacedWith: x-resource-0000000001-x
         occurrences:
             - original: ci-ln-k7vx6h2-002ac.ci.azure.devcluster.openshift.com
-              count: 1935
+              count: 1944
       - canonical: ci-ln-k7vx6h2-002ac-w7gjh-master-1
         replacedWith: x-resource-0000000004-x
         occurrences:
             - original: ci-ln-k7vx6h2-002ac-w7gjh-master-1
-              count: 21642
+              count: 21904
       - canonical: image-caching-operator-v0-0-1-sub.yaml
         replacedWith: x-subscription-0000000002-x
         occurrences:
             - original: image-caching-operator-v0-0-1-sub.yaml
               count: 2
-      - canonical: ci-ln-k7vx6h2-002ac.ci.azure.devcluster.openshift.com"},"conditions":[{"type":"Failed","status":"False","lastTransitionTime":"2021-09-13T15:02:46Z","reason":"ProviderSuccess","message":"The
-        replacedWith: x-resource-0000000012-x
-        occurrences:
-            - original: ci-ln-k7vx6h2-002ac.ci.azure.devcluster.openshift.com"},"conditions":[{"type":"Failed","status":"False","lastTransitionTime":"2021-09-13T15:02:46Z","reason":"ProviderSuccess","message":"The
-              count: 2
-      - canonical: ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus21-gqtkz"
-        replacedWith: x-resource-0000000018-x
-        occurrences:
-            - original: ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus21-gqtkz"
-              count: 672
 omissions:
     - /quay-io-openshift-release-dev-ocp-v4-0-art-dev-sha256-415e56a6d8d2b8576c59d08a7c57a7d081fa59e7dc3cd8782ed7bcd6080c7c12/cluster-scoped-resources/certificates.k8s.io/certificatesigningrequests/csr-6b4dm.yaml
     - /quay-io-openshift-release-dev-ocp-v4-0-art-dev-sha256-415e56a6d8d2b8576c59d08a7c57a7d081fa59e7dc3cd8782ed7bcd6080c7c12/cluster-scoped-resources/certificates.k8s.io/certificatesigningrequests/csr-6hmvd.yaml
@@ -2083,26 +2033,14 @@ config:
             ci-ln-k7vx6h2-002ac-w7gjh: x-resource-0000000014-x
             ci-ln-k7vx6h2-002ac-w7gjh-ab5705cd25ad44c63bbb4b60bfc52de4.: x-resource-0000000009-x
             ci-ln-k7vx6h2-002ac-w7gjh-master-0: x-resource-0000000003-x
-            ci-ln-k7vx6h2-002ac-w7gjh-master-0": x-resource-0000000015-x
             ci-ln-k7vx6h2-002ac-w7gjh-master-1: x-resource-0000000004-x
-            ci-ln-k7vx6h2-002ac-w7gjh-master-1": x-resource-0000000016-x
             ci-ln-k7vx6h2-002ac-w7gjh-master-2: x-resource-0000000007-x
-            ci-ln-k7vx6h2-002ac-w7gjh-master-2": x-resource-0000000017-x
             ci-ln-k7vx6h2-002ac-w7gjh-rg: x-resourcegroup-0000000001-x
             ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus21-gqtkz: x-resource-0000000008-x
-            ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus21-gqtkz": x-resource-0000000018-x
             ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus22-vthrm: x-resource-0000000006-x
-            ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus22-vthrm": x-resource-0000000019-x
             ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus23-d49js: x-resource-0000000005-x
-            ci-ln-k7vx6h2-002ac-w7gjh-worker-eastus23-d49js": x-resource-0000000020-x
             ci-ln-k7vx6h2-002ac.ci.azure.devcluster.openshift.com: x-resource-0000000001-x
-            ? ci-ln-k7vx6h2-002ac.ci.azure.devcluster.openshift.com"},"conditions":[{"type":"Failed","status":"False","lastTransitionTime":"2021-09-13T15:02:46Z","reason":"ProviderSuccess","message":"The
-            : x-resource-0000000012-x
-            ci-ln-k7vx6h2-002ac.ci.azure.devcluster.openshift.com"}}: x-resource-0000000010-x
             ci.azure.devcluster.openshift.com: x-resource-0000000002-x
-            ? ci.azure.devcluster.openshift.com"},"conditions":[{"type":"Failed","status":"False","lastTransitionTime":"2021-09-13T15:02:47Z","reason":"ProviderSuccess","message":"The
-            : x-resource-0000000013-x
-            ci.azure.devcluster.openshift.com"}}: x-resource-0000000011-x
             d38f1e38-4bed-438e-b227-833f997adf6a: x-subscription-0000000001-x
             image-caching-operator-v0-0-1-sub.yaml: x-subscription-0000000002-x
             os4-common: x-resourcegroup-0000000002-x

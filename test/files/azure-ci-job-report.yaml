@@ -95,7 +95,7 @@ replacements:
         replacedWith: resource-sharing-firefly
         occurrences:
             - original: aro-hcp-gpu-nodepool-NC6sv3
-              count: 15
+              count: 14
       - canonical: 73339b96-7ff6-575d-a522-a93ebb21cd17
         replacedWith: resource-comic-kingfish
         occurrences:
@@ -210,7 +210,7 @@ replacements:
         replacedWith: resourcegroup-simple-condor
         occurrences:
             - original: disabled-image-registry-gxzgff
-              count: 692
+              count: 691
       - canonical: etcd-data-kms-encryption-key
         replacedWith: subresource-rational-oriole
         occurrences:
@@ -400,12 +400,12 @@ replacements:
         replacedWith: resource-internal-serval
         occurrences:
             - original: managedIdentities
-              count: 129
+              count: 130
       - canonical: aro-hcp-demo
         replacedWith: resource-composed-cat
         occurrences:
             - original: aro-hcp-demo
-              count: 23
+              count: 24
       - canonical: bd2387f1-33c7-529c-8c3a-206f20099db2
         replacedWith: resource-known-mallard
         occurrences:
@@ -640,7 +640,7 @@ replacements:
         replacedWith: resourcegroup-actual-marmot
         occurrences:
             - original: gpu-nodepools-NC6sv3-wz4mrv
-              count: 874
+              count: 873
       - canonical: 0F6A0806E8A4D11F
         replacedWith: subresource-eternal-seagull
         occurrences:
@@ -705,7 +705,7 @@ replacements:
         replacedWith: resource-valued-wolf
         occurrences:
             - original: customer-nsg
-              count: 100
+              count: 102
       - canonical: 5f0d2121-19e1-5dca-92fe-537b6e751eb0
         replacedWith: resource-set-buzzard
         occurrences:
@@ -1015,7 +1015,7 @@ replacements:
         replacedWith: resource-flowing-seal
         occurrences:
             - original: cluster
-              count: 1306
+              count: 1297
       - canonical: B606C8C07041B20B
         replacedWith: subresource-live-cowbird
         occurrences:
@@ -1275,12 +1275,12 @@ replacements:
         replacedWith: resource-feasible-magpie
         occurrences:
             - original: node-pool
-              count: 15
+              count: 14
       - canonical: customer-vnet-subnet1
         replacedWith: subresource-deciding-hyena
         occurrences:
             - original: customer-vnet-subnet1
-              count: 164
+              count: 161
       - canonical: illegal-hcp-cluster-dp-image-registry-xyrv6fg5g54zg
         replacedWith: resource-guiding-lark
         occurrences:
@@ -1825,7 +1825,7 @@ replacements:
         replacedWith: resource-flowing-skylark
         occurrences:
             - original: managed-identities
-              count: 336
+              count: 337
       - canonical: gpu-nodepool-cluster-pht6k5-cp-disk-csi-driver-pj2d7pwdc2da2
         replacedWith: resource-growing-wildcat
         occurrences:
@@ -1845,7 +1845,7 @@ replacements:
         replacedWith: resource-adapted-jay
         occurrences:
             - original: customer-infra
-              count: 59
+              count: 57
       - canonical: customer-subnet-1
         replacedWith: subresource-logical-hamster
         occurrences:
@@ -1880,7 +1880,7 @@ replacements:
         replacedWith: resourcegroup-fair-ape
         occurrences:
             - original: illegal-ocp-version-6k6dxj
-              count: 686
+              count: 687
       - canonical: C0DADF04030DC98F
         replacedWith: subresource-adapting-thrush
         occurrences:
@@ -1930,7 +1930,7 @@ replacements:
         replacedWith: resourcegroup-touched-monkey
         occurrences:
             - original: basic-cluster-k4tbpz
-              count: 714
+              count: 713
       - canonical: c88c6ba0-e927-51df-bad1-b9e54dc2623f
         replacedWith: resource-calm-malamute
         occurrences:
@@ -2030,7 +2030,7 @@ replacements:
         replacedWith: subresource-selected-monster
         occurrences:
             - original: Microsoft.Authorization
-              count: 1427
+              count: 1428
       - canonical: A1DD50E6464B9019
         replacedWith: subresource-key-ocelot
         occurrences:

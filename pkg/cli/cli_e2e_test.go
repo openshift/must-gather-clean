@@ -77,9 +77,14 @@ func removeRelativePath(r *reporting.Report, path string) {
 func verifyObfuscation(t *testing.T, dir string, report *reporting.Report) {
 	// report should already be verified by verifyReport before to ensure it does contain correct information
 	generatedMap := map[string]string{}
-	for _, obfuscator := range report.Replacements {
-		for _, replacement := range obfuscator {
+	for i, replacementGroup := range report.Replacements {
+		azureResources := i < len(report.Config.Obfuscate) && report.Config.Obfuscate[i].Type == "AzureResources"
+		for _, replacement := range replacementGroup {
 			for _, occurrence := range replacement.Occurrences {
+				// Azure resource names shorter than five characters are intentionally skipped.
+				if azureResources && len(occurrence.Original) < 5 {
+					continue
+				}
 				generatedMap[occurrence.Original] = replacement.ReplacedWith
 			}
 		}
@@ -120,8 +125,16 @@ func verifyReport(t *testing.T, inputDir string, truthReport *reporting.Report, 
 func verifyReplacements(t *testing.T, inputDir string, truthReport *reporting.Report, generatedReport *reporting.Report) {
 	tr := reportInternalRepresentation(truthReport)
 	gr := reportInternalRepresentation(generatedReport)
-	replacementReportsMatch(t, tr, gr)
+	require.Equal(t, len(tr), len(gr))
+	require.Equal(t, len(tr), len(truthReport.Config.Obfuscate))
+	require.Equal(t, len(gr), len(generatedReport.Config.Obfuscate))
 
+	for i := range tr {
+		// Azure resource counts vary with file processing order because discovered
+		// canonical values are also replaced in later lines across parallel workers.
+		compareCounts := truthReport.Config.Obfuscate[i].Type != "AzureResources"
+		replacementReportsMatch(t, tr[i], gr[i], compareCounts)
+	}
 }
 
 func verifyOmissions(t *testing.T, inputDir string, truthReport *reporting.Report, generatedReport *reporting.Report) {
@@ -130,41 +143,51 @@ func verifyOmissions(t *testing.T, inputDir string, truthReport *reporting.Repor
 	assert.Equal(t, truthReport.Omissions, generatedReport.Omissions)
 }
 
-func reportInternalRepresentation(report *reporting.Report) obfuscator.ReplacementReport {
-	var repls []obfuscator.Replacement
-	for _, o := range report.Replacements {
-		for _, r := range o {
+func reportInternalRepresentation(report *reporting.Report) [][]obfuscator.Replacement {
+	repls := make([][]obfuscator.Replacement, len(report.Replacements))
+	for i, replacementGroup := range report.Replacements {
+		for _, r := range replacementGroup {
 			count := map[string]uint{}
 			for _, c := range r.Occurrences {
 				count[c.Original] = c.Count
 			}
-			repls = append(repls, obfuscator.Replacement{
+			repls[i] = append(repls[i], obfuscator.Replacement{
 				Canonical:    r.Canonical,
 				ReplacedWith: r.ReplacedWith,
 				Counter:      count,
 			})
 		}
 	}
-	return obfuscator.ReplacementReport{Replacements: repls}
+	return repls
 }
 
-func replacementReportsMatch(t *testing.T, want, got obfuscator.ReplacementReport) {
-	assert.Equal(t, len(want.Replacements), len(got.Replacements))
-	sort.Slice(want.Replacements, func(i, j int) bool {
-		return want.Replacements[i].Canonical > want.Replacements[j].Canonical
+func replacementReportsMatch(t *testing.T, want, got []obfuscator.Replacement, compareCounts bool) {
+	require.Equal(t, len(want), len(got))
+	sort.Slice(want, func(i, j int) bool {
+		return want[i].Canonical > want[j].Canonical
 	})
-	sort.Slice(got.Replacements, func(i, j int) bool {
-		return got.Replacements[i].Canonical > got.Replacements[j].Canonical
+	sort.Slice(got, func(i, j int) bool {
+		return got[i].Canonical > got[j].Canonical
 	})
-	for i := range got.Replacements {
-		if i >= len(want.Replacements) {
-			break
-		}
-		w := want.Replacements[i]
-		g := got.Replacements[i]
+	for i := range got {
+		w := want[i]
+		g := got[i]
 		assert.Equal(t, w.Canonical, g.Canonical)
-		assert.Equal(t, w.Counter, g.Counter)
+		if compareCounts {
+			assert.Equal(t, w.Counter, g.Counter)
+			continue
+		}
+		assert.Equal(t, replacementCounterKeys(w.Counter), replacementCounterKeys(g.Counter))
 	}
+}
+
+func replacementCounterKeys(counter map[string]uint) []string {
+	keys := make([]string, 0, len(counter))
+	for key := range counter {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 func verifyConfig(t *testing.T, report *reporting.Report) {
