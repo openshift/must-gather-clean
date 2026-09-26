@@ -186,6 +186,8 @@ func createObfuscatorsFromConfig(config *schema.SchemaJson) (finalObfuscator *ob
 			if err != nil {
 				return nil, nil, err
 			}
+		case schema.ObfuscateTypeURLUserinfo:
+			k = obfuscator.NewURLUserinfoObfuscator()
 		default:
 			return nil, nil, fmt.Errorf("unknown obfuscator type %s", o.Type)
 		}

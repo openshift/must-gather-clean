@@ -155,6 +155,7 @@ const ObfuscateTypeIP ObfuscateType = "IP"
 const ObfuscateTypeKeywords ObfuscateType = "Keywords"
 const ObfuscateTypeMAC ObfuscateType = "MAC"
 const ObfuscateTypeRegex ObfuscateType = "Regex"
+const ObfuscateTypeURLUserinfo ObfuscateType = "URLUserinfo"
 
 var enumValues_ObfuscateType = []interface{}{
 	"AzureResources",
@@ -164,6 +165,7 @@ var enumValues_ObfuscateType = []interface{}{
 	"Keywords",
 	"MAC",
 	"Regex",
+	"URLUserinfo",
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
