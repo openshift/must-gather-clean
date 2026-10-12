@@ -103,9 +103,10 @@ configuration are treated as ambiguous and left unchanged. Older reports
 without occurrence metadata are rejected.
 Directory cleaning writes `report.yaml` in the reporting folder (the current
 directory by default).
-Pipe-mode cleaning does not create a report. Input and output default to stdin
-and stdout when the command is run in pipe mode, so deobfuscation can be used in
-a pipeline:
+Pipe-mode cleaning does not create a report. When stdin is piped or redirected,
+deobfuscation always reads from stdin and writes to stdout, even if `--input` or
+`--output` are provided. With terminal stdin, both file paths are required. This
+lets deobfuscation run in a pipeline:
 
 ```sh
 $ cat support-response.txt | must-gather-clean deobfuscate --report report.yaml > restored-response.txt
