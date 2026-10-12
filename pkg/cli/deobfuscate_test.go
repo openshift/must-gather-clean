@@ -105,7 +105,6 @@ func TestWriteDeobfuscatedFileDoesNotPublishPartialOutput(t *testing.T) {
 				deobfuscator.Mapping{"token": "original"},
 				&partialErrorReader{},
 				outputPath,
-				nil,
 			)
 			require.ErrorIs(t, err, io.ErrUnexpectedEOF)
 
@@ -189,20 +188,6 @@ func TestRunDeobfuscateFileRejectsReportAsOutput(t *testing.T) {
 	require.Equal(t, report, contents)
 }
 
-func TestRunDeobfuscateFileRejectsInvalidReportBeforeCreatingOutput(t *testing.T) {
-	dir := t.TempDir()
-	reportPath := filepath.Join(dir, "report.yaml")
-	inputPath := filepath.Join(dir, "input.txt")
-	outputPath := filepath.Join(dir, "restored.txt")
-	require.NoError(t, os.WriteFile(reportPath, []byte("replacements: ["), 0600))
-	require.NoError(t, os.WriteFile(inputPath, []byte("token\n"), 0600))
-
-	err := RunDeobfuscateFile(reportPath, inputPath, outputPath)
-	require.Error(t, err)
-	_, statErr := os.Stat(outputPath)
-	require.ErrorIs(t, statErr, os.ErrNotExist)
-}
-
 func TestRunDeobfuscateFileRejectsInputReportAliases(t *testing.T) {
 	for _, mode := range []string{"exact", "hardlink", "symlink"} {
 		t.Run(mode, func(t *testing.T) {
@@ -226,11 +211,25 @@ func TestRunDeobfuscateFileRejectsInputReportAliases(t *testing.T) {
 			require.EqualError(t, err, "input and report paths must differ")
 			after, readErr := os.ReadFile(reportPath)
 			require.NoError(t, readErr)
-			require.True(t, bytes.Equal(reportData, after))
+			require.Equal(t, reportData, after)
 			_, statErr := os.Stat(outputPath)
 			require.ErrorIs(t, statErr, os.ErrNotExist)
 		})
 	}
+}
+
+func TestRunDeobfuscateFileRejectsInvalidReportBeforeCreatingOutput(t *testing.T) {
+	dir := t.TempDir()
+	reportPath := filepath.Join(dir, "report.yaml")
+	inputPath := filepath.Join(dir, "input.txt")
+	outputPath := filepath.Join(dir, "restored.txt")
+	require.NoError(t, os.WriteFile(reportPath, []byte("replacements: ["), 0600))
+	require.NoError(t, os.WriteFile(inputPath, []byte("token\n"), 0600))
+
+	err := RunDeobfuscateFile(reportPath, inputPath, outputPath)
+	require.Error(t, err)
+	_, statErr := os.Stat(outputPath)
+	require.ErrorIs(t, statErr, os.ErrNotExist)
 }
 
 type failingReader struct{ err error }

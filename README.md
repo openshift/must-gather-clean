@@ -98,7 +98,9 @@ directory-cleaning run that produced the must-gather; a different run can reuse
 token values and restore them to unrelated canonical values. Reports with
 replacement groups but no matching obfuscation configuration are rejected. Reversible
 groups must include occurrence metadata that links each original to its configured
-replacement; older reports without that metadata are rejected.
+replacement. Tokens whose occurrence metadata conflicts with the group
+configuration are treated as ambiguous and left unchanged. Older reports
+without occurrence metadata are rejected.
 Directory cleaning writes `report.yaml` in the reporting folder (the current
 directory by default).
 Pipe-mode cleaning does not create a report. Input and output default to stdin

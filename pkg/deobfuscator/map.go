@@ -30,31 +30,56 @@ func LoadReport(path string) (Mapping, error) {
 	if len(report.Config.Obfuscate) != len(report.Replacements) {
 		return nil, fmt.Errorf("failed to parse report %s: obfuscation config and replacement groups do not match", path)
 	}
-	if err := validateReplacementGroupConfiguration(report); err != nil {
+	unsafeTokens, err := validateReplacementGroupConfiguration(report)
+	if err != nil {
 		return nil, fmt.Errorf("failed to parse report %s: %w", path, err)
 	}
-	return newMapping(report), nil
+	return newMappingWithUnsafeTokens(report, unsafeTokens), nil
 }
 
 // validateReplacementGroupConfiguration checks report metadata that ties each
 // replacement group to its configuration. Reversible groups need occurrence
 // metadata so a same-count but misaligned report cannot make an unsupported
-// replacement look like a supported one.
-func validateReplacementGroupConfiguration(report reporting.Report) error {
+// replacement look like a supported one. Conflicting outputs for one original
+// are returned as unsafe tokens because the config map can store only one.
+func validateReplacementGroupConfiguration(report reporting.Report) (map[string]struct{}, error) {
+	unsafeTokens := make(map[string]struct{})
 	for groupIndex, group := range report.Replacements {
 		config := report.Config.Obfuscate[groupIndex]
+		outputsByOriginal := make(map[string]map[string]struct{})
+		for _, replacement := range group {
+			if replacement.ReplacedWith == "" {
+				continue
+			}
+			for _, occurrence := range replacement.Occurrences {
+				if outputsByOriginal[occurrence.Original] == nil {
+					outputsByOriginal[occurrence.Original] = make(map[string]struct{})
+				}
+				outputsByOriginal[occurrence.Original][replacement.ReplacedWith] = struct{}{}
+			}
+		}
+
 		for _, replacement := range group {
 			if replacement.ReplacedWith == "" {
 				continue
 			}
 			if isReversibleConfiguration(config) && replacement.Canonical != "" && len(replacement.Occurrences) == 0 {
-				return fmt.Errorf("replacement group %d is missing occurrence metadata", groupIndex+1)
+				return nil, fmt.Errorf("replacement group %d is missing occurrence metadata", groupIndex+1)
 			}
 			if len(replacement.Occurrences) > 0 {
 				for _, occurrence := range replacement.Occurrences {
 					replacedWith, exists := config.Replacement[occurrence.Original]
-					if !exists || replacedWith != replacement.ReplacedWith {
-						return fmt.Errorf("obfuscation config and replacement group %d do not match", groupIndex+1)
+					if !exists {
+						return nil, fmt.Errorf("obfuscation config and replacement group %d do not match", groupIndex+1)
+					}
+					if replacedWith != replacement.ReplacedWith {
+						if _, isReportedOutput := outputsByOriginal[occurrence.Original][replacedWith]; isReportedOutput {
+							// The config map can retain only one output for an original.
+							// Keep the group, but do not restore this conflicting token.
+							unsafeTokens[replacement.ReplacedWith] = struct{}{}
+							continue
+						}
+						return nil, fmt.Errorf("obfuscation config and replacement group %d do not match", groupIndex+1)
 					}
 				}
 				continue
@@ -70,11 +95,11 @@ func validateReplacementGroupConfiguration(report reporting.Report) error {
 				}
 			}
 			if !found {
-				return fmt.Errorf("obfuscation config and replacement group %d do not match", groupIndex+1)
+				return nil, fmt.Errorf("obfuscation config and replacement group %d do not match", groupIndex+1)
 			}
 		}
 	}
-	return nil
+	return unsafeTokens, nil
 }
 
 // newMapping builds a reverse lookup from the replacement groups in a report.
@@ -82,8 +107,19 @@ func validateReplacementGroupConfiguration(report reporting.Report) error {
 // more than one canonical value or involved in a replacement chain are omitted
 // because they cannot be restored safely.
 func newMapping(report reporting.Report) Mapping {
+	return newMappingWithUnsafeTokens(report, nil)
+}
+
+func newMappingWithUnsafeTokens(report reporting.Report, unsafeTokens map[string]struct{}) Mapping {
 	mapping := make(Mapping)
-	unsafeTokens := findChainedReplacementTokens(report)
+	knownUnsafeTokens := make(map[string]struct{}, len(unsafeTokens))
+	for token := range unsafeTokens {
+		knownUnsafeTokens[token] = struct{}{}
+	}
+	unsafeTokens = knownUnsafeTokens
+	for token := range findChainedReplacementTokens(report) {
+		unsafeTokens[token] = struct{}{}
+	}
 	for token := range findTokensInUnsupportedOutputs(report) {
 		unsafeTokens[token] = struct{}{}
 	}

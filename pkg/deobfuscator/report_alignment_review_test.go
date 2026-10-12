@@ -68,3 +68,26 @@ func TestLoadReportAcceptsMatchingReplacementGroupConfiguration(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "ip-original", mapping.Replace("ip-token"))
 }
+
+func TestLoadReportAcceptsMultipleReportedOutputsForOneOccurrence(t *testing.T) {
+	report := reporting.Report{
+		Config: schema.SchemaJsonConfig{Obfuscate: []schema.Obfuscate{{
+			Type:            schema.ObfuscateTypeIP,
+			ReplacementType: schema.ObfuscateReplacementTypeConsistent,
+			Replacement:     schema.ObfuscateReplacement{"192.0.2.1": "ip-token-a"},
+		}}},
+		Replacements: [][]reporting.Replacement{{
+			{Canonical: "192.0.2.1", ReplacedWith: "ip-token-a", Occurrences: []reporting.Occurrence{{Original: "192.0.2.1"}}},
+			{Canonical: "198.51.100.1", ReplacedWith: "ip-token-b", Occurrences: []reporting.Occurrence{{Original: "192.0.2.1"}}},
+		}},
+	}
+	data, err := yaml.Marshal(report)
+	require.NoError(t, err)
+	path := filepath.Join(t.TempDir(), "report.yaml")
+	require.NoError(t, os.WriteFile(path, data, 0600))
+
+	mapping, err := LoadReport(path)
+	require.NoError(t, err)
+	require.Equal(t, "192.0.2.1", mapping.Replace("ip-token-a"))
+	require.Equal(t, "ip-token-b", mapping.Replace("ip-token-b"))
+}
