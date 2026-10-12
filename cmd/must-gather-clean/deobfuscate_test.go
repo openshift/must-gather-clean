@@ -10,6 +10,9 @@ import (
 )
 
 func TestDeobfuscateCommandUsesStdinAndStdout(t *testing.T) {
+	oldPipeModeEnabled := PipeModeEnabled
+	PipeModeEnabled = true
+	t.Cleanup(func() { PipeModeEnabled = oldPipeModeEnabled })
 	initFlags()
 	reportPath := filepath.Join(t.TempDir(), "report.yaml")
 	report := []byte("config:\n  obfuscate:\n    - type: IP\n      replacementType: Consistent\n      replacement: {original: token}\nreplacements:\n  - - canonical: original\n      replacedWith: token\n      occurrences: [{original: original}]\n")

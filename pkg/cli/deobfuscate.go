@@ -26,84 +26,52 @@ func runDeobfuscate(mapping deobfuscator.Mapping, input io.Reader, output io.Wri
 	return nil
 }
 
-// RunDeobfuscateFile restores values from inputPath to outputPath. Empty paths
-// use stdin and stdout respectively, which also makes the command suitable for
-// shell pipelines.
+// RunDeobfuscateFile restores values from inputPath to outputPath.
 func RunDeobfuscateFile(reportPath, inputPath, outputPath string) (err error) {
+	if inputPath == "" || outputPath == "" {
+		return fmt.Errorf("input and output file paths are required")
+	}
+
 	mapping, loadErr := deobfuscator.LoadReport(reportPath)
 	if loadErr != nil {
 		return loadErr
 	}
-	if inputPath != "" && outputPath != "" {
-		inputAbs, absErr := filepath.Abs(inputPath)
-		if absErr != nil {
-			return fmt.Errorf("failed to resolve support response %s: %w", inputPath, absErr)
-		}
-		outputAbs, absErr := filepath.Abs(outputPath)
-		if absErr != nil {
-			return fmt.Errorf("failed to resolve output path %s: %w", outputPath, absErr)
-		}
-		if inputAbs == outputAbs {
-			return fmt.Errorf("input and output paths must differ")
-		}
+	inputFile, err := os.Open(inputPath)
+	if err != nil {
+		return fmt.Errorf("failed to open support response %s: %w", inputPath, err)
 	}
-
-	input := io.Reader(os.Stdin)
-	var inputFile *os.File
-	if inputPath != "" {
-		file, openErr := os.Open(inputPath)
-		if openErr != nil {
-			return fmt.Errorf("failed to open support response %s: %w", inputPath, openErr)
-		}
-		inputFile = file
-		defer func() {
-			if inputFile == nil {
-				return
-			}
+	defer func() {
+		if inputFile != nil {
 			if closeErr := inputFile.Close(); closeErr != nil && err == nil {
 				err = fmt.Errorf("failed to close support response %s: %w", inputPath, closeErr)
 			}
-		}()
-		input = file
+		}
+	}()
+
+	sameFile, statErr := pathsReferToSameFile(inputPath, reportPath)
+	if statErr != nil {
+		return fmt.Errorf("failed to compare support response and report files: %w", statErr)
+	}
+	if sameFile {
+		return fmt.Errorf("input and report paths must differ")
 	}
 
-	if inputPath != "" {
-		sameFile, statErr := pathsReferToSameFile(inputPath, reportPath)
-		if statErr != nil {
-			return fmt.Errorf("failed to compare support response and report files: %w", statErr)
-		}
-		if sameFile {
-			return fmt.Errorf("input and report paths must differ")
-		}
+	sameFile, statErr = pathsReferToSameFile(inputPath, outputPath)
+	if statErr != nil {
+		return fmt.Errorf("failed to compare support response and output files: %w", statErr)
 	}
-
-	if outputPath != "" {
-		if inputPath != "" {
-			sameFile, statErr := pathsReferToSameFile(inputPath, outputPath)
-			if statErr != nil {
-				return fmt.Errorf("failed to compare support response and output files: %w", statErr)
-			}
-			if sameFile {
-				return fmt.Errorf("input and output paths must differ")
-			}
-		}
-		sameFile, statErr := pathsReferToSameFile(reportPath, outputPath)
-		if statErr != nil {
-			return fmt.Errorf("failed to compare report and output files: %w", statErr)
-		}
-		if sameFile {
-			return fmt.Errorf("report and output paths must differ")
-		}
+	if sameFile {
+		return fmt.Errorf("input and output paths must differ")
 	}
-
-	if outputPath == "" {
-		return runDeobfuscate(mapping, input, os.Stdout)
+	sameFile, statErr = pathsReferToSameFile(reportPath, outputPath)
+	if statErr != nil {
+		return fmt.Errorf("failed to compare report and output files: %w", statErr)
+	}
+	if sameFile {
+		return fmt.Errorf("report and output paths must differ")
 	}
 
 	beforePublish := func() error {
-		if inputFile == nil {
-			return nil
-		}
 		closeErr := inputFile.Close()
 		inputFile = nil
 		if closeErr != nil {
@@ -111,7 +79,7 @@ func RunDeobfuscateFile(reportPath, inputPath, outputPath string) (err error) {
 		}
 		return nil
 	}
-	return writeDeobfuscatedFile(mapping, input, outputPath, beforePublish)
+	return writeDeobfuscatedFile(mapping, inputFile, outputPath, beforePublish)
 }
 
 // writeDeobfuscatedFile writes to a temporary file beside the destination and

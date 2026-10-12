@@ -177,10 +177,12 @@ func TestRunDeobfuscateFileRejectsHardLinkAlias(t *testing.T) {
 func TestRunDeobfuscateFileRejectsReportAsOutput(t *testing.T) {
 	dir := t.TempDir()
 	reportPath := filepath.Join(dir, "report.yaml")
+	inputPath := filepath.Join(dir, "input.txt")
 	report := []byte(validDeobfuscationReport)
 	require.NoError(t, os.WriteFile(reportPath, report, 0600))
+	require.NoError(t, os.WriteFile(inputPath, []byte("token\n"), 0600))
 
-	err := RunDeobfuscateFile(reportPath, "", reportPath)
+	err := RunDeobfuscateFile(reportPath, inputPath, reportPath)
 	require.EqualError(t, err, "report and output paths must differ")
 	contents, readErr := os.ReadFile(reportPath)
 	require.NoError(t, readErr)
@@ -190,13 +192,45 @@ func TestRunDeobfuscateFileRejectsReportAsOutput(t *testing.T) {
 func TestRunDeobfuscateFileRejectsInvalidReportBeforeCreatingOutput(t *testing.T) {
 	dir := t.TempDir()
 	reportPath := filepath.Join(dir, "report.yaml")
+	inputPath := filepath.Join(dir, "input.txt")
 	outputPath := filepath.Join(dir, "restored.txt")
 	require.NoError(t, os.WriteFile(reportPath, []byte("replacements: ["), 0600))
+	require.NoError(t, os.WriteFile(inputPath, []byte("token\n"), 0600))
 
-	err := RunDeobfuscateFile(reportPath, "", outputPath)
+	err := RunDeobfuscateFile(reportPath, inputPath, outputPath)
 	require.Error(t, err)
 	_, statErr := os.Stat(outputPath)
 	require.ErrorIs(t, statErr, os.ErrNotExist)
+}
+
+func TestRunDeobfuscateFileRejectsInputReportAliases(t *testing.T) {
+	for _, mode := range []string{"exact", "hardlink", "symlink"} {
+		t.Run(mode, func(t *testing.T) {
+			dir := t.TempDir()
+			reportPath := filepath.Join(dir, "report.yaml")
+			reportData := []byte(validDeobfuscationReport)
+			require.NoError(t, os.WriteFile(reportPath, reportData, 0600))
+
+			inputPath := reportPath
+			switch mode {
+			case "hardlink":
+				inputPath = filepath.Join(dir, "input-hardlink")
+				require.NoError(t, os.Link(reportPath, inputPath))
+			case "symlink":
+				inputPath = filepath.Join(dir, "input-symlink")
+				require.NoError(t, os.Symlink(reportPath, inputPath))
+			}
+			outputPath := filepath.Join(dir, "output.txt")
+
+			err := RunDeobfuscateFile(reportPath, inputPath, outputPath)
+			require.EqualError(t, err, "input and report paths must differ")
+			after, readErr := os.ReadFile(reportPath)
+			require.NoError(t, readErr)
+			require.True(t, bytes.Equal(reportData, after))
+			_, statErr := os.Stat(outputPath)
+			require.ErrorIs(t, statErr, os.ErrNotExist)
+		})
+	}
 }
 
 type failingReader struct{ err error }

@@ -102,19 +102,25 @@ replacement; older reports without that metadata are rejected.
 Directory cleaning writes `report.yaml` in the reporting folder (the current
 directory by default).
 Pipe-mode cleaning does not create a report. Input and output default to stdin
-and stdout, so deobfuscation can be used in a pipeline:
+and stdout when the command is run in pipe mode, so deobfuscation can be used in
+a pipeline:
 
 ```sh
 $ cat support-response.txt | must-gather-clean deobfuscate --report report.yaml > restored-response.txt
 ```
 
-Use `--input` and `--output` to read and write files directly. Only unambiguous
-consistent IP, MAC, and domain replacements are restored. Static replacements,
-Azure resource replacements, ambiguous tokens, report-visible chains, and
-other unsupported replacements are left unchanged, as are tokens without a
-reversible mapping. The report stores canonical values, so restored text can
-differ from the original spelling in case or formatting. The restored output
-contains sensitive values and must be handled accordingly.
+For file input and output, provide both paths:
+
+```sh
+$ must-gather-clean deobfuscate --report report.yaml --input support-response.txt --output restored-response.txt
+```
+
+Only unambiguous consistent IP, MAC, and domain replacements are restored.
+Static replacements, Azure resource replacements, ambiguous tokens,
+report-visible chains, and other unsupported replacements are left unchanged,
+as are tokens without a reversible mapping. The report stores canonical values,
+so restored text can differ from the original spelling in case or formatting.
+The restored output contains sensitive values and must be handled accordingly.
 
 # Configuration
 
