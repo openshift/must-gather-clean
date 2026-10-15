@@ -10,6 +10,7 @@ import (
 	"github.com/openshift/must-gather-clean/pkg/reporting"
 	"github.com/openshift/must-gather-clean/pkg/schema"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 )
 
 func TestMappingReplacesUnambiguousTokens(t *testing.T) {
@@ -257,6 +258,87 @@ func TestMappingDoesNotPartiallyRestoreOverlappingTokensInSubstringChain(t *test
 	require.Equal(t, "domain domain-token cluster.domain-token x-mac-0000000001-x", mapping.Replace("domain domain-token cluster.domain-token x-mac-0000000001-x"))
 }
 
+func TestLoadReportPreservesSelfChainContainingShorterToken(t *testing.T) {
+	report := reporting.Report{
+		Config: schema.SchemaJsonConfig{Obfuscate: []schema.Obfuscate{{
+			Type: schema.ObfuscateTypeIP, ReplacementType: schema.ObfuscateReplacementTypeConsistent,
+			Replacement: schema.ObfuscateReplacement{"192.0.2.1": "token", "token-long": "token-long"},
+		}}},
+		Replacements: [][]reporting.Replacement{{
+			{Canonical: "192.0.2.1", ReplacedWith: "token", Occurrences: []reporting.Occurrence{{Original: "192.0.2.1"}}},
+			{Canonical: "token-long", ReplacedWith: "token-long", Occurrences: []reporting.Occurrence{{Original: "token-long"}}},
+		}},
+	}
+	mapping, err := LoadReport(writeReport(t, report))
+	require.NoError(t, err)
+	require.Equal(t, "token-long token", mapping.Replace("token-long token"))
+}
+
+func TestLoadReportPreservesChainsFromExactOutputs(t *testing.T) {
+	for _, original := range []string{"192.0.2.1", "prefix-192.0.2.1-suffix"} {
+		for _, target := range []schema.ObfuscateTarget{schema.ObfuscateTargetAll, schema.ObfuscateTargetFileContents, schema.ObfuscateTargetFilePath} {
+			t.Run(original+string(target), func(t *testing.T) {
+				report := reporting.Report{
+					Config: schema.SchemaJsonConfig{Obfuscate: []schema.Obfuscate{
+						{Type: schema.ObfuscateTypeExact, Target: target, ExactReplacements: []schema.ObfuscateExactReplacementsElem{{Original: "keyword", Replacement: "192.0.2.1"}}},
+						{Type: schema.ObfuscateTypeIP, Target: target, ReplacementType: schema.ObfuscateReplacementTypeConsistent, Replacement: schema.ObfuscateReplacement{original: "token"}},
+					}},
+					Replacements: [][]reporting.Replacement{{}, {{Canonical: original, ReplacedWith: "token", Occurrences: []reporting.Occurrence{{Original: original}}}}},
+				}
+				mapping, err := LoadReport(writeReport(t, report))
+				require.NoError(t, err)
+				require.Equal(t, "token", mapping.Replace("token"))
+			})
+		}
+	}
+}
+
+func TestLoadReportDoesNotChainExactOutputAcrossTargets(t *testing.T) {
+	report := reporting.Report{
+		Config: schema.SchemaJsonConfig{Obfuscate: []schema.Obfuscate{
+			{Type: schema.ObfuscateTypeExact, Target: schema.ObfuscateTargetFilePath, ExactReplacements: []schema.ObfuscateExactReplacementsElem{{Original: "keyword", Replacement: "192.0.2.1"}}},
+			{Type: schema.ObfuscateTypeIP, Target: schema.ObfuscateTargetFileContents, ReplacementType: schema.ObfuscateReplacementTypeConsistent, Replacement: schema.ObfuscateReplacement{"192.0.2.1": "token"}},
+		}},
+		Replacements: [][]reporting.Replacement{{}, {{Canonical: "192.0.2.1", ReplacedWith: "token", Occurrences: []reporting.Occurrence{{Original: "192.0.2.1"}}}}},
+	}
+	mapping, err := LoadReport(writeReport(t, report))
+	require.NoError(t, err)
+	require.Equal(t, "192.0.2.1", mapping.Replace("token"))
+}
+
+func TestLoadReportPreservesChainsAcrossCanonicalization(t *testing.T) {
+	for _, firstType := range []schema.ObfuscateType{schema.ObfuscateTypeExact, schema.ObfuscateTypeKeywords} {
+		for _, tc := range []struct {
+			typ                 schema.ObfuscateType
+			original, canonical string
+		}{
+			{schema.ObfuscateTypeMAC, "aa:bb:cc:dd:ee:ff", "AA:BB:CC:DD:EE:FF"},
+			{schema.ObfuscateTypeIP, "192-0-2-1", "192.0.2.1"},
+		} {
+			t.Run(string(firstType)+string(tc.typ), func(t *testing.T) {
+				first := schema.Obfuscate{Type: firstType}
+				var firstGroup []reporting.Replacement
+				if firstType == schema.ObfuscateTypeExact {
+					first.ExactReplacements = []schema.ObfuscateExactReplacementsElem{{Original: "keyword", Replacement: tc.original}}
+				} else {
+					first.Replacement = schema.ObfuscateReplacement{"keyword": tc.original}
+					firstGroup = []reporting.Replacement{{Canonical: "keyword", ReplacedWith: tc.original, Occurrences: []reporting.Occurrence{{Original: "keyword"}}}}
+				}
+				report := reporting.Report{
+					Config: schema.SchemaJsonConfig{Obfuscate: []schema.Obfuscate{
+						first,
+						{Type: tc.typ, ReplacementType: schema.ObfuscateReplacementTypeConsistent, Replacement: schema.ObfuscateReplacement{tc.original: "token"}},
+					}},
+					Replacements: [][]reporting.Replacement{firstGroup, {{Canonical: tc.canonical, ReplacedWith: "token", Occurrences: []reporting.Occurrence{{Original: tc.original}}}}},
+				}
+				mapping, err := LoadReport(writeReport(t, report))
+				require.NoError(t, err)
+				require.Equal(t, "token", mapping.Replace("token"))
+			})
+		}
+	}
+}
+
 func TestMappingReplaceReaderStreamsAndPreservesLineEndings(t *testing.T) {
 	mapping := mappingWithConsistentConfig([][]reporting.Replacement{{
 		{Canonical: "10.0.0.1", ReplacedWith: "x-ip-1-x"},
@@ -310,6 +392,75 @@ func TestLoadReportRejectsReplacementGroupsWithoutConfiguration(t *testing.T) {
 	require.ErrorContains(t, err, "obfuscation config and replacement groups do not match")
 }
 
+func TestLoadReportRejectsSameCountMismatchedReplacementGroups(t *testing.T) {
+	report := reporting.Report{
+		Config: schema.SchemaJsonConfig{Obfuscate: []schema.Obfuscate{
+			{
+				Type:            schema.ObfuscateTypeIP,
+				ReplacementType: schema.ObfuscateReplacementTypeConsistent,
+				Replacement:     schema.ObfuscateReplacement{"ip-original": "ip-token"},
+			},
+			{
+				Type:            schema.ObfuscateTypeMAC,
+				ReplacementType: schema.ObfuscateReplacementTypeConsistent,
+				Replacement:     schema.ObfuscateReplacement{"mac-original": "mac-token"},
+			},
+		}},
+		Replacements: [][]reporting.Replacement{
+			{{Canonical: "mac-original", ReplacedWith: "mac-token", Occurrences: []reporting.Occurrence{{Original: "mac-original"}}}},
+			{{Canonical: "ip-original", ReplacedWith: "ip-token", Occurrences: []reporting.Occurrence{{Original: "ip-original"}}}},
+		},
+	}
+
+	_, err := LoadReport(writeReport(t, report))
+	require.ErrorContains(t, err, "replacement group 1 do not match")
+}
+
+func TestLoadReportRejectsMetadataFreeSameCountMismatchedGroups(t *testing.T) {
+	report := []byte("config:\n  obfuscate:\n    - type: IP\n      replacementType: Consistent\n    - type: AzureResources\n      replacementType: Consistent\nreplacements:\n  - - canonical: azure-resource\n      replacedWith: azure-token\n  - - canonical: 192.0.2.1\n      replacedWith: ip-token\n")
+	path := filepath.Join(t.TempDir(), "report.yaml")
+	require.NoError(t, writeFile(path, report))
+
+	_, err := LoadReport(path)
+	require.ErrorContains(t, err, "missing occurrence metadata")
+}
+
+func TestLoadReportAcceptsMatchingReplacementGroupConfiguration(t *testing.T) {
+	report := reporting.Report{
+		Config: schema.SchemaJsonConfig{Obfuscate: []schema.Obfuscate{{
+			Type:            schema.ObfuscateTypeIP,
+			ReplacementType: schema.ObfuscateReplacementTypeConsistent,
+			Replacement:     schema.ObfuscateReplacement{"ip-original": "ip-token"},
+		}}},
+		Replacements: [][]reporting.Replacement{{
+			{Canonical: "ip-original", ReplacedWith: "ip-token", Occurrences: []reporting.Occurrence{{Original: "ip-original"}}},
+		}},
+	}
+
+	mapping, err := LoadReport(writeReport(t, report))
+	require.NoError(t, err)
+	require.Equal(t, "ip-original", mapping.Replace("ip-token"))
+}
+
+func TestLoadReportAcceptsMultipleReportedOutputsForOneOccurrence(t *testing.T) {
+	report := reporting.Report{
+		Config: schema.SchemaJsonConfig{Obfuscate: []schema.Obfuscate{{
+			Type:            schema.ObfuscateTypeIP,
+			ReplacementType: schema.ObfuscateReplacementTypeConsistent,
+			Replacement:     schema.ObfuscateReplacement{"192.0.2.1": "ip-token-a"},
+		}}},
+		Replacements: [][]reporting.Replacement{{
+			{Canonical: "192.0.2.1", ReplacedWith: "ip-token-a", Occurrences: []reporting.Occurrence{{Original: "192.0.2.1"}}},
+			{Canonical: "198.51.100.1", ReplacedWith: "ip-token-b", Occurrences: []reporting.Occurrence{{Original: "192.0.2.1"}}},
+		}},
+	}
+
+	mapping, err := LoadReport(writeReport(t, report))
+	require.NoError(t, err)
+	require.Equal(t, "192.0.2.1", mapping.Replace("ip-token-a"))
+	require.Equal(t, "ip-token-b", mapping.Replace("ip-token-b"))
+}
+
 func mappingWithConsistentConfig(groups [][]reporting.Replacement) Mapping {
 	obfuscators := make([]schema.Obfuscate, len(groups))
 	for i := range obfuscators {
@@ -326,4 +477,13 @@ func mappingWithConsistentConfig(groups [][]reporting.Replacement) Mapping {
 
 func writeFile(path string, data []byte) error {
 	return os.WriteFile(path, data, 0600)
+}
+
+func writeReport(t *testing.T, report reporting.Report) string {
+	t.Helper()
+	data, err := yaml.Marshal(report)
+	require.NoError(t, err)
+	path := filepath.Join(t.TempDir(), "report.yaml")
+	require.NoError(t, writeFile(path, data))
+	return path
 }
