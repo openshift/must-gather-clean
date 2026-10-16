@@ -9,12 +9,6 @@ This directory contains archives of [must-gather](https://github.com/openshift/m
 
 Each archive has corresponding report (`-report.yaml`) that acts as the source of truth for the e2e test.
 
-For Azure resource replacements, the E2E test compares canonical values and
-the set of original values, but not occurrence counts. Parallel workers can
-discover a resource name at different points while processing files, changing
-how often its later occurrences are counted. Counts for other obfuscators are
-compared exactly.
-
 Use `make test-e2e` to execute the test suite.
 
 ### Update the reports

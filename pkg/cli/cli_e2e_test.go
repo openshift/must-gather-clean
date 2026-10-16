@@ -57,7 +57,7 @@ func TestEndToEnd(t *testing.T) {
 		outputDir,
 		true,
 		generatedReportDir,
-		runtime.NumCPU())
+		1)
 	require.NoError(t, err)
 
 	// read reports
@@ -131,10 +131,7 @@ func verifyReplacements(t *testing.T, inputDir string, truthReport *reporting.Re
 	require.Equal(t, len(gr), len(generatedReport.Config.Obfuscate))
 
 	for i := range tr {
-		// Azure resource counts vary with file processing order because discovered
-		// canonical values are also replaced in later lines across parallel workers.
-		compareCounts := truthReport.Config.Obfuscate[i].Type != schema.ObfuscateTypeAzureResources
-		replacementReportsMatch(t, tr[i], gr[i], compareCounts)
+		replacementReportsMatch(t, tr[i], gr[i])
 	}
 }
 
@@ -162,7 +159,7 @@ func reportInternalRepresentation(report *reporting.Report) [][]obfuscator.Repla
 	return repls
 }
 
-func replacementReportsMatch(t *testing.T, want, got []obfuscator.Replacement, compareCounts bool) {
+func replacementReportsMatch(t *testing.T, want, got []obfuscator.Replacement) {
 	require.Equal(t, len(want), len(got))
 	sort.Slice(want, func(i, j int) bool {
 		return want[i].Canonical > want[j].Canonical
@@ -174,21 +171,9 @@ func replacementReportsMatch(t *testing.T, want, got []obfuscator.Replacement, c
 		w := want[i]
 		g := got[i]
 		assert.Equal(t, w.Canonical, g.Canonical)
-		if compareCounts {
-			assert.Equal(t, w.Counter, g.Counter)
-			continue
-		}
-		assert.Equal(t, replacementCounterKeys(w.Counter), replacementCounterKeys(g.Counter))
+		assert.Equal(t, w.ReplacedWith, g.ReplacedWith)
+		assert.Equal(t, w.Counter, g.Counter)
 	}
-}
-
-func replacementCounterKeys(counter map[string]uint) []string {
-	keys := make([]string, 0, len(counter))
-	for key := range counter {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	return keys
 }
 
 func verifyConfig(t *testing.T, report *reporting.Report) {
