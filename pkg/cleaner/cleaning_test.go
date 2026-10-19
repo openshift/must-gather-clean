@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/openshift/must-gather-clean/pkg/kube"
@@ -153,6 +154,83 @@ func TestObfuscateFileOutputExists(t *testing.T) {
 		_, err = os.Stat(filepath.Join(tmpOutputDir, existingFile) + "." + strconv.Itoa(i+1))
 		require.NoError(t, err)
 	}
+}
+
+func TestObfuscateFileConcurrentCollisionPreservesOutputs(t *testing.T) {
+	tmpInputDir, err := os.MkdirTemp("", "Worker-test-*")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(tmpInputDir)
+	}()
+
+	tmpOutputDir, err := os.MkdirTemp("", "Worker-test-*")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(tmpOutputDir)
+	}()
+
+	const outputFileName = "target.txt"
+	const regularContent = "regular content"
+	require.NoError(t, os.WriteFile(filepath.Join(tmpInputDir, "regular.txt"), []byte(regularContent), 0666))
+	require.NoError(t, os.Symlink("regular.txt", filepath.Join(tmpInputDir, "link.txt")))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpOutputDir, outputFileName), []byte("existing content"), 0666))
+
+	fco := &FileContentObfuscator{
+		ContentObfuscator: ContentObfuscator{Obfuscator: obfuscator.NoopObfuscator{}},
+		inputFolder:       tmpInputDir,
+		outputFolder:      tmpOutputDir,
+	}
+
+	start := make(chan struct{})
+	errorsCh := make(chan error, 2)
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(2)
+	go func() {
+		defer waitGroup.Done()
+		<-start
+		errorsCh <- fco.ObfuscateFile("regular.txt", "target.txt")
+	}()
+	go func() {
+		defer waitGroup.Done()
+		<-start
+		errorsCh <- fco.ObfuscateFile("link.txt", "target.txt")
+	}()
+	close(start)
+	waitGroup.Wait()
+	close(errorsCh)
+	for err := range errorsCh {
+		require.NoError(t, err)
+	}
+
+	existingContent, err := os.ReadFile(filepath.Join(tmpOutputDir, outputFileName))
+	require.NoError(t, err)
+	assert.Equal(t, "existing content", string(existingContent))
+
+	entries, err := os.ReadDir(tmpOutputDir)
+	require.NoError(t, err)
+	require.Len(t, entries, 3)
+
+	candidates := []string{outputFileName + ".1", outputFileName + ".2"}
+	var regularFileName, symlinkFileName string
+	for _, candidate := range candidates {
+		info, err := os.Lstat(filepath.Join(tmpOutputDir, candidate))
+		require.NoError(t, err)
+		if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+			symlinkFileName = candidate
+		} else {
+			regularFileName = candidate
+		}
+	}
+	require.NotEmpty(t, regularFileName)
+	require.NotEmpty(t, symlinkFileName)
+
+	gotRegularContent, err := os.ReadFile(filepath.Join(tmpOutputDir, regularFileName))
+	require.NoError(t, err)
+	assert.Equal(t, regularContent, string(gotRegularContent))
+
+	gotSymlinkTarget, err := os.Readlink(filepath.Join(tmpOutputDir, symlinkFileName))
+	require.NoError(t, err)
+	assert.Equal(t, "regular.txt", gotSymlinkTarget)
 }
 
 func TestCleanerProcessor(t *testing.T) {
