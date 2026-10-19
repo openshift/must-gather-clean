@@ -74,6 +74,7 @@ type azureResourceObfuscator struct {
 
 	// we always check all of them because more than one can match a line, but they are evaluated in order because some are more specific than others.
 	orderedPartialRegexReplacers []*partialRegexReplacer
+	shortCanonicalWarningOnce    sync.Once
 }
 
 func (o *azureResourceObfuscator) Path(s string) string {
@@ -106,7 +107,9 @@ func (o *azureResourceObfuscator) replace(s string) string {
 		for _, canonicalStringToReplace := range canonicalReplacements {
 			if strings.Contains(patternReplacedString, canonicalStringToReplace) {
 				if len(canonicalStringToReplace) < 5 {
-					klog.Warningf("Azure resource obfuscator will skip '%s' because it's too short", canonicalStringToReplace)
+					o.shortCanonicalWarningOnce.Do(func() {
+						klog.Warning("Azure resource obfuscator will skip replacements shorter than 5 characters because they may cause false positives")
+					})
 					// we don't want to replace the canonical string if it's too short, because it's probably a trivial string like "0"
 					continue
 				}

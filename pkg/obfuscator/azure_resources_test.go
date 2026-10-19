@@ -1,11 +1,17 @@
 package obfuscator
 
 import (
+	"bytes"
+	"io"
+	"os"
+	"strings"
+	"sync"
 	"testing"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
 )
 
@@ -83,6 +89,44 @@ short_np: Microsoft.RedHatOpenShift/hcpOpenShiftClusters/nodePools/resource-touc
 			assert.Equal(t, tt.expectedOutput, actualOutput)
 		})
 	}
+}
+
+func TestAzureResourceObfuscatorWarnsOnceForShortStrings(t *testing.T) {
+	var logBuffer bytes.Buffer
+	klog.SetOutputBySeverity("WARNING", &logBuffer)
+	klog.SetOutputBySeverity("INFO", io.Discard)
+	klog.LogToStderr(false)
+	t.Cleanup(func() {
+		klog.SetOutput(os.Stderr)
+		klog.LogToStderr(true)
+	})
+
+	obfuscator, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(), ptr.To(1))
+	require.NoError(t, err)
+
+	assert.Equal(t, "/resourcegroups/resourcegroup-touched-monkey", obfuscator.Contents("/resourcegroups/0"))
+
+	const workers = 16
+	outputs := make([]string, workers)
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(workers)
+	for worker := 0; worker < workers; worker++ {
+		worker := worker
+		go func() {
+			defer waitGroup.Done()
+			outputs[worker] = obfuscator.Contents("foo: 0")
+		}()
+	}
+	waitGroup.Wait()
+
+	for _, output := range outputs {
+		assert.Equal(t, "foo: 0", output)
+	}
+
+	klog.Flush()
+	logs := logBuffer.String()
+	assert.Equal(t, 1, strings.Count(logs, "Azure resource obfuscator will skip replacements shorter than 5 characters"))
+	assert.NotContains(t, logs, "will skip '0'")
 }
 
 func TestAzureResourcesObfuscatorContents(t *testing.T) {
