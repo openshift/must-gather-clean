@@ -55,6 +55,8 @@ func initFlags() {
 		_ = rootCmd.MarkFlagRequired("config")
 		_ = rootCmd.MarkFlagRequired("input")
 		_ = rootCmd.MarkFlagRequired("output")
+		_ = deobfuscateCmd.MarkFlagRequired("input")
+		_ = deobfuscateCmd.MarkFlagRequired("output")
 	}
 
 	fs := goflag.NewFlagSet("", goflag.ExitOnError)
