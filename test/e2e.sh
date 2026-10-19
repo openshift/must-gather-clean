@@ -16,7 +16,7 @@ for archive in $( find "${target_dir}" -type f -name '*.tar.xz' | sort); do
     testcase_dir="${test_dir}/${archive_name}"
     mkdir -p ${testcase_dir}
     tar -xJf ${archive} -C ${testcase_dir} --strip-components=1
-    go test -mod=vendor -v -tags e2e ./pkg/cli -- -input="${testcase_dir}" -report="${target_dir}/${archive_name}-report.yaml" || exit 1
+    go test -mod=vendor -v -tags e2e -run '^TestEndToEnd$' ./pkg/cli -- -input="${testcase_dir}" -report="${target_dir}/${archive_name}-report.yaml" || exit 1
     cleaned_dir="${testcase_dir}.cleaned"
     # grep for IPv4 addresses
     is_clean=$(grep -Erho '\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}\b' "${cleaned_dir}" | grep -Ev '^(0\.0\.0\.0|127\.0\.0\.1)$' || true)
@@ -31,3 +31,10 @@ for archive in $( find "${target_dir}" -type f -name '*.tar.xz' | sort); do
         exit 1
     fi
 done
+
+if [[ ! -f "${target_dir}/azure-ci-job.tar.xz" || ! -f "${target_dir}/azure-ci-job-report.yaml" ]]; then
+    echo "azure-ci-job fixture and report are required for the parallel-worker E2E test" >&2
+    exit 1
+fi
+
+go test -mod=vendor -v -tags e2e -run '^TestEndToEndParallelWorkers$' ./pkg/cli -- -input="${test_dir}/azure-ci-job" -report="${target_dir}/azure-ci-job-report.yaml" || exit 1

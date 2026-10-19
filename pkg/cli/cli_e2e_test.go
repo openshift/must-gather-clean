@@ -69,6 +69,47 @@ func TestEndToEnd(t *testing.T) {
 	verifyObfuscation(t, outputDir, generatedReport)
 }
 
+func TestEndToEndParallelWorkers(t *testing.T) {
+	var input, report string
+	fs := flag.NewFlagSet("e2e-fs", flag.ContinueOnError)
+	fs.StringVar(&input, "input", "", "")
+	fs.StringVar(&report, "report", "", "")
+	if err := fs.Parse(flag.Args()); err != nil {
+		t.Fatal(err)
+	}
+	if input == "" || report == "" {
+		t.Fatal("Expected arguments --input && --report")
+	}
+
+	_, filename, _, _ := runtime.Caller(0)
+	rootDir := path.Join(path.Dir(filename), "..", "..")
+	inputDir := path.Join(rootDir, input)
+	tempDir := t.TempDir()
+	outputDir := path.Join(tempDir, "cleaned")
+	configPath := path.Join(rootDir, configOpenshiftDefaultPath)
+	generatedReportDir := path.Join(tempDir, "report")
+	reportPath := path.Join(rootDir, report)
+	workerCount := runtime.NumCPU()
+	if workerCount < 2 {
+		workerCount = 2
+	}
+
+	err := Run(configPath,
+		inputDir,
+		outputDir,
+		true,
+		generatedReportDir,
+		workerCount)
+	require.NoError(t, err)
+
+	truthReport := readReport(t, reportPath)
+	generatedReport := readReport(t, filepath.Join(generatedReportDir, reportFileName))
+	removeRelativePath(generatedReport, inputDir)
+
+	verifyParallelReport(t, truthReport, generatedReport)
+	verifyObfuscation(t, outputDir, generatedReport)
+}
+
 func removeRelativePath(r *reporting.Report, path string) {
 	for i := range r.Omissions {
 		r.Omissions[i] = strings.TrimPrefix(r.Omissions[i], path)
@@ -92,7 +133,7 @@ func verifyObfuscation(t *testing.T, dir string, report *reporting.Report) {
 	}
 	err := filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
-			return nil
+			return err
 		}
 
 		for k, v := range generatedMap {
@@ -139,6 +180,77 @@ func verifyOmissions(t *testing.T, inputDir string, truthReport *reporting.Repor
 	sort.Strings(truthReport.Omissions)
 	sort.Strings(generatedReport.Omissions)
 	assert.Equal(t, truthReport.Omissions, generatedReport.Omissions)
+}
+
+func verifyParallelReport(t *testing.T, truthReport *reporting.Report, generatedReport *reporting.Report) {
+	require.Equal(t, len(truthReport.Replacements), len(generatedReport.Replacements))
+	require.Equal(t, len(truthReport.Config.Obfuscate), len(generatedReport.Replacements))
+	require.Equal(t, len(generatedReport.Config.Obfuscate), len(generatedReport.Replacements))
+
+	truthReplacements := reportInternalRepresentation(truthReport)
+	generatedReplacements := reportInternalRepresentation(generatedReport)
+	for groupIndex := range generatedReport.Replacements {
+		require.Equalf(
+			t,
+			truthReport.Config.Obfuscate[groupIndex].Type,
+			generatedReport.Config.Obfuscate[groupIndex].Type,
+			"replacement group type mismatch in group %d",
+			groupIndex+1,
+		)
+		compareCounts := generatedReport.Config.Obfuscate[groupIndex].Type != schema.ObfuscateTypeAzureResources
+		parallelReplacementReportsMatch(t, truthReplacements[groupIndex], generatedReplacements[groupIndex], compareCounts)
+		verifyParallelConfig(t, generatedReport, groupIndex)
+	}
+
+	verifyOmissions(t, "", truthReport, generatedReport)
+}
+
+func verifyParallelConfig(t *testing.T, report *reporting.Report, groupIndex int) {
+	replacementsByOriginal := make(map[string]string)
+	for _, replacement := range report.Replacements[groupIndex] {
+		for _, occurrence := range replacement.Occurrences {
+			if existingReplacement, ok := replacementsByOriginal[occurrence.Original]; ok {
+				require.Equalf(t, existingReplacement, replacement.ReplacedWith, "original %s maps to multiple replacements in group %d", occurrence.Original, groupIndex+1)
+			}
+			replacementsByOriginal[occurrence.Original] = replacement.ReplacedWith
+		}
+	}
+	expectedConfig := make(schema.ObfuscateReplacement, len(replacementsByOriginal))
+	for original, replacement := range replacementsByOriginal {
+		expectedConfig[original] = replacement
+	}
+	actualConfig := make(schema.ObfuscateReplacement, len(report.Config.Obfuscate[groupIndex].Replacement))
+	for original, replacement := range report.Config.Obfuscate[groupIndex].Replacement {
+		actualConfig[original] = replacement
+	}
+	assert.Equalf(t, expectedConfig, actualConfig, "replacement config mismatch in group %d", groupIndex+1)
+}
+
+func parallelReplacementReportsMatch(t *testing.T, want, got []obfuscator.Replacement, compareCounts bool) {
+	require.Equal(t, len(want), len(got))
+	sort.Slice(want, func(i, j int) bool {
+		return want[i].Canonical > want[j].Canonical
+	})
+	sort.Slice(got, func(i, j int) bool {
+		return got[i].Canonical > got[j].Canonical
+	})
+	for i := range got {
+		assert.Equal(t, want[i].Canonical, got[i].Canonical)
+		if compareCounts {
+			assert.Equal(t, want[i].Counter, got[i].Counter)
+			continue
+		}
+		assert.Equal(t, replacementCounterKeys(want[i].Counter), replacementCounterKeys(got[i].Counter))
+	}
+}
+
+func replacementCounterKeys(counter map[string]uint) []string {
+	keys := make([]string, 0, len(counter))
+	for key := range counter {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 func reportInternalRepresentation(report *reporting.Report) [][]obfuscator.Replacement {
