@@ -1,11 +1,11 @@
 package fsutil
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"k8s.io/klog/v2"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 )
@@ -20,25 +20,33 @@ func Relink(readPath string, writePath string, readPathStat os.FileInfo) error {
 		return fmt.Errorf("failed to read link in %s: %w", readPath, err)
 	}
 
-	// we try to link once, if it fails on a link error we will try by shelling out, otherwise place a file with the original linkage
 	err = os.Symlink(src, writePath)
 	if err == nil {
 		return nil
-	} else {
-		klog.V(1).Infof("could not link '%s' to '%s', trying shell instead. Error was: %v", src, writePath, err)
+	}
+	if errors.Is(err, os.ErrExist) {
+		return fmt.Errorf("failed to link from %s to %s: %w", readPath, writePath, os.ErrExist)
 	}
 
-	cmd := exec.Command("cp", "--preserve=links", "--no-dereference", src, writePath)
-	err = cmd.Run()
-	if err == nil {
-		return nil
-	} else if ee, ok := err.(*exec.ExitError); ok {
-		klog.V(1).Infof("could not link '%s' to '%s' via shell, writing file instead. Error was: %v", src, writePath, ee)
-	}
+	klog.V(1).Infof("could not link '%s' to '%s', writing the link target instead. Error was: %v", src, writePath, err)
 
-	err = os.WriteFile(writePath, []byte(src), readPathStat.Mode())
+	outputOsFile, err := os.OpenFile(writePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, readPathStat.Mode())
 	if err != nil {
-		return fmt.Errorf("failed to link from %s to %s: %w", readPath, writePath, err)
+		if errors.Is(err, os.ErrExist) {
+			return fmt.Errorf("failed to link from %s to %s: %w", readPath, writePath, os.ErrExist)
+		}
+		return fmt.Errorf("failed to create and open '%s': %w", writePath, err)
+	}
+
+	_, err = outputOsFile.WriteString(src)
+	if err != nil {
+		_ = outputOsFile.Close()
+		return fmt.Errorf("failed to write link target to '%s': %w", writePath, err)
+	}
+
+	err = outputOsFile.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close '%s': %w", writePath, err)
 	}
 
 	err = chown(writePath, readPathStat)
