@@ -1,16 +1,14 @@
 package traversal
 
 import (
-	"errors"
+	"context"
 	"io/fs"
 	"path/filepath"
 	"sync"
-
-	"k8s.io/klog/v2"
 )
 
 type Traverser interface {
-	Traverse()
+	Traverse() error
 }
 
 type FileWalker struct {
@@ -20,8 +18,13 @@ type FileWalker struct {
 	workerFactory func(int) QueueProcessor
 }
 
-// Traverse should be called to start processing the must-gather directory. This method will exit the CLI if an error is encountered.
-func (w *FileWalker) Traverse() {
+// Traverse processes the must-gather directory and returns the first worker
+// or traversal error. It lets the caller decide how to report and handle the
+// failure instead of terminating the process from this package.
+func (w *FileWalker) Traverse() error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	wg := sync.WaitGroup{}
 	errorCh := make(chan error, w.workerCount)
 	queue := make(chan workerInput, w.workerCount)
@@ -35,24 +38,27 @@ func (w *FileWalker) Traverse() {
 		}(i, queue, errorCh)
 	}
 
-	errorWg := sync.WaitGroup{}
-	errorWg.Add(1)
+	firstError := make(chan error, 1)
+	collectionDone := make(chan struct{})
 	go func(errorCh <-chan error) {
+		defer close(collectionDone)
 		for err := range errorCh {
-			var e *fileProcessingError
-			switch {
-			case errors.As(err, &e):
-				klog.Exitf("failed to process %s due to %v", e.path, e.cause)
+			select {
+			case firstError <- err:
 			default:
-				klog.Exitf("unexpected error: %v", err)
 			}
+			cancel()
 		}
-		errorWg.Done()
 	}(errorCh)
 
-	err := filepath.WalkDir(w.inputPath, func(path string, dirEntry fs.DirEntry, err error) error {
+	walkErr := filepath.WalkDir(w.inputPath, func(path string, dirEntry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+		select {
+		case <-ctx.Done():
+			return fs.SkipAll
+		default:
 		}
 
 		if !dirEntry.IsDir() {
@@ -68,16 +74,20 @@ func (w *FileWalker) Traverse() {
 		return nil
 	})
 
-	if err != nil {
-		klog.Exitf("failed to traverse the directory structure due to: %v", err)
-	}
-
 	close(queue)
 	wg.Wait()
 
-	// once all the workers have exited close the error channel and wait for the exit goroutine to complete.
+	// Once all workers have exited, close the error channel and wait for the
+	// collector so a buffered worker error cannot be missed.
 	close(errorCh)
-	errorWg.Wait()
+	<-collectionDone
+
+	select {
+	case err := <-firstError:
+		return err
+	default:
+	}
+	return walkErr
 }
 
 func NewParallelFileWalker(inputPath string, workerCount int, workerFactory func(id int) QueueProcessor) *FileWalker {
