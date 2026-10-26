@@ -1,6 +1,7 @@
 package traversal
 
 import (
+	"errors"
 	"path/filepath"
 	"testing"
 
@@ -43,7 +44,7 @@ func TestFileWalker(t *testing.T) {
 				return queueProc
 			})
 
-			walker.Traverse()
+			require.NoError(t, walker.Traverse())
 
 			assert.Equal(t, tc.expectedResult, queueProc.paths)
 		})
@@ -59,7 +60,7 @@ func TestFileWalkerAbsolutePathing(t *testing.T) {
 		return queueProc
 	})
 
-	walker.Traverse()
+	require.NoError(t, walker.Traverse())
 
 	assert.Equal(t, []string{
 		"nodes/another.yaml",
@@ -69,4 +70,28 @@ func TestFileWalkerAbsolutePathing(t *testing.T) {
 		"pods/pod2/application.log",
 		"pods/pod2/manifests.yaml",
 	}, queueProc.paths)
+}
+
+func TestFileWalkerReturnsWorkerError(t *testing.T) {
+	processor := &failingQueueProcessor{}
+	walker := NewParallelFileWalker("testfiles/test1/mg", 1, func(id int) QueueProcessor {
+		return processor
+	})
+
+	err := walker.Traverse()
+	require.Error(t, err)
+	assert.EqualError(t, err, "worker failed")
+	assert.NotEmpty(t, processor.paths)
+	assert.Less(t, len(processor.paths), 6, "worker error should stop the walk before every file is queued")
+}
+
+type failingQueueProcessor struct {
+	paths []string
+}
+
+func (f *failingQueueProcessor) ProcessQueue(queue chan workerInput, errorCh chan error) {
+	for input := range queue {
+		f.paths = append(f.paths, string(input))
+		errorCh <- errors.New("worker failed")
+	}
 }

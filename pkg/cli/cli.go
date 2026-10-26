@@ -84,7 +84,9 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 	prescanWorkerFactory := func(id int) traversal.QueueProcessor {
 		return traversal.NewWorker(id, prescanCleaner)
 	}
-	traversal.NewParallelFileWalker(inputPath, workerCount, prescanWorkerFactory).Traverse()
+	if err := traversal.NewParallelFileWalker(inputPath, workerCount, prescanWorkerFactory).Traverse(); err != nil {
+		return fmt.Errorf("failed to prescan input: %w", err)
+	}
 
 	mro, err := createOmittersFromConfig(config, inputPath)
 	if err != nil {
@@ -95,7 +97,9 @@ func Run(configPath string, inputPath string, outputPath string, deleteOutputFol
 	workerFactory := func(id int) traversal.QueueProcessor {
 		return traversal.NewWorker(id, fileCleaner)
 	}
-	traversal.NewParallelFileWalker(inputPath, workerCount, workerFactory).Traverse()
+	if err := traversal.NewParallelFileWalker(inputPath, workerCount, workerFactory).Traverse(); err != nil {
+		return fmt.Errorf("failed to process input: %w", err)
+	}
 
 	reporter := reporting.NewSimpleReporter(config)
 	reporter.CollectOmitterReport(mro.Report())
