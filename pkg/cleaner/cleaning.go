@@ -122,7 +122,7 @@ func (c *FileContentObfuscator) ObfuscateFile(inputFile string, outputFile strin
 		if reportOnly {
 			return nil
 		}
-		return fsutil.Relink(readPath, writePath, readPathStat)
+		return c.relinkNonConflictingFileUnderLock(readPath, writePath, readPathStat)
 	}
 
 	var inputOsFile io.ReadCloser
@@ -194,6 +194,27 @@ func (c *FileContentObfuscator) createNonConflictingFileUnderLock(outputFilePath
 	defer c.pathCollisionMutex.Unlock()
 
 	return fsutil.CreateNonConflictingFile(outputFilePath, inputFileInfo)
+}
+
+func (c *FileContentObfuscator) relinkNonConflictingFileUnderLock(readPath string, outputFilePath string, inputFileInfo os.FileInfo) error {
+	c.pathCollisionMutex.Lock()
+	defer c.pathCollisionMutex.Unlock()
+
+	for fileExt := 0; ; fileExt++ {
+		candidatePath := outputFilePath
+		if fileExt > 0 {
+			candidatePath = fmt.Sprintf("%s.%d", outputFilePath, fileExt)
+		}
+
+		err := fsutil.Relink(readPath, candidatePath, inputFileInfo)
+		if err == nil {
+			return nil
+		}
+		if errors.Is(err, os.ErrExist) {
+			continue
+		}
+		return err
+	}
 }
 
 func (c *ContentObfuscator) obfuscateTar(input io.Reader, output io.Writer) (err error) {
