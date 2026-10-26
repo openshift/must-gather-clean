@@ -3,11 +3,18 @@
 This directory contains archives of [must-gather](https://github.com/openshift/must-gather) outputs from these environments:
 * aws
 * azure
+* azure-ci-job
 * gcp
 * metal (ipv6)
 * vsphere
 
 Each archive has corresponding report (`-report.yaml`) that acts as the source of truth for the e2e test.
+
+The exact report comparison and report generation use one worker so that discovery
+order and report contents are deterministic. A separate parallel-worker test runs
+against the Azure CI job fixture with at least two workers. That test checks
+worker-independent invariants instead of comparing reports exactly, because worker
+scheduling can change opaque replacement assignment and Azure occurrence counts.
 
 Use `make test-e2e` to execute the test suite.
 
