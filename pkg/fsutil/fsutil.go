@@ -14,6 +14,22 @@ func IsSymbolicLink(fileInfo fs.FileInfo) bool {
 	return (fileInfo.Mode() & fs.ModeSymlink) == fs.ModeSymlink
 }
 
+// ResolveSymlink returns the final target of an existing symlink so callers
+// can write through it instead of replacing the link itself.
+func ResolveSymlink(path string) (string, error) {
+	info, err := os.Lstat(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return path, nil
+	}
+	if err != nil {
+		return "", err
+	}
+	if !IsSymbolicLink(info) {
+		return path, nil
+	}
+	return filepath.EvalSymlinks(path)
+}
+
 func Relink(readPath string, writePath string, readPathStat os.FileInfo) error {
 	src, err := os.Readlink(readPath)
 	if err != nil {
