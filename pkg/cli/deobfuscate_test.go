@@ -16,12 +16,12 @@ const validDeobfuscationReport = `config:
     - type: IP
       replacementType: Consistent
       replacement:
-        original: token
+        192.0.2.1: token
 replacements:
-  - - canonical: original
+  - - canonical: 192.0.2.1
       replacedWith: token
       occurrences:
-        - original: original
+        - original: 192.0.2.1
 `
 
 func TestRunDeobfuscate(t *testing.T) {
@@ -31,7 +31,7 @@ func TestRunDeobfuscate(t *testing.T) {
 	var output bytes.Buffer
 	err := RunDeobfuscate(reportPath, bytes.NewBufferString("node token unknown\n"), &output)
 	require.NoError(t, err)
-	require.Equal(t, "node original unknown\n", output.String())
+	require.Equal(t, "node 192.0.2.1 unknown\n", output.String())
 }
 
 func TestRunDeobfuscateReportsReadAndWriteErrors(t *testing.T) {
@@ -59,7 +59,7 @@ func TestRunDeobfuscateFile(t *testing.T) {
 	require.NoError(t, RunDeobfuscateFile(reportPath, inputPath, outputPath))
 	restored, err := os.ReadFile(outputPath)
 	require.NoError(t, err)
-	require.Equal(t, "original\n", string(restored))
+	require.Equal(t, "192.0.2.1\n", string(restored))
 }
 
 func TestRunDeobfuscateFilePreservesOutputWhenInputReadFails(t *testing.T) {
@@ -138,7 +138,7 @@ func TestRunDeobfuscateFileWritesThroughOutputSymlink(t *testing.T) {
 	require.NotZero(t, linkInfo.Mode()&os.ModeSymlink)
 	restored, err := os.ReadFile(targetPath)
 	require.NoError(t, err)
-	require.Equal(t, "original\n", string(restored))
+	require.Equal(t, "192.0.2.1\n", string(restored))
 }
 
 func TestRunDeobfuscateFileRejectsSameInputAndOutput(t *testing.T) {

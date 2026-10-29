@@ -21,7 +21,7 @@ func TestDeobfuscateCommandUsesStdinAndStdout(t *testing.T) {
 	})
 	initFlags()
 	reportPath := filepath.Join(t.TempDir(), "report.yaml")
-	report := []byte("config:\n  obfuscate:\n    - type: IP\n      replacementType: Consistent\n      replacement: {original: token}\nreplacements:\n  - - canonical: original\n      replacedWith: token\n      occurrences: [{original: original}]\n")
+	report := []byte("config:\n  obfuscate:\n    - type: IP\n      replacementType: Consistent\n      replacement: {192.0.2.1: token}\nreplacements:\n  - - canonical: 192.0.2.1\n      replacedWith: token\n      occurrences: [{original: 192.0.2.1}]\n")
 	require.NoError(t, os.WriteFile(reportPath, report, 0600))
 
 	oldStdin, oldStdout := os.Stdin, os.Stdout
@@ -54,5 +54,5 @@ func TestDeobfuscateCommandUsesStdinAndStdout(t *testing.T) {
 	require.NoError(t, stdinWriter.Close())
 	require.NoError(t, <-executionDone)
 	require.NoError(t, stdoutWriter.Close())
-	require.Equal(t, "node original\n", string(<-outputDone))
+	require.Equal(t, "node 192.0.2.1\n", string(<-outputDone))
 }

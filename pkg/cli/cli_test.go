@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -74,6 +75,97 @@ func TestCreateObfuscatorFromFullConfig(t *testing.T) {
 	mfo, _, err := createObfuscatorsFromConfig(config)
 	require.NoError(t, err)
 	assert.Equal(t, "something else", mfo.Contents("something"))
+}
+
+func TestCreateObfuscatorsSharesTokensAcrossConsistentEntries(t *testing.T) {
+	config := &schema.SchemaJson{Config: schema.SchemaJsonConfig{
+		Obfuscate: []schema.Obfuscate{
+			{
+				Type:            schema.ObfuscateTypeIP,
+				ReplacementType: schema.ObfuscateReplacementTypeConsistent,
+				Target:          schema.ObfuscateTargetFilePath,
+			},
+			{
+				Type:            schema.ObfuscateTypeIP,
+				ReplacementType: schema.ObfuscateReplacementTypeConsistent,
+				Target:          schema.ObfuscateTargetFileContents,
+			},
+		},
+	}}
+
+	mfo, _, err := createObfuscatorsFromConfig(config)
+	require.NoError(t, err)
+	assert.Equal(t, "x-ipv4-0000000001-x", mfo.Path("192.0.2.1"))
+	assert.Equal(t, "x-ipv4-0000000002-x", mfo.Contents("198.51.100.7"))
+
+	reports := mfo.ReportPerObfuscator()
+	require.Len(t, reports, 2)
+	assert.Equal(t, "x-ipv4-0000000001-x", reports[0].Replacements[0].ReplacedWith)
+	assert.Equal(t, "x-ipv4-0000000002-x", reports[1].Replacements[0].ReplacedWith)
+}
+
+func TestCreateObfuscatorsRejectsAmbiguousConfiguredTokens(t *testing.T) {
+	config := &schema.SchemaJson{Config: schema.SchemaJsonConfig{
+		Obfuscate: []schema.Obfuscate{{
+			Type:            schema.ObfuscateTypeIP,
+			ReplacementType: schema.ObfuscateReplacementTypeConsistent,
+			Replacement: map[string]string{
+				"192.0.2.1":    "x-ipv4-0000000001-x",
+				"198.51.100.7": "x-ipv4-0000000001-x",
+			},
+		}},
+	}}
+
+	_, _, err := createObfuscatorsFromConfig(config)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid replacement map")
+}
+
+func TestCreateObfuscatorsRejectsInvalidIPReplacementKey(t *testing.T) {
+	config := &schema.SchemaJson{Config: schema.SchemaJsonConfig{
+		Obfuscate: []schema.Obfuscate{{
+			Type:            schema.ObfuscateTypeIP,
+			ReplacementType: schema.ObfuscateReplacementTypeConsistent,
+			Replacement:     map[string]string{"not-an-ip": "token"},
+		}},
+	}}
+
+	_, _, err := createObfuscatorsFromConfig(config)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "not-an-ip")
+}
+
+func TestRunCanonicalizesPlausibleIPReplacementKeyAndRoundTrips(t *testing.T) {
+	tempDir := t.TempDir()
+	inputDir := filepath.Join(tempDir, "input")
+	outputDir := filepath.Join(tempDir, "output")
+	reportDir := filepath.Join(tempDir, "report")
+	require.NoError(t, os.Mkdir(inputDir, 0755))
+	require.NoError(t, os.WriteFile(filepath.Join(inputDir, "value.txt"), []byte("value=192.0.2.1\n"), 0644))
+
+	configPath := filepath.Join(tempDir, "config.yaml")
+	require.NoError(t, os.WriteFile(configPath, []byte(`
+config:
+  obfuscate:
+    - type: IP
+      replacementType: Consistent
+      target: All
+      replacement:
+        192-0-2-1: x-ipv4-0000000001-x
+`), 0644))
+
+	require.NoError(t, Run(configPath, inputDir, outputDir, true, reportDir, 1))
+	obfuscated, err := os.ReadFile(filepath.Join(outputDir, "value.txt"))
+	require.NoError(t, err)
+	require.Equal(t, "value=x-ipv4-0000000001-x\n", string(obfuscated))
+
+	var restored bytes.Buffer
+	require.NoError(t, RunDeobfuscate(
+		filepath.Join(reportDir, reportFileName),
+		bytes.NewReader(obfuscated),
+		&restored,
+	))
+	assert.Equal(t, "value=192.0.2.1\n", restored.String())
 }
 
 func TestCreateOmitter(t *testing.T) {
