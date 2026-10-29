@@ -88,3 +88,31 @@ func TestNewKeywordsObfuscator(t *testing.T) {
 		})
 	}
 }
+
+func TestKeywordsObfuscatorDoesNotRewriteGeneratedReplacements(t *testing.T) {
+	for iteration := 0; iteration < 200; iteration++ {
+		obfuscator := NewKeywordsObfuscator(map[string]string{
+			"foo": "bar",
+			"bar": "baz",
+		})
+
+		require.Equal(t, "bar", obfuscator.Contents("foo"))
+		replacementReportsMatch(t, ReplacementReport{Replacements: []Replacement{
+			{Canonical: "bar", ReplacedWith: "baz", Counter: map[string]uint{"bar": 0}},
+			{Canonical: "foo", ReplacedWith: "bar", Counter: map[string]uint{"foo": 1}},
+		}}, obfuscator.Report())
+	}
+}
+
+func TestKeywordsObfuscatorPrefersLongestKeywordWithoutOverlappingCounts(t *testing.T) {
+	obfuscator := NewKeywordsObfuscator(map[string]string{
+		"foo":    "short",
+		"foobar": "long",
+	})
+
+	require.Equal(t, "longshort", obfuscator.Contents("foobarfoo"))
+	replacementReportsMatch(t, ReplacementReport{Replacements: []Replacement{
+		{Canonical: "foo", ReplacedWith: "short", Counter: map[string]uint{"foo": 1}},
+		{Canonical: "foobar", ReplacedWith: "long", Counter: map[string]uint{"foobar": 1}},
+	}}, obfuscator.Report())
+}

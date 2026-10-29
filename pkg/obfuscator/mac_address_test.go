@@ -2,6 +2,7 @@ package obfuscator
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
@@ -20,6 +21,48 @@ func TestMacConsistentReplacement(t *testing.T) {
 	assert.Equal(t, "x-mac-0000000001-x", o.Contents("29-7E-8C-8C-60-C9"))
 	// This testcase reports both the original detected MAC address as well as the normalized MAC address
 	assert.Equal(t, map[string]string{"29-7E-8C-8C-60-C9": "x-mac-0000000001-x"}, o.Report().AsMap())
+}
+
+func TestMACObfuscatorReplacesPercentEncodedMAC(t *testing.T) {
+	obfuscator, err := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
+	require.NoError(t, err)
+
+	output := obfuscator.Contents("mac=52%3Adf%3A20%3A08%3A6c%3Aff")
+
+	assert.Equal(t, "mac=x-mac-0000000001-x", output)
+	assert.Equal(t, map[string]string{
+		"52%3Adf%3A20%3A08%3A6c%3Aff": "x-mac-0000000001-x",
+	}, obfuscator.Report().AsMap())
+}
+
+func TestMACObfuscatorRawAndEncodedFormsShareReplacement(t *testing.T) {
+	obfuscator, err := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
+	require.NoError(t, err)
+
+	forms := []string{
+		"52:df:20:08:6c:ff",
+		"52-df-20-08-6c-ff",
+		"52%3Adf%3A20%3A08%3A6c%3Aff",
+		"%35%32:df:20:08:6c:ff",
+	}
+	output := obfuscator.Contents(strings.Join(forms, " | "))
+	reports := obfuscator.Report().Replacements
+
+	require.Len(t, reports, 1)
+	assert.Equal(t, "52:DF:20:08:6C:FF", reports[0].Canonical)
+	assert.Equal(t, len(forms), strings.Count(output, reports[0].ReplacedWith))
+	for _, form := range forms {
+		assert.Equal(t, uint(1), reports[0].Counter[form])
+	}
+}
+
+func TestMACObfuscatorDoesNotStartInsidePercentEncoding(t *testing.T) {
+	obfuscator, err := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
+	require.NoError(t, err)
+
+	input := "%252:df:20:08:6c:ff"
+	assert.Equal(t, input, obfuscator.Contents(input))
+	assert.Empty(t, obfuscator.Report().Replacements)
 }
 
 func TestMacReplacementManyMatchLine(t *testing.T) {
@@ -46,6 +89,9 @@ func TestMacReplacementStatic(t *testing.T) {
 		{name: "uppercase-colon", input: "69:80:6F:E6:7C:05", expectedOutput: staticMacReplacement},
 		{name: "lowercase-dash", input: "eb-a1-2a-b2-09-bf", expectedOutput: staticMacReplacement},
 		{name: "lowercase-colon", input: "eb:a1:2a:b2:09:bf", expectedOutput: staticMacReplacement},
+		{name: "mixed separators", input: "52-df:20-08:6c-ff", expectedOutput: staticMacReplacement},
+		{name: "seven groups", input: "00:11:22:33:44:55:66", expectedOutput: staticMacReplacement + ":66"},
+		{name: "overlong run", input: "00:11:22:33:44:55:66:77:88:99:aa:bb", expectedOutput: staticMacReplacement + ":" + staticMacReplacement},
 		{name: "multi-colon", input: "eb:a1:2a:b2:09:bf eb:a1:2a:b2:09:bf", expectedOutput: staticMacReplacement + " " + staticMacReplacement},
 		{name: "multi-colon-dash", input: "16-7C-44-26-24-14 BF:51:A4:1B:7D:0B", expectedOutput: staticMacReplacement + " " + staticMacReplacement},
 		{name: "mac surrounded", input: "mac 52:df:20:08:6c:ff caused some trouble", expectedOutput: fmt.Sprintf("mac %s caused some trouble", staticMacReplacement)},
@@ -159,5 +205,50 @@ func TestMACConsistentObfuscator(t *testing.T) {
 			}
 			assert.Equal(t, tc.report, o.Report().AsMap())
 		})
+	}
+}
+
+func BenchmarkMACObfuscatorNoMatches(b *testing.B) {
+	input := strings.Repeat("this line contains hexadecimal words but no MAC address\n", 10000)
+	obfuscator, err := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.SetBytes(int64(len(input)))
+	b.ReportAllocs()
+	b.ResetTimer()
+	for iteration := 0; iteration < b.N; iteration++ {
+		_ = obfuscator.Contents(input)
+	}
+}
+
+func BenchmarkMACObfuscatorManyMatches(b *testing.B) {
+	input := strings.Repeat("52:df:20:08:6c:ff ", 10000)
+	obfuscator, err := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.SetBytes(int64(len(input)))
+	b.ReportAllocs()
+	b.ResetTimer()
+	for iteration := 0; iteration < b.N; iteration++ {
+		_ = obfuscator.Contents(input)
+	}
+}
+
+func BenchmarkMACObfuscatorUUIDHeavy(b *testing.B) {
+	input := strings.Repeat("4a5299ac-6104-479d-aed4-b79faedffcb4 ", 10000)
+	obfuscator, err := NewMacAddressObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.SetBytes(int64(len(input)))
+	b.ReportAllocs()
+	b.ResetTimer()
+	for iteration := 0; iteration < b.N; iteration++ {
+		_ = obfuscator.Contents(input)
 	}
 }
