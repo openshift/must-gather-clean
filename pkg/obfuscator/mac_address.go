@@ -1,7 +1,6 @@
 package obfuscator
 
 import (
-	"regexp"
 	"strings"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
@@ -17,7 +16,6 @@ const (
 
 type macAddressObfuscator struct {
 	ReplacementTracker
-	regex         *regexp.Regexp
 	obfsGenerator generator
 }
 
@@ -26,17 +24,142 @@ func (m *macAddressObfuscator) Path(s string) string {
 }
 
 func (m *macAddressObfuscator) Contents(s string) string {
-	return m.regex.ReplaceAllStringFunc(s, func(mac string) string {
-		match := strings.ToUpper(strings.ReplaceAll(mac, "-", ":"))
-		return m.obfsGenerator.generateReplacement(match, mac, 1, m.ReplacementTracker)
-	})
+	matches := m.findMatches(s)
+	if len(matches) == 0 {
+		return s
+	}
+
+	var output strings.Builder
+	output.Grow(len(s))
+	lastIndex := 0
+	for _, match := range matches {
+		mac := s[match[0]:match[1]]
+		key := canonicalMAC(mac)
+		output.WriteString(s[lastIndex:match[0]])
+		output.WriteString(m.obfsGenerator.generateReplacement(key, mac, 1, m.ReplacementTracker))
+		lastIndex = match[1]
+	}
+	output.WriteString(s[lastIndex:])
+	return output.String()
+}
+
+func (m *macAddressObfuscator) findMatches(input string) [][]int {
+	var matches [][]int
+	for start := 0; start < len(input); {
+		if insidePercentEncodingAt(input, start) || !possibleMACStart(input, start) {
+			start++
+			continue
+		}
+		end, found := matchMACAt(input, start)
+		if !found {
+			start++
+			continue
+		}
+		matches = append(matches, []int{start, end})
+		start = end
+	}
+	return matches
+}
+
+func possibleMACStart(input string, index int) bool {
+	_, _, valid := readMACHexDigit(input, index)
+	return valid
+}
+
+func matchMACAt(input string, start int) (int, bool) {
+	index := start
+	for groups := 0; groups < 6; groups++ {
+		groupEnd, valid := matchMACGroupAt(input, index)
+		if !valid {
+			return 0, false
+		}
+		index = groupEnd
+		if groups == 5 {
+			break
+		}
+		separatorWidth, valid := readMACSeparator(input, index)
+		if !valid {
+			return 0, false
+		}
+		index += separatorWidth
+	}
+	return index, true
+}
+
+func matchMACGroupAt(input string, start int) (int, bool) {
+	index := start
+	for digit := 0; digit < 2; digit++ {
+		_, width, valid := readMACHexDigit(input, index)
+		if !valid {
+			return 0, false
+		}
+		index += width
+	}
+	return index, true
+}
+
+func readMACHexDigit(input string, index int) (byte, int, bool) {
+	value, width, valid := decodedByteAt(input, index)
+	if valid && isHexDigit(value) {
+		return value, width, true
+	}
+	return 0, 0, false
+}
+
+func readMACSeparator(input string, index int) (int, bool) {
+	if index >= len(input) {
+		return 0, false
+	}
+	if input[index] == ':' || input[index] == '-' {
+		return 1, true
+	}
+	value, width, valid := decodedByteAt(input, index)
+	if valid && (value == ':' || value == '-') {
+		return width, true
+	}
+	return 0, false
+}
+
+func canonicalMAC(value string) string {
+	canonical, valid := parseCanonicalMAC(value)
+	if !valid {
+		return value
+	}
+	return canonical
+}
+
+func parseCanonicalMAC(value string) (string, bool) {
+	canonical := make([]byte, 0, len(value))
+	index := 0
+	for group := 0; group < 6; group++ {
+		for digit := 0; digit < 2; digit++ {
+			byteValue, width, valid := readMACHexDigit(value, index)
+			if !valid {
+				return "", false
+			}
+			canonical = append(canonical, byteValue)
+			if byteValue >= 'a' && byteValue <= 'f' {
+				canonical[len(canonical)-1] -= 'a' - 'A'
+			}
+			index += width
+		}
+		if group == 5 {
+			break
+		}
+		separatorWidth, valid := readMACSeparator(value, index)
+		if !valid {
+			return "", false
+		}
+		index += separatorWidth
+		canonical = append(canonical, ':')
+	}
+	if index != len(value) {
+		return "", false
+	}
+	return string(canonical), true
 }
 
 func NewMacAddressObfuscator(replacementType schema.ObfuscateReplacementType, tracker ReplacementTracker) (ReportingObfuscator, error) {
-	// this regex differs from the standard `(?:[0-9a-fA-F]([:-])?){12}`, to not match very frequently happening UUIDs in K8s
-	// the main culprit is the support for squashed MACs like '69806FE67C05', which won't be supported with the below
-	regex := regexp.MustCompile(`([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}`)
-
 	// creating a new generator object
 	generator, err := newGenerator(consistentMACTemplate, staticMacReplacement, maximumSupportedObfuscationsMAC, replacementType)
 	if err != nil {
@@ -44,7 +167,6 @@ func NewMacAddressObfuscator(replacementType schema.ObfuscateReplacementType, tr
 	}
 	return &macAddressObfuscator{
 		ReplacementTracker: tracker,
-		regex:              regex,
 		obfsGenerator:      *generator,
 	}, nil
 }

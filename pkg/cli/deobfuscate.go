@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/openshift/must-gather-clean/pkg/deobfuscator"
+	"github.com/openshift/must-gather-clean/pkg/fsutil"
 )
 
 // RunDeobfuscate restores values in input using the report at reportPath.
@@ -82,7 +83,7 @@ func rejectAliasedFiles(inputPath, reportPath, outputPath string) error {
 // writeDeobfuscatedFile writes to a temporary file beside the destination and
 // publishes it only after reading and writing succeed.
 func writeDeobfuscatedFile(mapping deobfuscator.Mapping, input io.Reader, outputPath string) (err error) {
-	targetPath, err := resolveOutputSymlink(outputPath)
+	targetPath, err := fsutil.ResolveSymlink(outputPath)
 	if err != nil {
 		return fmt.Errorf("failed to resolve output path %s: %w", outputPath, err)
 	}
@@ -134,22 +135,6 @@ func writeDeobfuscatedFile(mapping deobfuscator.Mapping, input io.Reader, output
 		return fmt.Errorf("failed to publish deobfuscated support response %s: %w", outputPath, err)
 	}
 	return nil
-}
-
-// resolveOutputSymlink keeps file-output behavior consistent with os.Create:
-// write through a valid symlink instead of replacing the symlink itself.
-func resolveOutputSymlink(outputPath string) (string, error) {
-	info, err := os.Lstat(outputPath)
-	if errors.Is(err, os.ErrNotExist) {
-		return outputPath, nil
-	}
-	if err != nil {
-		return "", err
-	}
-	if info.Mode()&os.ModeSymlink == 0 {
-		return outputPath, nil
-	}
-	return filepath.EvalSymlinks(outputPath)
 }
 
 func pathsReferToSameFile(firstPath, secondPath string) (bool, error) {

@@ -147,6 +147,9 @@ The different types are explained along examples below. The whole schema itself 
 can be found in [schema.json](pkg/schema/schema.json) with more examples and documentation for each property. A more browsable
 alternative can be found on [json-schema.app](https://json-schema.app/view/%23?url=https%3A%2F%2Fraw.githubusercontent.com%2Fopenshift%2Fmust-gather-clean%2Fmain%2Fpkg%2Fschema%2Fschema.json).
 
+The exact matcher boundaries, percent-decoding rules, and deterministic report
+ordering are documented in [matcher behavior](docs/matcher-behavior.md).
+
 ## Obfuscation
 
 You can define obfuscators as a list of "types", usually customized by a couple of parameters.

@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/openshift/must-gather-clean/pkg/obfuscator"
 	"github.com/openshift/must-gather-clean/pkg/reporting"
 	"github.com/openshift/must-gather-clean/pkg/schema"
 	"gopkg.in/yaml.v3"
@@ -34,7 +35,37 @@ func LoadReport(path string) (Mapping, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse report %s: %w", path, err)
 	}
+	if err := validateCanonicalValues(report); err != nil {
+		return nil, fmt.Errorf("failed to parse report %s: %w", path, err)
+	}
 	return newMappingWithUnsafeTokens(report, unsafeTokens), nil
+}
+
+func validateCanonicalValues(report reporting.Report) error {
+	for groupIndex, group := range report.Replacements {
+		config := report.Config.Obfuscate[groupIndex]
+		for _, replacement := range group {
+			if replacement.Canonical == "" {
+				continue
+			}
+			valid := true
+			switch config.Type {
+			case schema.ObfuscateTypeIP:
+				valid = obfuscator.IsCanonicalIP(replacement.Canonical)
+			case schema.ObfuscateTypeMAC:
+				valid = obfuscator.IsCanonicalMAC(replacement.Canonical)
+			case schema.ObfuscateTypeDomain:
+				valid = obfuscator.IsCanonicalDomain(replacement.Canonical)
+			}
+			if !valid {
+				return fmt.Errorf(
+					"replacement group %d contains invalid canonical value %q for type %s",
+					groupIndex+1, replacement.Canonical, config.Type,
+				)
+			}
+		}
+	}
+	return nil
 }
 
 // validateReplacementGroupConfiguration checks report metadata that ties each
