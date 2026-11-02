@@ -135,3 +135,15 @@ func TestTrackerDoesNotRetainInputLines(t *testing.T) {
 		}
 	}
 }
+
+func TestSimpleTrackerReportReturnsSnapshot(t *testing.T) {
+	tracker := NewSimpleTracker()
+	tracker.GenerateIfAbsent("canonical", "original", 1, func() string { return "replacement" })
+
+	report := tracker.Report()
+	tracker.GenerateIfAbsent("canonical", "original", 1, func() string { return "replacement" })
+	report.Replacements[0].Counter["caller-change"] = 1
+
+	assert.Equal(t, map[string]uint{"original": 2}, tracker.Report().Replacements[0].Counter)
+	assert.Equal(t, map[string]uint{"original": 1, "caller-change": 1}, report.Replacements[0].Counter)
+}

@@ -165,6 +165,8 @@ func verifyReport(t *testing.T, inputDir string, truthReport *reporting.Report, 
 }
 
 func verifyReplacements(t *testing.T, inputDir string, truthReport *reporting.Report, generatedReport *reporting.Report) {
+	// E2E fixtures verify decoded report semantics with one worker. Byte-level
+	// serialization order is covered by the reporting package tests.
 	tr := reportInternalRepresentation(truthReport)
 	gr := reportInternalRepresentation(generatedReport)
 	require.Equal(t, len(tr), len(gr))
