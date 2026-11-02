@@ -190,7 +190,7 @@
                     "additionalProperties": {
                         "type": "string"
                     },
-                    "description": "on replacement 'Keywords', this will override a given input string with another output string. On duplicate keys it will use the last defined value as replacement. The input values are matched in a case-sensitive fashion and only as a full words, substrings must be matched using a regex."
+                    "description": "on replacement 'Keywords', this maps literal input substrings to output strings. Matching is case-sensitive. At each input position the longest matching keyword wins, independent of map iteration order. Matches do not overlap and generated replacement text is not scanned again."
                 },
                 "regex": {
                     "type": "string",
