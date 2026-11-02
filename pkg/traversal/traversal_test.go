@@ -3,6 +3,7 @@ package traversal
 import (
 	"errors"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -80,9 +81,29 @@ func TestFileWalkerReturnsWorkerError(t *testing.T) {
 
 	err := walker.Traverse()
 	require.Error(t, err)
-	assert.EqualError(t, err, "worker failed")
+	assert.ErrorContains(t, err, "worker failed")
 	assert.NotEmpty(t, processor.paths)
 	assert.Less(t, len(processor.paths), 6, "worker error should stop the walk before every file is queued")
+}
+
+func TestFileWalkerJoinsWorkerErrors(t *testing.T) {
+	firstErr := errors.New("first worker failed")
+	secondErr := errors.New("second worker failed")
+	ready := sync.WaitGroup{}
+	ready.Add(2)
+
+	walker := NewParallelFileWalker("testfiles/test1/mg", 2, func(id int) QueueProcessor {
+		err := firstErr
+		if id == 2 {
+			err = secondErr
+		}
+		return &synchronizedFailingQueueProcessor{ready: &ready, err: err}
+	})
+
+	err := walker.Traverse()
+	require.Error(t, err)
+	assert.ErrorIs(t, err, firstErr)
+	assert.ErrorIs(t, err, secondErr)
 }
 
 type failingQueueProcessor struct {
@@ -93,5 +114,21 @@ func (f *failingQueueProcessor) ProcessQueue(queue chan workerInput, errorCh cha
 	for input := range queue {
 		f.paths = append(f.paths, string(input))
 		errorCh <- errors.New("worker failed")
+	}
+}
+
+type synchronizedFailingQueueProcessor struct {
+	ready *sync.WaitGroup
+	err   error
+}
+
+func (p *synchronizedFailingQueueProcessor) ProcessQueue(queue chan workerInput, errorCh chan error) {
+	if _, ok := <-queue; !ok {
+		return
+	}
+	p.ready.Done()
+	p.ready.Wait()
+	errorCh <- p.err
+	for range queue {
 	}
 }

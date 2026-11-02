@@ -2,6 +2,7 @@ package traversal
 
 import (
 	"context"
+	"errors"
 	"io/fs"
 	"path/filepath"
 	"sync"
@@ -18,8 +19,8 @@ type FileWalker struct {
 	workerFactory func(int) QueueProcessor
 }
 
-// Traverse processes the must-gather directory and returns the first worker
-// or traversal error. It lets the caller decide how to report and handle the
+// Traverse processes the must-gather directory and returns the worker and
+// traversal errors. It lets the caller decide how to report and handle the
 // failure instead of terminating the process from this package.
 func (w *FileWalker) Traverse() error {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -38,15 +39,12 @@ func (w *FileWalker) Traverse() error {
 		}(i, queue, errorCh)
 	}
 
-	firstError := make(chan error, 1)
 	collectionDone := make(chan struct{})
+	var workerErrors []error
 	go func(errorCh <-chan error) {
 		defer close(collectionDone)
 		for err := range errorCh {
-			select {
-			case firstError <- err:
-			default:
-			}
+			workerErrors = append(workerErrors, err)
 			cancel()
 		}
 	}(errorCh)
@@ -82,12 +80,7 @@ func (w *FileWalker) Traverse() error {
 	close(errorCh)
 	<-collectionDone
 
-	select {
-	case err := <-firstError:
-		return err
-	default:
-	}
-	return walkErr
+	return errors.Join(append(workerErrors, walkErr)...)
 }
 
 func NewParallelFileWalker(inputPath string, workerCount int, workerFactory func(id int) QueueProcessor) *FileWalker {
