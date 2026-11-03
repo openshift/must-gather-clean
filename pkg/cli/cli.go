@@ -155,10 +155,21 @@ func createObfuscatorsFromConfig(config *schema.SchemaJson) (finalObfuscator *ob
 	var prescanObfuscators []obfuscator.ReportingObfuscator
 	for _, o := range config.Config.Obfuscate {
 		var (
-			k   obfuscator.ReportingObfuscator
-			err error
+			k       obfuscator.ReportingObfuscator
+			tracker obfuscator.ReplacementTracker
+			err     error
 		)
-		tracker := obfuscator.NewSimpleTrackerMap(o.Replacement)
+		if o.Type != schema.ObfuscateTypeKeywords {
+			tracker, err = obfuscator.NewSimpleTrackerMapForObfuscation(
+				o.Replacement,
+				o.Type,
+				o.DomainNames,
+				o.ReplacementType,
+			)
+			if err != nil {
+				return nil, nil, fmt.Errorf("invalid replacement map for obfuscator %s: %w", o.Type, err)
+			}
+		}
 		switch o.Type {
 		case schema.ObfuscateTypeKeywords:
 			k = obfuscator.NewKeywordsObfuscator(o.Replacement)

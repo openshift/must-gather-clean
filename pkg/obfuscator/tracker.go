@@ -1,8 +1,12 @@
 package obfuscator
 
 import (
+	"fmt"
+	"sort"
 	"strings"
 	"sync"
+
+	"github.com/openshift/must-gather-clean/pkg/schema"
 )
 
 var onlyOneInit = make(chan struct{})
@@ -72,14 +76,29 @@ func (s *SimpleTracker) Report() ReplacementReport {
 
 	var replacements []Replacement
 	for _, v := range s.mapping {
-		replacements = append(replacements, *v)
+		counter := make(map[string]uint, len(v.Counter))
+		for original, count := range v.Counter {
+			counter[original] = count
+		}
+		replacements = append(replacements, Replacement{
+			Canonical:    v.Canonical,
+			ReplacedWith: v.ReplacedWith,
+			Counter:      counter,
+		})
 	}
+	sort.SliceStable(replacements, func(first, second int) bool {
+		if replacements[first].Canonical != replacements[second].Canonical {
+			return replacements[first].Canonical < replacements[second].Canonical
+		}
+		return replacements[first].ReplacedWith < replacements[second].ReplacedWith
+	})
 	return ReplacementReport{Replacements: replacements}
 }
 
 func (s *SimpleTracker) GenerateIfAbsent(canonical string, original string, count uint, generator GenerateReplacement) string {
 	s.lock.Lock()
 	defer s.lock.Unlock()
+	s.ensureMaps()
 
 	if r, ok := s.mapping[canonical]; ok {
 		r.Increment(original, count)
@@ -99,6 +118,7 @@ func (s *SimpleTracker) Initialize(report ReplacementReport) {
 
 	s.lock.Lock()
 	defer s.lock.Unlock()
+	s.ensureMaps()
 
 	for _, r := range report.Replacements {
 		c := make(map[string]uint)
@@ -113,17 +133,167 @@ func (s *SimpleTracker) Initialize(report ReplacementReport) {
 	}
 }
 
+func (s *SimpleTracker) ensureMaps() {
+	if s.mapping == nil {
+		s.mapping = map[string]*Replacement{}
+	}
+}
+
 func NewSimpleTracker() ReplacementTracker {
 	return &SimpleTracker{mapping: map[string]*Replacement{}}
 }
 
 // NewSimpleTrackerMap takes the existing map of replacements as an argument and builds, returns the required ReplacementTracker
 func NewSimpleTrackerMap(existingReplacements map[string]string) ReplacementTracker {
-
-	var m = map[string]*Replacement{}
-	// injecting the already-existing replacement report
-	for key, value := range existingReplacements {
-		m[key] = NewReplacement(key, key, value, 0)
+	tracker, err := NewSimpleTrackerMapForObfuscation(
+		existingReplacements,
+		schema.ObfuscateTypeKeywords,
+		nil,
+		schema.ObfuscateReplacementTypeStatic,
+	)
+	if err != nil {
+		// The legacy constructor has no error return. Any map this call could
+		// reject is also rejected by the corresponding obfuscator constructor.
+		panic(err)
 	}
-	return &SimpleTracker{mapping: m}
+	return tracker
+}
+
+// NewSimpleTrackerMapForObfuscation rebuilds a tracker from a config or report
+// replacement map. The type-aware canonicalization is essential when a report
+// contains percent-encoded or alternate MAC/domain spellings: the obfuscators
+// look those values up using their canonical form.
+func NewSimpleTrackerMapForObfuscation(
+	existingReplacements map[string]string,
+	obfuscationType schema.ObfuscateType,
+	domainNames []string,
+	replacementType schema.ObfuscateReplacementType,
+) (ReplacementTracker, error) {
+	if obfuscationType == schema.ObfuscateTypeDomain {
+		if err := validateDomainNames(domainNames); err != nil {
+			return nil, err
+		}
+	}
+	domainIndex := newDomainCanonicalIndex(domainNames)
+
+	allowDuplicateTokens := replacementType != schema.ObfuscateReplacementTypeConsistent ||
+		(obfuscationType != schema.ObfuscateTypeIP &&
+			obfuscationType != schema.ObfuscateTypeMAC &&
+			obfuscationType != schema.ObfuscateTypeDomain)
+
+	mapping := make(map[string]*Replacement, len(existingReplacements))
+	usedTokens := make(map[string]string, len(existingReplacements))
+	keys := make([]string, 0, len(existingReplacements))
+	for original := range existingReplacements {
+		keys = append(keys, original)
+	}
+	sort.Strings(keys)
+	for _, original := range keys {
+		replacement := existingReplacements[original]
+		if err := validateReplacementKey(original, obfuscationType); err != nil {
+			return nil, err
+		}
+		canonical := canonicalReplacementKey(original, obfuscationType, domainIndex)
+		if existing, ok := mapping[canonical]; ok {
+			if existing.ReplacedWith != replacement {
+				return nil, fmt.Errorf(
+					"conflicting existing replacements for canonical value %q: %q and %q",
+					canonical,
+					existing.ReplacedWith,
+					replacement,
+				)
+			}
+			existing.Counter[original] = 0
+			continue
+		}
+		if !allowDuplicateTokens && replacement != "" {
+			if existingCanonical, exists := usedTokens[replacement]; exists && existingCanonical != canonical {
+				return nil, fmt.Errorf(
+					"conflicting existing replacement token %q for canonical value %q",
+					replacement,
+					canonical,
+				)
+			}
+			usedTokens[replacement] = canonical
+		}
+		mapping[canonical] = NewReplacement(canonical, original, replacement, 0)
+	}
+	return &SimpleTracker{mapping: mapping}, nil
+}
+
+type domainCanonicalIndex map[string]string
+
+func newDomainCanonicalIndex(domains []string) domainCanonicalIndex {
+	index := make(domainCanonicalIndex, len(domains))
+	for _, domain := range domains {
+		normalized := lowerASCIIString(domain)
+		if existing, exists := index[normalized]; !exists ||
+			domainPatternLength(normalized) > domainPatternLength(existing) ||
+			(domainPatternLength(normalized) == domainPatternLength(existing) && normalized < existing) {
+			index[normalized] = normalized
+		}
+	}
+	return index
+}
+
+// endingAt returns the most specific configured domain at the end of a
+// report value. Both the literal spelling and one decoded layer are checked:
+// matching accepts raw literal percent signs as well as their %25 encoding.
+// Map lookups keep this independent of the number of configured domains.
+func (i domainCanonicalIndex) endingAt(original string) string {
+	best := ""
+	for start := 0; start < len(original); start++ {
+		if insidePercentEncodingAt(original, start) {
+			continue
+		}
+		if domain := i.match(lowerASCIIString(original[start:])); domain != "" {
+			best = moreSpecificDomain(best, domain)
+		}
+		if strings.Contains(original[start:], "%") {
+			if domain := i.match(lowerASCIIString(decodePercentEncoded(original[start:]))); domain != "" {
+				best = moreSpecificDomain(best, domain)
+			}
+		}
+	}
+	return best
+}
+
+func (i domainCanonicalIndex) match(value string) string {
+	return i[value]
+}
+
+func moreSpecificDomain(current, candidate string) string {
+	if candidate == "" {
+		return current
+	}
+	if current == "" || domainPatternLength(candidate) > domainPatternLength(current) ||
+		(domainPatternLength(candidate) == domainPatternLength(current) && candidate < current) {
+		return candidate
+	}
+	return current
+}
+
+func canonicalReplacementKey(original string, obfuscationType schema.ObfuscateType, domainIndex domainCanonicalIndex) string {
+	switch obfuscationType {
+	case schema.ObfuscateTypeIP:
+		return canonicalIP(decodePercentEncoded(original))
+	case schema.ObfuscateTypeMAC:
+		return canonicalMAC(original)
+	case schema.ObfuscateTypeDomain:
+		if domain := domainIndex.endingAt(original); domain != "" {
+			return domain
+		}
+		return lowerASCIIString(decodePercentEncoded(original))
+	default:
+		return original
+	}
+}
+
+func lowerASCIIString(value string) string {
+	var lowered strings.Builder
+	lowered.Grow(len(value))
+	for index := 0; index < len(value); index++ {
+		lowered.WriteByte(lowerASCIIByte(value[index]))
+	}
+	return lowered.String()
 }
