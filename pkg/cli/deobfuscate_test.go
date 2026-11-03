@@ -16,12 +16,12 @@ const validDeobfuscationReport = `config:
     - type: IP
       replacementType: Consistent
       replacement:
-        original: token
+        192.0.2.1: token
 replacements:
-  - - canonical: original
+  - - canonical: 192.0.2.1
       replacedWith: token
       occurrences:
-        - original: original
+        - original: 192.0.2.1
 `
 
 func TestRunDeobfuscate(t *testing.T) {
@@ -31,7 +31,32 @@ func TestRunDeobfuscate(t *testing.T) {
 	var output bytes.Buffer
 	err := RunDeobfuscate(reportPath, bytes.NewBufferString("node token unknown\n"), &output)
 	require.NoError(t, err)
-	require.Equal(t, "node original unknown\n", output.String())
+	require.Equal(t, "node 192.0.2.1 unknown\n", output.String())
+}
+
+func TestRunDeobfuscateAcceptsLegacyUppercaseDomain(t *testing.T) {
+	report := []byte(`config:
+  obfuscate:
+    - domainNames: [Example.COM]
+      replacement:
+        api.Example.COM: domain0000000001
+      replacementType: Consistent
+      target: FileContents
+      type: Domain
+replacements:
+  - - canonical: Example.COM
+      replacedWith: domain0000000001
+      occurrences:
+        - original: api.Example.COM
+          count: 1
+`)
+	reportPath := filepath.Join(t.TempDir(), "legacy-report.yaml")
+	require.NoError(t, os.WriteFile(reportPath, report, 0600))
+
+	var output bytes.Buffer
+	err := RunDeobfuscate(reportPath, bytes.NewBufferString("host=api.domain0000000001\n"), &output)
+	require.NoError(t, err)
+	require.Equal(t, "host=api.Example.COM\n", output.String())
 }
 
 func TestRunDeobfuscateReportsReadAndWriteErrors(t *testing.T) {
@@ -59,7 +84,7 @@ func TestRunDeobfuscateFile(t *testing.T) {
 	require.NoError(t, RunDeobfuscateFile(reportPath, inputPath, outputPath))
 	restored, err := os.ReadFile(outputPath)
 	require.NoError(t, err)
-	require.Equal(t, "original\n", string(restored))
+	require.Equal(t, "192.0.2.1\n", string(restored))
 }
 
 func TestRunDeobfuscateFilePreservesOutputWhenInputReadFails(t *testing.T) {
@@ -138,7 +163,7 @@ func TestRunDeobfuscateFileWritesThroughOutputSymlink(t *testing.T) {
 	require.NotZero(t, linkInfo.Mode()&os.ModeSymlink)
 	restored, err := os.ReadFile(targetPath)
 	require.NoError(t, err)
-	require.Equal(t, "original\n", string(restored))
+	require.Equal(t, "192.0.2.1\n", string(restored))
 }
 
 func TestRunDeobfuscateFileRejectsSameInputAndOutput(t *testing.T) {

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/openshift/must-gather-clean/pkg/schema"
 )
@@ -28,6 +30,14 @@ func IsCanonicalDomain(value string) bool {
 	return value != "" && value == lowerASCIIString(value) && validDomainText(value)
 }
 
+// IsReportDomain reports whether value is a printable domain spelling that can
+// be restored from a report. Historical reports may contain uppercase or
+// non-ASCII printable domain canonical values; those spellings are preserved
+// verbatim during restoration.
+func IsReportDomain(value string) bool {
+	return validReportDomainText(value)
+}
+
 func validateReplacementKey(original string, obfuscationType schema.ObfuscateType) error {
 	switch obfuscationType {
 	case schema.ObfuscateTypeIP:
@@ -50,6 +60,18 @@ func validateReplacementKey(original string, obfuscationType schema.ObfuscateTyp
 func validDomainText(value string) bool {
 	for index := 0; index < len(value); index++ {
 		if value[index] >= 0x80 || value[index] <= ' ' || value[index] == 0x7f {
+			return false
+		}
+	}
+	return true
+}
+
+func validReportDomainText(value string) bool {
+	if value == "" || !utf8.ValidString(value) {
+		return false
+	}
+	for _, character := range value {
+		if !unicode.IsGraphic(character) || unicode.IsSpace(character) {
 			return false
 		}
 	}

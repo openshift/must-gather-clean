@@ -248,6 +248,17 @@ func TestDomainConfigurationValidation(t *testing.T) {
 	}
 }
 
+func TestReportDomainAcceptsHistoricalSpellingButWriterRequiresLowercase(t *testing.T) {
+	assert.False(t, IsCanonicalDomain("Example.COM"))
+	assert.True(t, IsReportDomain("Example.COM"))
+	assert.True(t, IsReportDomain("example.com"))
+	assert.True(t, IsReportDomain("éxample.com"))
+	assert.False(t, IsReportDomain(""))
+	assert.False(t, IsReportDomain("cluster example"))
+	assert.False(t, IsReportDomain("cluster\x01example"))
+	assert.False(t, IsReportDomain("cluster\xffexample"))
+}
+
 func TestNoDomainInput(t *testing.T) {
 	_, err := NewDomainObfuscator([]string{}, schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
 	assert.Error(t, err)
