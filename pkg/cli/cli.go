@@ -153,6 +153,7 @@ func createOmittersFromConfig(config *schema.SchemaJson, inputPath string) (omit
 func createObfuscatorsFromConfig(config *schema.SchemaJson) (finalObfuscator *obfuscator.MultiObfuscator, prescanObfuscator *obfuscator.MultiObfuscator, finalErr error) {
 	var obfuscators []obfuscator.ReportingObfuscator
 	var prescanObfuscators []obfuscator.ReportingObfuscator
+	replacementReservations := obfuscator.NewReplacementReservations()
 	for _, o := range config.Config.Obfuscate {
 		var (
 			k       obfuscator.ReportingObfuscator
@@ -165,6 +166,7 @@ func createObfuscatorsFromConfig(config *schema.SchemaJson) (finalObfuscator *ob
 				o.Type,
 				o.DomainNames,
 				o.ReplacementType,
+				replacementReservations,
 			)
 			if err != nil {
 				return nil, nil, fmt.Errorf("invalid replacement map for obfuscator %s: %w", o.Type, err)

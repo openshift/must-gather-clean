@@ -215,6 +215,7 @@ func TestDomainConfigurationValidation(t *testing.T) {
 			schema.ObfuscateTypeDomain,
 			[]string{domain},
 			schema.ObfuscateReplacementTypeConsistent,
+			nil,
 		)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), wantError)
@@ -240,6 +241,7 @@ func TestDomainConfigurationValidation(t *testing.T) {
 				schema.ObfuscateTypeDomain,
 				[]string{domain},
 				schema.ObfuscateReplacementTypeConsistent,
+				nil,
 			)
 			require.NoError(t, err)
 			_, err = NewDomainObfuscator([]string{domain}, schema.ObfuscateReplacementTypeConsistent, tracker)
@@ -329,6 +331,7 @@ func TestDomainObfuscatorCanonicalizesConfiguredBaseDomainForTracker(t *testing.
 		schema.ObfuscateTypeDomain,
 		[]string{"Example.COM"},
 		schema.ObfuscateReplacementTypeConsistent,
+		nil,
 	)
 	require.NoError(t, err)
 	o, err := NewDomainObfuscator([]string{"Example.COM"}, schema.ObfuscateReplacementTypeConsistent, tracker)
