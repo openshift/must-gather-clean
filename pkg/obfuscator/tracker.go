@@ -1,6 +1,7 @@
 package obfuscator
 
 import (
+	"strings"
 	"sync"
 )
 
@@ -29,7 +30,10 @@ type Replacement struct {
 }
 
 func (r *Replacement) Increment(original string, count uint) {
-	r.Counter[original] += count
+	// original is usually a substring of the (potentially multi-megabyte) line being obfuscated. Go overwrites the
+	// stored key of a string-keyed map on every assignment, even if the key already exists, so we must always store
+	// a copy. Otherwise every tracked value pins the most recent line it was seen in for the lifetime of the tracker.
+	r.Counter[strings.Clone(original)] += count
 }
 
 func NewReplacement(canonical string, original string, replacement string, count uint) *Replacement {
@@ -82,8 +86,11 @@ func (s *SimpleTracker) GenerateIfAbsent(canonical string, original string, coun
 		return r.ReplacedWith
 	}
 
-	g := generator()
-	s.mapping[canonical] = NewReplacement(canonical, original, g, count)
+	// canonical and original are frequently substrings of the (potentially multi-megabyte) line being obfuscated.
+	// Retaining them as-is would pin the whole line in memory for the lifetime of the tracker, so we copy them.
+	canonical = strings.Clone(canonical)
+	g := strings.Clone(generator())
+	s.mapping[canonical] = NewReplacement(canonical, strings.Clone(original), g, count)
 	return g
 }
 

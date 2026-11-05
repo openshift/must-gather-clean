@@ -256,3 +256,16 @@ func TestAzureResourcesObfuscatorContents(t *testing.T) {
 		})
 	}
 }
+
+func TestAzureResourceObfuscatorDoesNotRetainInputLines(t *testing.T) {
+	o, err := NewAzureResourceObfuscator(schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker(), ptr.To(1))
+	require.NoError(t, err)
+	line := "id: /subscriptions/my-subscription-id/resourceGroups/my-resource-group/providers/Microsoft.Network/virtualNetworks/my-vnet/subnets/my-subnet"
+	o.Contents(line)
+
+	for _, replacer := range o.(*azureResourceObfuscator).orderedPartialRegexReplacers {
+		for canonical := range replacer.canonicalReplacements {
+			assert.False(t, aliases(canonical, line), "canonical %q aliases input line", canonical)
+		}
+	}
+}

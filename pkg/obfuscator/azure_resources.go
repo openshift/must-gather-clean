@@ -65,7 +65,8 @@ func (t *partialRegexReplacer) generateReplacement(canonical, original string, c
 	t.lock.Lock()
 	defer t.lock.Unlock()
 
-	t.canonicalReplacements.Insert(canonical)
+	// canonical is a submatch of the line being obfuscated; copy it so the set does not pin the whole line in memory
+	t.canonicalReplacements.Insert(strings.Clone(canonical))
 	return t.generator.generateReplacement(canonical, original, count, tracker)
 }
 
