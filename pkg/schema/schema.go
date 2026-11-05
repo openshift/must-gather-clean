@@ -21,10 +21,10 @@ type Obfuscate struct {
 	// supported.
 	Regex *string `json:"regex,omitempty" yaml:"regex,omitempty"`
 
-	// on replacement 'Keywords', this will override a given input string with another
-	// output string. On duplicate keys it will use the last defined value as
-	// replacement. The input values are matched in a case-sensitive fashion and only
-	// as a full words, substrings must be matched using a regex.
+	// on replacement 'Keywords', this maps literal input substrings to output
+	// strings. Matching is case-sensitive. At each input position the longest
+	// matching keyword wins, independent of map iteration order. Matches do not
+	// overlap and generated replacement text is not scanned again.
 	Replacement ObfuscateReplacement `json:"replacement,omitempty" yaml:"replacement,omitempty"`
 
 	// This defines how the detected string will be replaced. Type 'Consistent' will
@@ -78,10 +78,10 @@ func (j *ObfuscateExactReplacementsElem) UnmarshalJSON(value []byte) error {
 	return nil
 }
 
-// on replacement 'Keywords', this will override a given input string with another
-// output string. On duplicate keys it will use the last defined value as
-// replacement. The input values are matched in a case-sensitive fashion and only
-// as a full words, substrings must be matched using a regex.
+// on replacement 'Keywords', this maps literal input substrings to output strings.
+// Matching is case-sensitive. At each input position the longest matching keyword
+// wins, independent of map iteration order. Matches do not overlap and generated
+// replacement text is not scanned again.
 type ObfuscateReplacement map[string]string
 
 type ObfuscateReplacementType string
