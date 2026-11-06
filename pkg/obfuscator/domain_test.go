@@ -207,10 +207,58 @@ func TestDomainObfuscator_FileName(t *testing.T) {
 	}
 }
 
-func TestBadDomainInput(t *testing.T) {
-	_, err := NewDomainObfuscator([]string{"[mustgather.com"}, schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to generate regex")
+func TestDomainConfigurationValidation(t *testing.T) {
+	assertRejected := func(t *testing.T, domain, wantError string) {
+		t.Helper()
+		_, err := NewSimpleTrackerMapForObfuscation(
+			nil,
+			schema.ObfuscateTypeDomain,
+			[]string{domain},
+			schema.ObfuscateReplacementTypeConsistent,
+			nil,
+		)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), wantError)
+
+		_, err = NewDomainObfuscator([]string{domain}, schema.ObfuscateReplacementTypeConsistent, NewSimpleTracker())
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), wantError)
+	}
+
+	assertRejected(t, "", "domain cannot be empty")
+	assertRejected(t, "münich.example", "domain must be printable ASCII")
+	assertRejected(t, "cluster\x01.example", "domain must be printable ASCII")
+	for _, metacharacter := range `+*?()|[]{}^$\` {
+		t.Run("regex "+string(metacharacter), func(t *testing.T) {
+			assertRejected(t, "example"+string(metacharacter)+".com", "cannot contain regex metacharacters")
+		})
+	}
+
+	for _, domain := range []string{"example.com", "sub-domain.example.com", "Example.COM", "_dmarc.example.com"} {
+		t.Run("accept "+domain, func(t *testing.T) {
+			tracker, err := NewSimpleTrackerMapForObfuscation(
+				nil,
+				schema.ObfuscateTypeDomain,
+				[]string{domain},
+				schema.ObfuscateReplacementTypeConsistent,
+				nil,
+			)
+			require.NoError(t, err)
+			_, err = NewDomainObfuscator([]string{domain}, schema.ObfuscateReplacementTypeConsistent, tracker)
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestReportDomainAcceptsHistoricalSpellingButWriterRequiresLowercase(t *testing.T) {
+	assert.False(t, IsCanonicalDomain("Example.COM"))
+	assert.True(t, IsReportDomain("Example.COM"))
+	assert.True(t, IsReportDomain("example.com"))
+	assert.True(t, IsReportDomain("éxample.com"))
+	assert.False(t, IsReportDomain(""))
+	assert.False(t, IsReportDomain("cluster example"))
+	assert.False(t, IsReportDomain("cluster\x01example"))
+	assert.False(t, IsReportDomain("cluster\xffexample"))
 }
 
 func TestNoDomainInput(t *testing.T) {
@@ -275,4 +323,24 @@ func TestDomainObfuscationStatic(t *testing.T) {
 			replacementReportsMatch(t, tc.report, o.Report())
 		})
 	}
+}
+
+func TestDomainObfuscatorCanonicalizesConfiguredBaseDomainForTracker(t *testing.T) {
+	tracker, err := NewSimpleTrackerMapForObfuscation(
+		map[string]string{"Example.COM": "domain0000000001"},
+		schema.ObfuscateTypeDomain,
+		[]string{"Example.COM"},
+		schema.ObfuscateReplacementTypeConsistent,
+		nil,
+	)
+	require.NoError(t, err)
+	o, err := NewDomainObfuscator([]string{"Example.COM"}, schema.ObfuscateReplacementTypeConsistent, tracker)
+	require.NoError(t, err)
+
+	assert.Equal(t, "api.domain0000000001", o.Contents("api.Example.COM"))
+	report := o.Report().Replacements
+	require.Len(t, report, 1)
+	assert.Equal(t, "example.com", report[0].Canonical)
+	assert.Equal(t, "domain0000000001", report[0].ReplacedWith)
+	assert.True(t, IsCanonicalDomain(report[0].Canonical))
 }

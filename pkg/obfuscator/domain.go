@@ -14,6 +14,7 @@ const (
 	obfuscatedTemplate                 = "domain%010d"
 	staticDomainReplacement            = "obfuscated.com"
 	maximumSupportedObfuscationDomains = 9999999999
+	domainRegexMetacharacters          = `+*?()|[]{}^$\`
 )
 
 type domainObfuscator struct {
@@ -38,7 +39,7 @@ func (d *domainObfuscator) replaceDomains(input string) string {
 			if len(groups) != 3 {
 				return match
 			}
-			baseDomain := groups[2]
+			baseDomain := lowerASCIIString(groups[2])
 			subDomain := groups[1]
 			obfuscatedBaseDomain := d.obfsGenerator.generateReplacement(baseDomain, match, 1, d.ReplacementTracker)
 			if subDomain != "" {
@@ -50,9 +51,27 @@ func (d *domainObfuscator) replaceDomains(input string) string {
 	return output
 }
 
+func validateDomainNames(domains []string) error {
+	for index, domain := range domains {
+		if domain == "" {
+			return fmt.Errorf("invalid domain at index %d: domain cannot be empty", index)
+		}
+		if !validDomainText(domain) {
+			return fmt.Errorf("invalid domain at index %d: domain must be printable ASCII", index)
+		}
+		if strings.ContainsAny(domain, domainRegexMetacharacters) {
+			return fmt.Errorf("invalid domain at index %d: domain %q cannot contain regex metacharacters", index, domain)
+		}
+	}
+	return nil
+}
+
 func NewDomainObfuscator(domains []string, replacementType schema.ObfuscateReplacementType, tracker ReplacementTracker) (ReportingObfuscator, error) {
 	if len(domains) == 0 {
 		return nil, fmt.Errorf("no domainNames supplied for the obfuscation type: Domain")
+	}
+	if err := validateDomainNames(domains); err != nil {
+		return nil, err
 	}
 	patterns := make([]*regexp.Regexp, len(domains))
 	for i, d := range domains {

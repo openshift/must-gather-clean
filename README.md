@@ -147,6 +147,8 @@ The different types are explained along examples below. The whole schema itself 
 can be found in [schema.json](pkg/schema/schema.json) with more examples and documentation for each property. A more browsable
 alternative can be found on [json-schema.app](https://json-schema.app/view/%23?url=https%3A%2F%2Fraw.githubusercontent.com%2Fopenshift%2Fmust-gather-clean%2Fmain%2Fpkg%2Fschema%2Fschema.json).
 
+Typed replacement keys are normalized when replacement trackers and obfuscators are created. Report canonical values for IP, MAC, and Domain are validated when a report is loaded, as described in [replacement canonicalization](docs/replacement-canonicalization.md).
+
 ## Obfuscation
 
 You can define obfuscators as a list of "types", usually customized by a couple of parameters.
@@ -481,12 +483,20 @@ config:
         type: Domain
 ```
 
-This allows to reproduce a run completely by passing the `report.yaml` back as a configuration:
+When the report is accepted as a configuration, passing `report.yaml` back reproduces the same run:
 ```sh
 $ must-gather-clean -c report.yaml -i must-gather-output -o must-gather-output-cleaned
 ```
 
 The resulting cleaned must-gather is replaced exactly as in the previous run that created the report.
+
+New configurations accept domain names only as printable ASCII literals; regex
+metacharacters other than `.` are rejected. Reports from older releases may
+contain Domain canonical values with uppercase letters or printable non-ASCII
+characters; `deobfuscate` preserves those spellings. Reports containing
+whitespace, control characters, or invalid UTF-8 are rejected. A legacy report
+whose embedded Domain configuration uses regex metacharacters other than `.`
+cannot be replayed by passing it back with `-c`.
 
 # Contributing to must-gather-clean
 
