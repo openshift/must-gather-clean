@@ -445,6 +445,8 @@ replacements:
 
 Each replacement comes with a canonicalized version of a detected text. In the above example report you see that the IP address `10.0.187.218` was replaced with `x-ipv4-0000000001-x` much more often formatted as `10-0-187-218` - 12429 over 7855 times. Omissions are also included in the report, those will report a listing of all files that have been omitted from the output.
 
+Replacement groups stay in configured obfuscator order. Their content and omitted paths are sorted, so the report has a stable serialization once replacement tracking is complete. Token allocation can still depend on the order in which parallel workers encounter values. Report ordering and publication rules are documented in [reporting behavior](docs/reporting.md).
+
 Please ensure to not share the report as this allows to relate the original confidential data with their obfuscated replacements.
 
 The report can also be used to restore supported, unambiguous replacement tokens

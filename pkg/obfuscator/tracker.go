@@ -72,7 +72,15 @@ func (s *SimpleTracker) Report() ReplacementReport {
 
 	var replacements []Replacement
 	for _, v := range s.mapping {
-		replacements = append(replacements, *v)
+		counter := make(map[string]uint, len(v.Counter))
+		for original, count := range v.Counter {
+			counter[original] = count
+		}
+		replacements = append(replacements, Replacement{
+			Canonical:    v.Canonical,
+			ReplacedWith: v.ReplacedWith,
+			Counter:      counter,
+		})
 	}
 	return ReplacementReport{Replacements: replacements}
 }
